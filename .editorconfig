@@ -1,0 +1,51 @@
+# 春连鲜选 · 编辑器统一约定
+#
+# 目的：消除「同一份代码在不同机器上 diff 出一堆空白变更」这类噪音。
+# 换行符统一 LF —— 仓库同时在 Windows / macOS / Linux 上被检出。
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# ---------- Markdown：保留行尾空格（两个空格 = 换行） ----------
+[*.md]
+trim_trailing_whitespace = false
+indent_size = 2
+
+# ---------- YAML / JSON ----------
+[*.{yml,yaml,json}]
+indent_size = 2
+
+# ---------- 前端 ----------
+[*.{js,ts,vue,scss,css,html}]
+indent_size = 2
+
+# ---------- Android / Gradle（Kotlin 官方风格为 4 空格） ----------
+[*.{kt,kts}]
+indent_size = 4
+max_line_length = 100
+
+[*.gradle]
+indent_size = 4
+
+# ---------- PHP（PSR-12：4 空格） ----------
+[*.php]
+indent_size = 4
+
+# ---------- SQL ----------
+[*.sql]
+indent_size = 4
+
+# ---------- 构建产物 / 生成物：不要动它们的格式 ----------
+[{*.bat,*.cmd}]
+end_of_line = crlf
+
+[*.{png,jpg,jpeg,gif,ico,webp,jar,zip,apk,aab}]
+insert_final_newline = false
+trim_trailing_whitespace = false

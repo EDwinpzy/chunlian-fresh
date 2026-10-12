@@ -1,0 +1,79 @@
+# ---------- 密钥与环境变量（绝不提交） ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.keystore
+*.jks
+!debug.keystore
+
+# ---------- 美术资源投放区 ----------
+# 原始美术包体积大、且会随设计迭代整体替换；
+# 可用资源到位后，应把最终文件落到 customer-miniapp/src/static/
+# 与 merchant-android/app/src/main/res/ 下再提交。
+design-assets/
+
+# ---------- PHP / Composer ----------
+vendor/
+.phpunit.cache/
+.phpunit.result.cache
+composer.phar
+
+# ---------- Node / 前端 ----------
+node_modules/
+dist/
+unpackage/
+.npm/
+.eslintcache
+*.tsbuildinfo
+
+# ---------- Android / Gradle ----------
+.gradle/
+build/
+local.properties
+captures/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+output.json
+
+# ---------- IDE ----------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+!.vscode/extensions.json
+
+# ---------- 操作系统 ----------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ---------- 日志与临时文件 ----------
+*.log
+logs/
+*.tmp
+*.bak
+*.orig
+*.rej
+*~
+tmp/
+
+# ---------- 运行时生成（ShopXO 扩展层） ----------
+backend-extension/runtime/
+backend-extension/.env
+
+# ---------- 设计工具 ----------
+*.sketch
+*.fig

@@ -1,0 +1,39 @@
+{
+    "name": "chunlian/fresh-backend-extension",
+    "description": "春连鲜选 (Chunlian Fresh) — ShopXO 扩展层：订单修订、差价资金引擎、COD 收款、商家移动 API",
+    "type": "shopxo-plugin",
+    "license": "MIT",
+    "keywords": ["shopxo", "fresh", "grocery", "order-revision", "cod"],
+    "require": {
+        "php": ">=8.1",
+        "ext-json": "*",
+        "ext-pdo": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Chunlian\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Chunlian\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --colors=always",
+        "test:coverage": "phpunit --coverage-text --colors=always",
+        "lint": "find src tests -name '*.php' -print0 | xargs -0 -n1 php -l"
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.1.0"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

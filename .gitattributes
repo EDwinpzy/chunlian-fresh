@@ -1,0 +1,68 @@
+# 春连鲜选 · 换行符与文件属性
+#
+# 【为什么必须显式声明，而不能依赖 git 的 autocrlf】
+# 本项目的 shell 脚本要部署到 Linux 服务器执行。若这些文件被检出为 CRLF，
+# Linux 上会直接报 `bad interpreter: /bin/bash^M: no such file or directory`，
+# 而且这个错误信息不会提示是换行符问题，排查成本很高。
+#
+# 因此这里把所有文本文件统一钉死为 LF，只对确实需要 CRLF 的
+# Windows 批处理文件开例外。
+
+# ---------- 默认：文本文件一律 LF ----------
+* text=auto eol=lf
+
+# ---------- 明确标记为二进制（禁止任何换行符转换） ----------
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.jar binary
+*.apk binary
+*.aab binary
+*.keystore binary
+*.jks binary
+*.so binary
+*.dex binary
+
+# ---------- 语言标注（便于 GitHub 统计与 diff 行为） ----------
+*.php  text diff=php
+*.kt   text diff=kotlin
+*.kts  text diff=kotlin
+*.java text diff=java
+*.js   text
+*.vue  text
+*.scss text
+*.css  text
+*.sql  text
+*.sh   text eol=lf
+*.md   text
+*.xml  text
+*.json text
+*.yml  text
+*.yaml text
+*.toml text
+
+# ---------- shell 脚本：必须 LF，且需保留可执行位 ----------
+deploy-backend.sh text eol=lf
+*.sh text eol=lf
+
+# ---------- Windows 批处理：必须 CRLF ----------
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# ---------- Gradle wrapper：跨平台一致性 ----------
+gradlew text eol=lf
+gradlew.bat text eol=crlf
+
+# ---------- 生成物：不参与 diff，不计入语言统计 ----------
+composer.lock -diff linguist-generated
+package-lock.json -diff linguist-generated
+dist/** linguist-generated
+*.min.js -diff
