@@ -258,7 +258,7 @@ $skuId = $spec_base['data']['spec_base']['id'];   // ← 稳定的 SKU 主键
 ShopXO 运行时
     │
     ├── app/plugins/chunlianfresh/          ← 薄适配层（本次新建）
-    │   ├── api/Merchant.php                   商家端 API（小程序/App 调用）
+    │   ├── api/Merchant.php                   商家端 API（客户端调用）
     │   ├── index/Order.php                    前台入口（支付回调等）
     │   ├── service/BaseService.php            配置字段声明
     │   ├── Event.php                          安装建表 / 钩子注册

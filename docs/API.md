@@ -1,7 +1,12 @@
-# API 契约｜春连鲜选
+# API 契约｜春连鲜选（后端）
 
 > 来源：方案 §10。所有 `/api/v1/...` 均为本项目**拟新增接口**，并非声称 ShopXO 官方已存在同名路由。
 > **所有金额使用 `*_fen` 整数（Long）**。机器可读版本见 `api-contracts/openapi.yaml`。
+>
+> **范围说明**：本仓库仅保留后端。契约中「顾客端接口」一节描述的是面向顾客端的
+> API 设计，其中**当前已实现并验证的只有订单改单相关端点**
+> （`/api/v1/customer/orders/{id}/revision*`）；其余顾客端能力（首页、商品、
+> 购物车、地址、下单、支付）目前仍走 ShopXO 原生 API（`/api.php?s=...`）。
 
 ## 1. 通用约定
 
@@ -12,7 +17,7 @@
 | `Authorization` | 是 | `Bearer <token>`；顾客为微信身份会话，商家为管理员会话 |
 | `Idempotency-Key` | 写请求必填 | UUID v4；同 key 重复请求返回首次结果 |
 | `X-Order-Version` | 订单写操作 | 乐观锁版本号，服务端强校验 |
-| `X-Client` | 否 | `miniapp` / `android`，用于日志与错误展示策略 |
+| `X-Client` | 否 | 调用方标识（如 `merchant` / `customer`），用于日志与错误展示策略 |
 | `X-Device-Id` | 商家端 | 设备标识，用于会话撤销与限速 |
 
 ### 1.2 统一响应
@@ -124,7 +129,7 @@
 }
 ```
 
-`payment_method=WECHAT` 时 `pay_params` 返回小程序支付参数（`timeStamp`/`nonceStr`/`package`/`signType`/`paySign`），`payment_state=PAYING`。
+`payment_method=WECHAT` 时 `pay_params` 返回客户端支付参数（`timeStamp`/`nonceStr`/`package`/`signType`/`paySign`，供微信小程序 `wx.requestPayment` 使用），`payment_state=PAYING`。
 
 ### 2.2 修改预览请求
 
@@ -214,7 +219,7 @@
 - 未开始配送才允许；COD 未收 / 微信未支付 → 直接 `CANCELLED`，不产生退款。
 - 微信已付款 → `REFUNDING`，应退 = `总已实付 − 总已成功退款`，**不得超额**。
 
-## 3. 商家 Android API
+## 3. 商家端 API
 
 | 方法 | 接口 | 作用 | 约束 |
 |---|---|---|---|
