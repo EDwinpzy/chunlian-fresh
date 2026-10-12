@@ -15,10 +15,14 @@
 | `infrastructure/` | ✅ 保留（nginx 配置、插件源码、部署/校验脚本） |
 | `docs/`、`design-assets/` | ✅ 保留 |
 
-前端共 327 个文件**仍在 git 历史**（最后一个含前端的提交是 `8574a23`），
-需要时 `git restore --source=8574a23 -- customer-miniapp merchant-android` 即可取回。
+前端共 327 个文件**已从 git 历史中彻底清除**（见下方说明）。
+含前端的完整历史已离线归档为 bundle，需要时可用它开一个旧仓库取回：
 
-项目体积：338M → **16M**。
+```bash
+git clone D:\MyProjects\_archive\chunlian-full-history-20261013.bundle chunlian-old
+```
+
+项目体积：338M → **16M**（`.git` 2.1M → 434K）。
 
 ## 二、服务器后端（磐石云）
 
@@ -90,23 +94,37 @@
      `docs/DEPLOYMENT.md`（移除前端构建步骤与 UI/Android 发布门槛）、
      `docs/API.md`、`docs/SHOPXO-AUDIT.md`
    - `docs/DEPLOYMENT-REPORT` / `NETWORK-DIAGNOSIS` 顶部加「结论已过时」提示
-   - 各文档均注明「前端已移出仓库，代码在 git 历史 `8574a23`」
+   - 各文档均注明「前端已移出仓库，且已从 git 历史清除（归档于
+     `_archive/chunlian-full-history-20261013.bundle`）」
 
-2. **本地收窄已提交并推送到 GitHub**。GitHub 仓库现在只含后端内容
-   （前端文件仍在**历史**中，见下方说明）。
+2. **本地收窄已提交，且前端已从 git 历史彻底清除并推送**（见下方说明）。
 
-### 说明：GitHub 上的前端残留
+### 说明：前端已从 git 历史彻底清除（已完成）
 
-GitHub 仓库当前状态是「仅后端」，但**前端代码仍在 git 历史里**
-（最早的两个提交 `d75d6c2` / `56ebb33` 就包含前端）。
-如果要把前端从 GitHub 彻底抹掉，需要重写历史 + 强制推送：
+2026-10-13 用 `git filter-repo` 重写历史，把 `customer-miniapp` 与
+`merchant-android` 从**所有提交**中移除，然后强制推送：
 
 ```bash
-git filter-repo --path customer-miniapp --path merchant-android --invert-paths
-git push --force origin main
+git filter-repo --path customer-miniapp --path merchant-android --invert-paths --force
+git remote add origin git@github.com:EDwinpzy/chunlian-fresh.git   # filter-repo 会移除 origin
+git push --force-with-lease=main:<推送前远端值> origin main
 ```
 
-**这会改写提交哈希**，且 GitHub 端仍需联系支持或等待 GC 才能清掉悬空对象。
+结果：
+
+- 提交数 **10 → 8**（两个只改前端的提交因变空被剪掉）
+- **所有提交哈希都变了**：原 `d75d6c2`…`ebea3ec` → 现 `1e828a5`…`3224a48`
+- 远端 HEAD `3224a48`，本地与远端同步；远端无任何前端文件
+- 本地 `.git` 2.1M → **434K**，`git rev-list --objects --all` 已查不到前端条目
+
+⚠️ **GitHub 服务端可能仍暂留旧对象**，直到其内部 GC 执行 —— 短时间内
+用旧哈希在网页上可能还能打开。要立即清掉需联系 GitHub 支持。
+
+⚠️ 同时删除了两个 `refs/codex/turn-diffs/checkpoints/*` 过期检查点 ref
+（它们仍指向改写前、含前端的对象）。**Codex 在本仓库的历史检查点因此失效。**
+
+**含前端的完整历史已归档**：
+`D:\MyProjects\_archive\chunlian-full-history-20261013.bundle`（1.8M，已 `git bundle verify`）
 需要的话告诉我，我来执行。
 
 ### 仍需你操作

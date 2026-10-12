@@ -4,10 +4,14 @@
 **配送前改单**这两件最容易出资金差错的事，并对外提供商家端 / 顾客端 API。
 
 > **范围说明**：本仓库**只保留后端**。原来的顾客端微信小程序（uni-app）与商家端
-> Android（Kotlin + Compose）已于 2026-10-13 从工作区移出，代码仍在 git 历史中
-> （最后一个含前端的提交是 `8574a23`），需要时：
+> Android（Kotlin + Compose）已于 2026-10-13 移出，并**已从 git 历史中彻底清除**
+> （历史被重写，所有提交哈希已变化）。
+>
+> 含前端的完整历史已离线归档为 bundle：
+> `D:\MyProjects\_archive\chunlian-full-history-20261013.bundle`
+> 需要时用它开一个旧仓库取回：
 > ```bash
-> git restore --source=8574a23 -- customer-miniapp merchant-android
+> git clone chunlian-full-history-20261013.bundle chunlian-old
 > ```
 
 ---
@@ -320,13 +324,13 @@ php scripts/verify-sku-capture.php    # 期望 7/7 通过
 | ShopXO `shopxo_order_detail` **不保存 SKU 身份** | 改单引擎无法按 SKU 比对 → 差价会算错。已用钩子捕获到 `veg_order_line` 并验证 |
 | `Order::refundable()` **未扣除处理中退款** | 与 ADR-005 及 `LedgerCalculator` 口径不一致 → 存在**超退风险**。已修复并加回归测试 |
 | 地址表字段名假设错误 | 实际是 `tel` 而非 `phone`；省市区是**区域 ID**，名称在 `*_name` 字段 → 拼出错误地址。已修正 |
-| 4 处接口响应体与调用方 DTO 不匹配 | 成功操作被判为「无法解析的数据」。已逐一对齐（见 git 历史 `da423c3`） |
+| 4 处接口响应体与调用方 DTO 不匹配 | 成功操作被判为「无法解析的数据」。已逐一对齐（`setShelves` 改回商品详情、新增 `MarkReadResponse` / `CommitTopupResponse` / `RevisionLineDto`） |
 
 ### 已知限制
 
 | 项 | 说明 |
 |---|---|
-| 前端已移出仓库 | 小程序与 Android 代码在 git 历史 `8574a23`，需 `git restore` 取回 |
+| 前端已移出仓库 | 小程序与 Android 代码**已从 git 历史清除**，完整历史归档在 `D:\MyProjects\_archive\chunlian-full-history-20261013.bundle` |
 | 顾客端业务接口未实现 | 除改单外，首页/分类/商品/购物车/地址/订单等仍需走 ShopXO 原生 API（`/api.php?s=...`） |
 | HTTPS 未配置 | 需域名 + certbot；当前仅 HTTP（微信体验版因此连不上） |
 | ICP 备案未办理 | 中国大陆 80/443 合规运营的前置条件 |
