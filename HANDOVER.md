@@ -56,41 +56,108 @@ baseUrl 是 `.../api/v1/`、Retrofit 路径是 `merchant/orders`，于是
 | 小程序 `test:money` 金额断言 | ✅ 34/34 通过 |
 | 后端 `php -l` / `phpunit` | ⚠️ **未跑**：本机无 PHP 环境 |
 
-## 三、待办
+## 三、部署核查与测试版（2026-10-12 第二轮）
 
-### 必须（部署前）
+### 后端：已部署并验证通过 ✅
 
-1. 后端迁移 `2026_10_12_000003_create_veg_notification_read` 尚未在库上执行。
-2. `infrastructure/nginx/chunlian.conf` 尚未同步到磐石云服务器。
-3. 在服务器上跑 `infrastructure/scripts/api-e2e-revision.php`，验证改单全链路。
+实际状态比本文档上一版记录的更完整（「nginx 未同步」「迁移未执行」两条已过时）：
 
-### 建议
+| 项 | 状态 |
+|---|---|
+| nginx `chunlian.conf` 的 merchant/customer 拆分 | ✅ 已生效 |
+| 插件 `Merchant.php` + `Customer.php`、领域层三个新 Service | ✅ 已部署 |
+| 迁移 `veg_notification_read` | ✅ 已执行（actor_id 主键正确） |
+| 公网 `http://103.236.97.137:8095/` | ✅ 可访问（HTTP 200，端口映射已做） |
+| 路由 + 鉴权自测 | ✅ `/api/v1/merchant/goods` → FORBIDDEN；`/api/v1/customer/orders/1/revisions` → FORBIDDEN |
+| **订单修订 E2E** | ✅ **32/32 通过**（见下） |
 
-4. Android goods/insight 页面**真机联调与验收未做**（已编译通过，但未上真机）。
-5. 后端新增的 3 个 Service 没有单元测试覆盖。本机装 PHP 后应补：
-   `CatalogService`（聚合字段重算、幂等上下架）、
+E2E 跑法（脚本已上传到服务器 `/root/`）：
+
+```bash
+cd /var/www/chunlian && php /root/api-e2e-revision.php
+```
+
+覆盖：补款前不切明细、已有 SKU 维持原价、待补款禁止配送、
+补款后切明细并重算总额、退款方向立即生效、订单行快照重建、修订历史。
+脚本自清理测试数据。
+
+### 小程序测试版：已完成的部分
+
+- `src/manifest.json` 写入真实 appid `wxddab1d4233fb0e96`，`urlCheck: false`
+- `src/config.js` 指向 `http://103.236.97.137:8095`，新增 `nativeApiPrefix`
+- `src/api/request.js` 支持 ShopXO 原生接口入口（**参数必须用 `&` 拼接**：
+  `s=/goods/detail&id=1` 正确，`s=/goods/detail?id=1` 会被整段吞进路由名）
+- `src/api/index.js` 改单接口补 `customer/` 前缀
+- 构建通过：11 个页面 / 4 个 tab（首页·买菜·购物车·我的）/ 图标齐全；
+  架构守卫 30 文件通过、金额断言 34/34 通过
+
+### 阻塞项（需要你操作）
+
+**① 上传体验版：开发者工具的「服务端口」是关闭的**
+
+CLI 无法调用（报 `IDE service port disabled`）。二选一：
+
+- 工具 → 设置 → 安全设置 → 打开「服务端口」，之后我可以用
+  `/c/应用/微信web开发者工具/cli.bat upload` 命令行上传；
+- 或者你自己在工具里导入 `customer-miniapp/dist/build/mp-weixin` 并点「上传」。
+
+**② 微信登录未配置**
+
+服务器上 `shopxo_config.common_app_mini_weixin_appid` 与
+`common_app_mini_weixin_appsecret` **都是空的**。小程序登录
+（`User::AppMiniUserAuth`）因此不可用 —— 而登录是购物车/订单/地址的前置。
+需要把小程序的 AppSecret 填进 ShopXO 后台（建议在后台填，不要贴到聊天里）。
+
+### 关于「微信体验版能不能连这个后端」
+
+微信官方规定（developers.weixin.qq.com 网络章节）：
+
+- 域名只支持 `https`；**不能用 IP 地址或 localhost**；**必须 ICP 备案**；
+- **端口可以自定义**（如 `https://域名:8095`）→ 现有 nginx 监听 8095 无需改；
+- 例外：**开发者工具内**、以及**手机开启「调试模式」时**不校验域名。
+
+所以：**后端本身没问题**，测试阶段（工具 / 手机调试模式）可用；
+但**正式版与默认的体验版连不上**，必须先有 HTTPS 域名 + 备案。
+
+### 还没做的大件：小程序 api 层
+
+实测 `/api/v1/{home,categories,products,cart/preview,addresses,orders,auth/login}`
+**全部 404** —— 11 个页面里只有「改单」有后端。
+
+按项目既有设计（`Customer.php` 注释明确「顾客端其余功能全部走 ShopXO 原生接口」），
+应把 `src/api/index.js` 改接到 ShopXO 原生 API：
+
+| 小程序函数 | ShopXO 原生路由 |
+|---|---|
+| `getHome` | `index/index` |
+| `getCategories` | `goods/category` |
+| `getProducts` | `search/index` |
+| `getProductDetail` | `goods/detail&id=` + `goods/specdetail&id=` |
+| `previewCart` | `cart/spec` / `cart/stock` |
+| `getAddresses` 等 | `useraddress/index|detail|save|delete|setdefault` |
+| `getOrders` / `getOrderDetail` | `order/index` / `order/detail&id=` |
+| `cancelOrder` / `confirmReceipt` | `order/cancel` / `order/collect` |
+| `login` | `user/appminiuserauth` |
+| 改单相关 | **我们的插件** `/api/v1/customer/orders/{id}/revision*` |
+
+### 其它待办
+
+1. Android goods/insight 页面**真机联调与验收未做**（已编译通过，未上真机）。
+2. 后端新增的 3 个 Service 没有单元测试覆盖。可在服务器上补跑 phpunit，
+   或给 `CatalogService`（聚合字段重算、幂等上下架）、
    `MerchantInsightService`（实收/应收分列、退款只计 SUCCESS）、
-   `RevisionService`（补款前不切明细）。
-6. **小程序 API 前缀与后端路由不一致**（本轮审查发现，**未修**，见下节说明）。
+   `RevisionService`（补款前不切明细）各写单测。
+3. 微信支付商户号未配置 → 下单后的支付流程无法跑通
+   （部署报告 §七 步骤 3 已列出）。
+4. `docs/API.md` 的复数/单数口径与实现不一致（见下节）。
 
-## 四、已知问题：小程序 API 前缀（本轮未处理）
 
-`customer-miniapp/src/api/request.js` 用 `${baseUrl}${apiPrefix}${url}` 拼 URL，
-`apiPrefix = '/api/v1'`，而 `src/api/index.js` 里的路径是裸的（`/orders/...`），
-因此实际请求是 `/api/v1/orders/{id}/revision`。
 
-但 nginx 与 `Customer.php` 期望的是 `/api/v1/customer/orders/{id}/revision`。
-此外小程序其余端点（`/home`、`/products`、`/cart/preview`、`/addresses`、
-`/auth/login`）在 `docs/API.md` 里分属 `catalog/` 与 `customer/` 分组，
-当前后端都还没有对应实现。
+## 四、文档口径不一致（小问题）
 
-另有文档口径不一致：`docs/API.md` 写 `/customer/orders/{id}/revisions`（复数），
-而 `Customer.php` 与小程序都用 `revision`（单数）。
-
-**为什么不在这轮修**：该问题在本轮之前就已存在（旧 nginx 同样对不上，
-裸路径会被路由到 merchant 控制器），并非本轮引入；且小程序尚未接真实后端
-（`config.js` 里的 baseUrl 仍是占位域名），改动需要先确定
-「小程序对齐后端实现」还是「后端对齐 docs/API.md」，属于设计决策。
+`docs/API.md` 写的是 `/api/v1/customer/orders/{id}/revisions`（复数），
+而 `Customer.php` 与小程序都用 `revision`（单数）。实现与代码一致，
+是文档需要对齐。改文档即可，不必改代码。
 
 ## 五、部署与环境要点
 
@@ -98,6 +165,10 @@ baseUrl 是 `.../api/v1/`、Retrofit 路径是 `merchant/orders`，于是
 - 目标服务器为磐石云（root@103.236.97.137:55560，经 cloud-server-control 连接器），
   **出网受限**（GitHub/Docker Hub 超时，走 mirrors.aliyun/gitee）；
   服务器上有他人服务（selfhosted-* 容器、/opt/quiz），改动前先查
-- nginx 配置改动（chunlian.conf）尚未同步到服务器
-- 本机（开发机）**没有 PHP**，后端改动无法本地 lint/测试；
-  Android 侧有 JDK 21 + Android SDK，可正常构建
+- 服务器凭据位置：`/root/.chunlian-db-cred`、`/root/.chunlian-admin-cred`、
+  `/etc/chunlian/chunlian.env`（均 chmod 600）
+- 本机（开发机）**没有 PHP**，后端改动无法本地 lint/测试 —— 但可以用
+  cloud-server-control 连接器在服务器上跑 `php -l` / 实测接口，这比本地更可信
+- Android 侧有 JDK 21 + Android SDK，可正常构建
+- 微信开发者工具 CLI：`/c/应用/微信web开发者工具/cli.bat`
+  （需先在工具里打开「服务端口」才能用）
