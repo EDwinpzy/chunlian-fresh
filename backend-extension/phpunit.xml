@@ -15,6 +15,9 @@
         <testsuite name="service">
             <directory>tests/Service</directory>
         </testsuite>
+        <testsuite name="repository">
+            <directory>tests/Repository</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

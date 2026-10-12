@@ -148,12 +148,25 @@ chunlian-fresh/
 │       └── navigation/         # 路由表 + NavHost
 │
 ├── infrastructure/             # 部署
-│   ├── nginx/chunlian.conf     # 站点配置（含安全拒绝规则）
-│   ├── scripts/deploy-backend.sh        # 一键幂等部署
-│   ├── scripts/install-shopxo-cli.php   # 无网页向导安装 ShopXO
+│   ├── nginx/chunlian.conf     # 站点配置（含商家 API 重写、安全拒绝规则）
+│   ├── shopxo-plugin/          # ShopXO 插件源码（版本管理主体）
+│   │   └── chunlianfresh/
+│   │       ├── Bootstrap.php   # PSR-4 自举（无 composer 依赖）+ PDO
+│   │       ├── Event.php       # 安装/卸载生命周期
+│   │       ├── Hook.php        # 订单行 SKU 身份捕获
+│   │       ├── config.json     # 钩子声明
+│   │       ├── api/Merchant.php    # 商家端 API（dispatch 内部路由）
+│   │       └── service/BaseService.php
+│   ├── scripts/
+│   │   ├── deploy-backend.sh          # 一键幂等部署
+│   │   ├── install-shopxo-cli.php     # 无网页向导安装 ShopXO
+│   │   ├── install-plugin.php         # 插件安装 + 钩子注册 + 建表
+│   │   ├── api-e2e-test.php           # 商家 API 端到端测试（35 项）
+│   │   └── verify-sku-capture.php     # SKU 捕获验证（7 项）
 │   └── .env.example
 │
-├── docs/                       # 10 份设计/契约/部署文档
+├── docs/                       # 11 份设计/契约/部署文档
+│   └── design/                 # 六屏高保真设计稿（HTML）
 └── design-assets/              # 美术资源投放区（见 §8）
 ```
 
@@ -248,9 +261,32 @@ debug / release 各一份，不硬编码在源码里。
 cd infrastructure
 cp .env.example .env      # 填入数据库、微信支付、密钥等
 sudo bash scripts/deploy-backend.sh
+
+# 安装 ShopXO 插件（注册插件 + 注册钩子 + 建扩展表）
+php scripts/install-plugin.php --check   # 先校验环境
+php scripts/install-plugin.php --apply   # 再执行
 ```
 
-脚本是**幂等**的，可重复执行。它会依次完成：系统依赖 → Nginx/PHP-FPM → 拉取 ShopXO → CLI 安装 → 建 `veg_*` 表 → 配置 cron（outbox worker / 支付对账 / 数据库备份）。
+两个脚本都是**幂等**的，可重复执行。
+
+`deploy-backend.sh` 依次完成：系统依赖 → Nginx/PHP-FPM → 拉取 ShopXO → CLI 安装 → 配置 cron（outbox worker / 支付对账 / 数据库备份）。
+
+`install-plugin.php` 完成四件事：校验文件 → 在 `shopxo_plugins` 登记 → 生成 `app/event.php`（钩子注册）→ 执行迁移建表。
+
+> **为什么钩子注册要自己生成 `app/event.php`**
+> ShopXO 的钩子部署只在**后台点击「应用管理」**时触发。
+> 命令行安装必须做同一件事，否则钩子不生效 ——
+> 而表现是「订单行快照没有写入」，直到改单功能算错钱才会被发现。
+
+### 6.5 验证
+
+```bash
+# 商家端 API 端到端（登录/配送/送达收款/幂等/乐观锁/应收/汇总）
+php scripts/api-e2e-test.php          # 期望 35/35 通过
+
+# 订单行 SKU 身份捕获（改单引擎的前提）
+php scripts/verify-sku-capture.php    # 期望 7/7 通过
+```
 
 详细步骤与排障见 `docs/DEPLOYMENT.md`。
 
@@ -263,6 +299,7 @@ sudo bash scripts/deploy-backend.sh
 | [`docs/PRD.md`](docs/PRD.md) | 产品需求、角色、P0 功能清单、隐私要求 |
 | [`docs/UI-SPEC.md`](docs/UI-SPEC.md) | 设计令牌、页面规格、全状态说明 |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | **8 条 ADR** —— 每个关键选型的背景与后果 |
+| [`docs/SHOPXO-AUDIT.md`](docs/SHOPXO-AUDIT.md) | **ShopXO 6.9.2 源码审计报告** —— 扩展机制、钩子、数据映射、发现的缺口 |
 | [`docs/API.md`](docs/API.md) | 接口契约、错误码、幂等与版本约定 |
 | [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) | 表结构、字段语义、统计口径 |
 | [`docs/TESTING.md`](docs/TESTING.md) | 测试策略与验收清单 |
@@ -270,6 +307,7 @@ sudo bash scripts/deploy-backend.sh
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | 分阶段计划、里程碑、真实完成度声明 |
 | [`docs/DEPLOYMENT-REPORT-2026-10-12.md`](docs/DEPLOYMENT-REPORT-2026-10-12.md) | 云服务器部署实录与遗留事项 |
 | [`docs/NETWORK-DIAGNOSIS-2026-10-12.md`](docs/NETWORK-DIAGNOSIS-2026-10-12.md) | 服务器网络可达性专项诊断 |
+| [`docs/design/六屏高保真设计稿.html`](docs/design/六屏高保真设计稿.html) | 顾客 C01–C03 + 商家 A01–A03 高保真稿 |
 
 ---
 
@@ -310,24 +348,37 @@ sudo bash scripts/deploy-backend.sh
 
 | 模块 | 状态 |
 |---|---|
-| `docs/` | 10 份文档 |
-| `backend-extension/` | 23 个源类；**115 测试 / 330 断言全通过**；7 张 `veg_*` 表迁移 + 回滚；OpenAPI 3.0 |
-| `customer-miniapp/` | 11 页面 / 7 组件；架构守卫通过（无 web-view 套壳）；**34/34 金额断言通过** |
-| `merchant-android/` | 37 个 Kotlin 文件；**29 测试全通过**；`assembleDebug` 产出 APK |
-| `infrastructure/` | 一键幂等部署脚本、ShopXO CLI 安装器、Nginx 配置、环境变量模板 |
-| 云服务器 | ShopXO 6.9.2 已装（262 条 SQL / 91 张表），站点名称与 SEO 已配置，公网可访问 |
+| `docs/` | 11 份文档 + 六屏高保真设计稿 |
+| `backend-extension/` | 29 个源类；**148 测试 / 431 断言全通过**；8 张 `veg_*` 表迁移 + 回滚；OpenAPI 3.0 |
+| `customer-miniapp/` | 11 页面 / 7 组件；架构守卫通过（无 web-view 套壳）；**34/34 金额断言通过**；**真实编译出微信小程序产物** |
+| `merchant-android/` | 37 个 Kotlin 文件；**34 测试全通过**；`assembleDebug` 产出 APK |
+| `infrastructure/` | 一键幂等部署脚本、ShopXO CLI 安装器、**插件安装器**、Nginx 配置、环境变量模板 |
+| ShopXO 插件 | **已安装并跑通**：路由注册、鉴权、四维状态、COD 收款、幂等、乐观锁 |
+| 云服务器 | ShopXO 6.9.2 + 插件已装；站点与**商家 API 公网可达**；`/api/v1/merchant/*` 全部端点 200 |
+
+### 已完成的关键修复（由审计与实测发现）
+
+| 问题 | 性质 |
+|---|---|
+| ShopXO `shopxo_order_detail` **不保存 SKU 身份** | 改单引擎无法按 SKU 比对 → 差价会算错。已用钩子捕获到 `veg_order_line` 并验证 |
+| `Order::refundable()` **未扣除处理中退款** | 与 ADR-005 及 `LedgerCalculator` 口径不一致 → 存在**超退风险**。已修复并加 5 个回归测试 |
+| Android 端枚举与服务端不一致 | 缺 `FINISHED`、`APPLYING/COMMITTED/FAILED`、`PAYING` → 解析会静默降级、界面状态错乱。已对齐 |
+| 地址表字段名假设错误 | 实际是 `tel` 而非 `phone`；省市区是**区域 ID**，名称在 `*_name` 字段 → 拼出错误地址。已修正 |
 
 ### 已知限制
 
 | 项 | 说明 |
 |---|---|
-| 扩展路由未注册进 ShopXO | `backend-extension/config/routes.php` 头部已标注：需先完成 ShopXO 6.9.2 源码审计才能确定注册方式 |
-| `OrderRepository` 持久化层是桩 | 需用审计后的真实 Repository 替换 `src/Repository/OrderRepository.php` |
 | HTTPS 未配置 | 需域名 + certbot；当前仅 HTTP |
 | ICP 备案未办理 | 中国大陆 80/443 合规运营的前置条件 |
-| 微信支付未接通 | 需正式商户号、证书与密钥 |
-| 未做真机验收 | 需微信开发者工具 + AppID、以及 Android 真机 |
+| 微信支付未接通 | 需正式商户号、证书与密钥；COD 链路已完整可用 |
+| 未做真机验收 | 需微信开发者工具 + 自己的 AppID、以及 Android 真机 |
 | 美术资源待替换 | 见 §8 |
+| 订单修订的 API 端点未暴露 | `RevisionCalculator` 与 `veg_order_revision` 已就绪，但尚未加修订接口 |
+| 商品管理未实现 | 商家端当前只做订单与收款；商品 CRUD 见 `docs/UI-SPEC.md` §8.5 |
+
+> **`backend-extension/config/routes.php` 已过时**：审计确认 ShopXO 用插件 catch-all 路由，
+> 不需要手写路由文件。实际路由见 `docs/SHOPXO-AUDIT.md` §2 与 `infrastructure/nginx/chunlian.conf`。
 
 ---
 

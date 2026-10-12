@@ -83,6 +83,44 @@ final class OrderAggregateTest extends TestCase
         self::assertSame(680, $order->refundable()->fen());
     }
 
+    /**
+     * 回归测试：可退余额必须扣除**处理中**的退款。
+     *
+     * 退款受理后要等第三方回调，这段窗口内钱还没出去，但额度必须已被占用。
+     * 若只减「已成功退款」，同一笔钱会在窗口期内被退两次 —— 真实资金损失。
+     * 见 docs/ARCHITECTURE.md ADR-005。
+     */
+    public function testRefundableExcludesInFlightRefund(): void
+    {
+        $order = $this->makeOrder();
+        $order->paidFen = 1000;
+        $order->refundedFen = 0;
+        $order->refundingFen = 1000;   // 一笔全额退款正在处理中
+
+        // 额度已被占用完，不能再发起第二次退款
+        self::assertSame(0, $order->refundable()->fen());
+    }
+
+    public function testRefundableSubtractsBothRefundedAndRefunding(): void
+    {
+        $order = $this->makeOrder();
+        $order->paidFen = 1000;
+        $order->refundedFen = 300;     // 已成功
+        $order->refundingFen = 200;    // 处理中
+
+        // 1000 − 300 − 200 = 500
+        self::assertSame(500, $order->refundable()->fen());
+    }
+
+    public function testRefundableNeverNegative(): void
+    {
+        $order = $this->makeOrder();
+        $order->paidFen = 100;
+        $order->refundedFen = 200;     // 数据异常（人工改库等）
+
+        self::assertSame(0, $order->refundable()->fen());
+    }
+
     public function testLineSubtotalUsesIntegerCents(): void
     {
         $line = new OrderLine('SKU_102', 'P1', '小青菜', '500g/份', 'a.jpg', 350, 3);

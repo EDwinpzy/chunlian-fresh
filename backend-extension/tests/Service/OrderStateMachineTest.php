@@ -356,6 +356,40 @@ final class OrderStateMachineTest extends TestCase
         self::assertSame(0, $result->get('refund_fen'));
     }
 
+    /**
+     * 回归测试：处理中的退款必须占用可退额度。
+     *
+     * 场景 —— 顾客先发起了一笔部分退款（980 中的 500），退款已受理但尚未到账，
+     * 此时顾客又取消了订单。若应退金额只扣「已成功退款」，
+     * 这里会算出 980 而不是 480，等于把同一笔钱退两次。
+     */
+    public function testCancelRefundAmountExcludesInFlightRefund(): void
+    {
+        $order = $this->makePaidWechatOrder(paidFen: 980, version: 3);
+        $order->paymentState = OrderPaymentState::REFUNDING;
+        $order->refundedFen = 0;
+        $order->refundingFen = 500;    // 500 分正在退款中
+
+        $result = $this->sm->cancel($order, 3);
+
+        self::assertTrue($result->success);
+        // 980 − 0 − 500 = 480，绝不能是 980
+        self::assertSame(480, $result->get('refund_fen'));
+    }
+
+    /** 全额退款处理中时取消，应退为 0（额度已被占满）。 */
+    public function testCancelWhenFullRefundInFlightRefundsZero(): void
+    {
+        $order = $this->makePaidWechatOrder(paidFen: 980, version: 3);
+        $order->paymentState = OrderPaymentState::REFUNDING;
+        $order->refundingFen = 980;
+
+        $result = $this->sm->cancel($order, 3);
+
+        self::assertTrue($result->success);
+        self::assertSame(0, $result->get('refund_fen'));
+    }
+
     // ---------- T21 / T22：已开始配送后禁止自助改/取消 ----------
 
     public function testCancelRejectedAfterDispatch(): void

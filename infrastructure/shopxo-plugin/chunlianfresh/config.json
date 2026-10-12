@@ -1,0 +1,7 @@
+{
+  "hook": {
+    "plugins_service_buy_order_insert_end": [
+      ["\\app\\plugins\\chunlianfresh\\Hook", "captureOrderLines"]
+    ]
+  }
+}

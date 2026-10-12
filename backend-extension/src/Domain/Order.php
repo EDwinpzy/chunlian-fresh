@@ -28,6 +28,19 @@ final class Order
         public int $deliveryFeeFen = 0,
         public int $paidFen = 0,
         public int $refundedFen = 0,
+        /**
+         * 处理中的退款金额（已受理、尚未出最终结果）。
+         *
+         * 【为什么必须单独记账】
+         * 退款不是瞬时完成的：受理后要等微信退款回调或主动查单。
+         * 这段时间里钱**还没退出去，但已经不能再被退第二次**。
+         * 若可退余额只减「已成功退款」，就会在这段窗口内算出偏大的可退额度，
+         * 同一笔钱可能被发起两次退款 —— 这是真实的资金损失，不是理论风险。
+         *
+         * 与 `LedgerCalculator::refundableFen()` 的口径保持一致：
+         * PROCESSING / PENDING 状态的退款流水都占用额度。
+         */
+        public int $refundingFen = 0,
         public ?\DateTimeImmutable $deliveredAt = null,
         public ?\DateTimeImmutable $receivedAt = null,
         public string $remark = '',
@@ -66,9 +79,21 @@ final class Order
         return $this->total()->subtract(Money::fromFen($this->paidFen));
     }
 
-    /** 可退余额：总已实付 − 总已成功退款。防超退。 */
+    /**
+     * 可退余额。防超退。
+     *
+     * 公式：`已实付 − 已成功退款 − 处理中退款`
+     *
+     * 【必须减去「处理中」】
+     * 退款受理后要等第三方回调，这段窗口内钱还没出去但额度必须已被占用。
+     * 只减「已成功退款」会让同一笔钱在窗口期内被退两次。
+     * 见 docs/ARCHITECTURE.md ADR-005。
+     */
     public function refundable(): Money
     {
-        return Money::fromFen($this->paidFen)->subtract(Money::fromFen($this->refundedFen));
+        $available = $this->paidFen - $this->refundedFen - $this->refundingFen;
+
+        // 数据异常（例如人工改库）时不允许出现负数可退额度
+        return Money::fromFen(max(0, $available));
     }
 }

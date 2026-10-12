@@ -190,7 +190,9 @@ final class OrderStateMachine
     /**
      * 顾客取消订单。
      *
-     * @return array{result: TransitionResult, refund_fen: int}
+     * 已付款的订单会同时转入退款流程（`payment_state = REFUNDING`）。
+     * 应退金额取 `Order::refundable()` —— 该式已扣除**处理中**的退款，
+     * 防止在退款窗口期内重复计算可退额度。
      */
     public function cancel(Order $order, int $clientVersion): TransitionResult
     {
@@ -208,11 +210,8 @@ final class OrderStateMachine
             ]);
         }
 
-        // 应退 = 总已实付 − 总已成功退款（同时冲销处理中退款，防重复退）
+        // 应退 = 已实付 − 已成功退款 − 处理中退款（refundable() 内部已做下限 0 保护）
         $refundFen = $order->refundable()->fen();
-        if ($refundFen < 0) {
-            $refundFen = 0;
-        }
 
         $paymentState = match (true) {
             $refundFen > 0 => OrderPaymentState::REFUNDING,

@@ -3,13 +3,26 @@
 declare(strict_types=1);
 
 /**
- * 春连鲜选 扩展层路由注册。
+ * 春连鲜选 扩展层路由声明（**契约文档，非实际注册代码**）。
  *
- * ⚠️  这是**拟新增接口**的路由声明，不是 ShopXO 官方已有路由。
- *     实际注册方式（插件路由 / 独立入口 / 服务层挂载）需在完成
- *     ShopXO 6.9.2 源码审计后确定；见 docs/ROADMAP.md §5。
+ * ✅ 审计已完成 —— 实际路由方式见 docs/SHOPXO-AUDIT.md §2，结论：
  *
- * 所有路由的 URI 与 docs/API.md、api-contracts/openapi.yaml 保持一致。
+ *   1. **不需要手写路由文件**。ShopXO 的 `config/route.php` 里
+ *      `url_route_must = false`，插件走 catch-all 分发：
+ *        前台：`/{插件名}-{控制器}-{方法}`
+ *        API ：`/api.php?s=/plugins/index&pluginsname=…&pluginscontrol=…&pluginsaction=…`
+ *
+ *   2. 商家端 API 由 `app/plugins/chunlianfresh/api/Merchant.php` 的
+ *      `dispatch` 单入口内部路由，Nginx 把 `/api/v1/<path>` 重写成插件调用
+ *      （见 infrastructure/nginx/chunlian.conf）。
+ *
+ *   3. 本文件保留为**接口清单与契约对照**：所有 URI 与 docs/API.md、
+ *      api-contracts/openapi.yaml 保持一致，便于评审与生成文档。
+ *      它不是被加载的代码 —— 修改它不会改变运行时行为。
+ *
+ * ⚠️ 因此：**不要把本文件的内容复制进插件当作路由注册**。
+ *    新增接口应当改 `api/Merchant.php` 的 dispatch 分支 + 本文件 + OpenAPI，
+ *    三处保持同步。
  */
 
 return [
