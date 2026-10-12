@@ -9,10 +9,14 @@ require_once dirname(__DIR__) . '/Bootstrap.php';
 use Chunlian\Domain\RejectionCode;
 use Chunlian\Repository\PdoIdempotencyStore;
 use Chunlian\Repository\PdoOrderRepository;
+use Chunlian\Service\CatalogService;
 use Chunlian\Service\IdempotencyService;
 use Chunlian\Service\LedgerCalculator;
+use Chunlian\Service\MerchantInsightService;
 use Chunlian\Service\MerchantOrderService;
 use Chunlian\Service\OrderStateMachine;
+use Chunlian\Service\RevisionCalculator;
+use Chunlian\Service\RevisionService;
 
 use function app\plugins\chunlianfresh\pdo;
 use function app\plugins\chunlianfresh\table_prefix;
@@ -87,6 +91,75 @@ class Merchant
             return $this->service()->dailySettlement($this->query('date'));
         }
 
+        // ---------- 经营视图 ----------
+        if ($path === 'stats') {
+            // 默认看最近 7 天：生鲜店的经营节奏以周为单位
+            $to = $this->query('to') ?? date('Y-m-d');
+            $from = $this->query('from') ?? date('Y-m-d', strtotime($to . ' -6 days'));
+
+            return $this->insight()->stats($from, $to);
+        }
+
+        if ($path === 'ledger') {
+            return $this->insight()->ledgerList(
+                orderId: $this->query('order_id'),
+                kind: $this->query('kind'),
+                page: (int) ($this->query('page') ?? 1),
+                pageSize: (int) ($this->query('page_size') ?? 20),
+            );
+        }
+
+        if ($path === 'notifications') {
+            return $this->insight()->notifications($actorId, (int) ($this->query('limit') ?? 50));
+        }
+
+        if ($path === 'notifications/read') {
+            return $this->insight()->markAllRead($actorId);
+        }
+
+        // ---------- 商品管理 ----------
+        if ($path === 'goods/categories') {
+            return $this->catalog()->categories();
+        }
+
+        if ($path === 'goods') {
+            return $this->catalog()->listGoods(
+                keyword: $this->query('keyword'),
+                onSaleOnly: $this->boolQuery('on_sale_only'),
+                page: (int) ($this->query('page') ?? 1),
+                pageSize: (int) ($this->query('page_size') ?? 20),
+            );
+        }
+
+        // goods/{id}/shelves
+        if (preg_match('#^goods/(\d+)/shelves$#', $path, $m) === 1) {
+            $body = $this->body();
+
+            return $this->catalog()->setShelves(
+                $m[1],
+                (bool) ($body['is_shelves'] ?? false),
+                $actorId
+            );
+        }
+
+        // goods/{id}/sku/{skuId}
+        if (preg_match('#^goods/(\d+)/sku/(\d+)$#', $path, $m) === 1) {
+            $body = $this->body();
+
+            return $this->catalog()->updateSku(
+                goodsId: $m[1],
+                skuId: $m[2],
+                priceFen: isset($body['price_fen']) ? (int) $body['price_fen'] : null,
+                inventory: isset($body['inventory']) ? (int) $body['inventory'] : null,
+                actorId: $actorId,
+            );
+        }
+
+        // goods/{id}
+        if (preg_match('#^goods/(\d+)$#', $path, $m) === 1) {
+            return $this->catalog()->goodsDetail($m[1]);
+        }
+
         if ($path === 'orders') {
             return $this->service()->listOrders(
                 status: $this->query('status'),
@@ -95,6 +168,15 @@ class Merchant
                 page: (int) ($this->query('page') ?? 1),
                 pageSize: (int) ($this->query('page_size') ?? 20),
             );
+        }
+
+        // ---------- 订单修订（商家端只读 + 补款提交） ----------
+        if (preg_match('#^orders/([^/]+)/revisions$#', $path, $m) === 1) {
+            return $this->revision()->history($m[1]);
+        }
+
+        if (preg_match('#^orders/([^/]+)/commit-topup$#', $path, $m) === 1) {
+            return $this->revision()->commitTopup($m[1], $actorId);
         }
 
         // orders/{id}/{action}
@@ -283,7 +365,7 @@ class Merchant
 
         $service = new MerchantOrderService(
             pdo: $pdo,
-            orders: new PdoOrderRepository($pdo, $prefix),
+            orders: $this->orders(),
             stateMachine: new OrderStateMachine(),
             idempotency: new IdempotencyService(new PdoIdempotencyStore($pdo)),
             ledger: new LedgerCalculator(),
@@ -291,6 +373,59 @@ class Merchant
         );
 
         return $service;
+    }
+
+    private function orders(): PdoOrderRepository
+    {
+        static $repo = null;
+        if ($repo instanceof PdoOrderRepository) {
+            return $repo;
+        }
+
+        $repo = new PdoOrderRepository($this->pdo, table_prefix());
+
+        return $repo;
+    }
+
+    private function catalog(): CatalogService
+    {
+        static $svc = null;
+        if ($svc instanceof CatalogService) {
+            return $svc;
+        }
+
+        $svc = new CatalogService($this->pdo, table_prefix());
+
+        return $svc;
+    }
+
+    private function insight(): MerchantInsightService
+    {
+        static $svc = null;
+        if ($svc instanceof MerchantInsightService) {
+            return $svc;
+        }
+
+        $svc = new MerchantInsightService($this->pdo, new LedgerCalculator(), table_prefix());
+
+        return $svc;
+    }
+
+    private function revision(): RevisionService
+    {
+        static $svc = null;
+        if ($svc instanceof RevisionService) {
+            return $svc;
+        }
+
+        $svc = new RevisionService(
+            $this->pdo,
+            $this->orders(),
+            new RevisionCalculator(),
+            table_prefix()
+        );
+
+        return $svc;
     }
 
     // =========================================================
