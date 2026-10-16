@@ -1,7 +1,10 @@
 # ShopXO 6.9.2 源码审计报告｜春连鲜选
+> 历史源码审计：2026-10-12。本文的服务器和源码观察仅对应审计当日，不代表当前新业务已部署。生产 HTTPS 后续已切换到 8096 并验证；生产仍运行旧业务版本，新业务尚未部署。当前状态见 HANDOVER.md 与 docs/DEPLOYMENT.md。
+
 
 > 审计对象：服务器 `/var/www/chunlian/shopxo`（官方 v6.9.2，20260928 release）
 > 审计日期：2026-10-12
+> 路径注记：本文中的 `backend-extension/` 按审计时的布局记录；当前仓库源码位于 `backend/extension/`，生产部署目录仍为 `/var/www/chunlian/backend-extension/`。
 > 目的：为 `backend-extension` 确定**接入方式**、**数据映射**与**必须补的缺口**。
 >
 > 本文回答 `docs/ROADMAP.md` §5「源码审计必须先做的 12 件事」中的全部问题。

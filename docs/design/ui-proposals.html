@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>春连鲜选 · 10 套移动端 UI 设计方案</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0F1113;color:#E8EAED;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{max-width:1420px;margin:0 auto;padding:52px 34px 110px}
+
+/* ---------- 页头 ---------- */
+.hero{border-bottom:1px solid #23262A;padding-bottom:34px;margin-bottom:34px}
+.kicker{font-size:11px;letter-spacing:.22em;color:#6E7681;text-transform:uppercase;margin-bottom:14px}
+h1{font-size:31px;font-weight:600;letter-spacing:-.01em;line-height:1.25}
+h1 em{font-style:normal;color:#5DCAA5}
+.lede{font-size:14px;color:#9BA3AE;max-width:760px;margin-top:14px;line-height:1.75}
+.metaline{display:flex;flex-wrap:wrap;gap:26px;margin-top:26px}
+.metaline div{font-size:12px;color:#6E7681}
+.metaline b{display:block;font-size:17px;font-weight:600;color:#E8EAED;margin-top:3px}
+
+/* ---------- 约束卡 ---------- */
+.rules{background:#16181B;border:1px solid #23262A;border-radius:14px;padding:22px 24px;margin-bottom:44px}
+.rules h2{font-size:13px;font-weight:600;color:#E8EAED;margin-bottom:14px;letter-spacing:.02em}
+.rules ul{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px 30px}
+.rules li{font-size:12.5px;color:#9BA3AE;padding-left:16px;position:relative;line-height:1.6}
+.rules li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:2px;background:#3E7A5E}
+.rules li b{color:#D5DBE2;font-weight:600}
+
+/* ---------- 方案卡 ---------- */
+.set{background:#141618;border:1px solid #23262A;border-radius:18px;padding:26px 26px 30px;margin-bottom:26px;scroll-margin-top:20px}
+.set-head{display:flex;align-items:flex-start;gap:16px;padding-bottom:22px;border-bottom:1px solid #1E2124;margin-bottom:24px}
+.num{flex:0 0 auto;width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;letter-spacing:-.02em}
+.set-head h3{font-size:18px;font-weight:600;letter-spacing:-.01em}
+.set-head .ref{font-size:12px;color:#7D858F;margin-top:5px}
+.set-head .tags{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;max-width:300px}
+.tag{font-size:11px;padding:4px 10px;border-radius:20px;background:#1E2124;color:#9BA3AE;border:1px solid #2A2E33;white-space:nowrap}
+.set-body{display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap}
+.phones{display:flex;gap:24px;flex-wrap:wrap}
+.stage{display:flex;flex-direction:column;align-items:center;gap:10px}
+.stage>figcaption{font-size:11px;color:#6E7681;letter-spacing:.06em}
+
+/* ---------- 手机框 ---------- */
+.phone{width:274px;height:570px;border-radius:42px;padding:10px;background:#1B1E21;box-shadow:0 30px 70px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.075);position:relative;flex:0 0 auto}
+.phone::after{content:"";position:absolute;top:10px;left:50%;transform:translateX(-50%);width:74px;height:20px;background:#1B1E21;border-radius:0 0 13px 13px;z-index:9}
+.scr{width:100%;height:100%;border-radius:33px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.sb{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 20px;font-size:10px;font-weight:600;flex:0 0 auto;letter-spacing:.02em}
+.sb .r{display:flex;align-items:center;gap:2.5px}
+.sb .r i{display:block;width:3px;border-radius:1px;background:currentColor}
+.sb .r i:nth-child(1){height:4px}.sb .r i:nth-child(2){height:6.5px}.sb .r i:nth-child(3){height:9px}
+.sb .r b{width:17px;height:8.5px;border-radius:2.5px;border:1px solid currentColor;opacity:.85;position:relative;margin-left:2px}
+.sb .r b::after{content:"";position:absolute;inset:1.5px;right:4.5px;background:currentColor;border-radius:1px}
+.body{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.tab{flex:0 0 auto;display:flex;align-items:center;justify-content:space-around;height:56px}
+.ti{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:8.5px;letter-spacing:.02em}
+.ic{width:19px;height:19px;display:block}
+
+/* ---------- 素材占位 ---------- */
+.slot{border:1px dashed currentColor;border-radius:inherit;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9px;letter-spacing:.05em;line-height:1.4;padding:3px;opacity:.5;width:100%;height:100%}
+img.real{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+img.real--contain{object-fit:contain;background:#fff}
+
+/* ---------- 右侧规格栏 ---------- */
+.spec{flex:1;min-width:290px;max-width:420px}
+.spec h4{font-size:11px;letter-spacing:.14em;color:#6E7681;text-transform:uppercase;margin-bottom:11px}
+.pal{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.sw{flex:1;min-width:56px}
+.sw i{display:block;height:44px;border-radius:9px;border:1px solid rgba(255,255,255,.09)}
+.sw span{display:block;font-size:9.5px;color:#7D858F;margin-top:6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.spec dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:12px;margin-bottom:18px}
+.spec dt{color:#6E7681}
+.spec dd{color:#C6CDD6}
+.note{font-size:12px;color:#9BA3AE;line-height:1.7;padding:12px 14px;border-radius:10px;background:#191C1F;border:1px solid #23262A;margin-bottom:10px}
+.note b{color:#E8EAED;font-weight:600}
+.note.warn{background:#1F1917;border-color:#3A2A22}
+.note.warn b{color:#EF9F27}
+
+/* ================= S1 有机鲜绿 ================= */
+.s1 .num{background:#245947;color:#EAF3DE}
+.s1 .scr{background:#F7F8F4;color:#1E2823}
+.s1 .sb{color:#173F34}
+.s1 .hd{padding:4px 16px 0}
+.s1 .loc{font-size:10.5px;color:#66736B;display:flex;align-items:center;gap:5px}
+.s1 .loc b{font-size:15.5px;color:#173F34;font-weight:600;letter-spacing:-.01em}
+.s1 .sr{display:flex;align-items:center;gap:8px;background:#fff;border-radius:15px;padding:9px 13px;margin-top:11px;box-shadow:0 5px 16px rgba(23,63,52,.08)}
+.s1 .sr span{font-size:11.5px;color:#96A099}
+.s1 .chips{display:flex;gap:7px;padding:13px 16px 0}
+.s1 .chip{font-size:11px;padding:5.5px 12px;border-radius:20px;background:#EDF0E9;color:#66736B;white-space:nowrap}
+.s1 .chip.on{background:#245947;color:#fff;font-weight:600}
+.s1 .hero{margin:13px 16px 0;border-radius:22px;background:#173F34;height:126px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;position:relative;overflow:hidden}
+.s1 .hero .badge{font-size:9.5px;background:#D7A766;color:#3A2A10;padding:3px 9px;border-radius:20px;align-self:flex-start;font-weight:600;letter-spacing:.04em}
+.s1 .hero .t{font-size:16px;font-weight:600;letter-spacing:-.01em;margin-top:auto}
+.s1 .hero .s{font-size:10.5px;opacity:.72;margin-top:3px}
+.s1 .hero .pr{font-size:19px;font-weight:600;color:#E3C48C;margin-top:5px}
+.s1 .hero .pr s{font-size:11px;color:rgba(255,255,255,.45);font-weight:400;margin-left:5px}
+.s1 .hero .ph{position:absolute;right:12px;top:34px;width:74px;height:74px;border-radius:18px;color:rgba(255,255,255,.55)}
+.s1 .sec{display:flex;align-items:baseline;justify-content:space-between;padding:16px 16px 0}
+.s1 .sec b{font-size:13.5px;font-weight:600;color:#173F34}
+.s1 .sec span{font-size:10.5px;color:#88938B}
+.s1 .g{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:11px 16px 0}
+.s1 .card{background:#fff;border-radius:18px;padding:8px;box-shadow:0 4px 14px rgba(23,63,52,.06)}
+.s1 .card .im{height:84px;border-radius:13px;background:#EEF3F0;color:#8AA396;overflow:hidden}
+.s1 .card .n{font-size:11.5px;font-weight:600;margin-top:8px;line-height:1.35}
+.s1 .card .d{font-size:9.5px;color:#88938B;margin-top:2px}
+.s1 .card .b{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
+.s1 .card .p{font-size:13px;font-weight:600;color:#B53B39}
+.s1 .card .p em{font-size:9.5px;font-style:normal;font-weight:400}
+.s1 .card .add{width:21px;height:21px;border-radius:50%;background:#245947;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;line-height:1;padding-bottom:1px}
+.s1 .tab{background:#fff;border-top:1px solid #E7EAE4;color:#96A099}
+.s1 .ti.on{color:#245947;font-weight:600}
+/* S1 商家 */
+.s1m .scr{background:#F7F8F4;color:#1E2823}
+.s1m .sb{color:#173F34}
+.s1m .top{background:#173F34;color:#fff;padding:2px 18px 46px;border-radius:0 0 26px 26px}
+.s1m .top .who{font-size:10.5px;opacity:.68}
+.s1m .top .nm{font-size:15px;font-weight:600;margin-top:3px}
+.s1m .top .rev{font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:16px}
+.s1m .top .rl{font-size:10.5px;opacity:.62;margin-top:2px}
+.s1m .kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:-34px 16px 0}
+.s1m .k{background:#fff;border-radius:15px;padding:11px 10px;box-shadow:0 6px 18px rgba(23,63,52,.1)}
+.s1m .k .v{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.s1m .k .l{font-size:9.5px;color:#88938B;margin-top:3px}
+.s1m .k.a .v{color:#B53B39}
+.s1m .k.b .v{color:#A46B22}
+.s1m .k.c .v{color:#245947}
+.s1m .qa{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 16px 0}
+.s1m .q{background:#fff;border-radius:14px;padding:10px 4px;text-align:center;box-shadow:0 3px 10px rgba(23,63,52,.06)}
+.s1m .q .g{width:30px;height:30px;border-radius:10px;background:#EDF0E9;color:#245947;margin:0 auto 6px;display:flex;align-items:center;justify-content:center}
+.s1m .q .g .ic{width:16px;height:16px}
+.s1m .q span{font-size:9px;color:#66736B}
+.s1m .lst{margin:16px 16px 0}
+.s1m .lst b{font-size:12.5px;font-weight:600;color:#173F34;display:block;margin-bottom:9px}
+.s1m .o{background:#fff;border-radius:15px;padding:11px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;box-shadow:0 3px 10px rgba(23,63,52,.05)}
+.s1m .o .av{width:34px;height:34px;border-radius:11px;background:#EEF3F0;color:#8AA396;overflow:hidden;flex:0 0 auto}
+.s1m .o .m{flex:1;min-width:0}
+.s1m .o .m .n{font-size:11.5px;font-weight:600}
+.s1m .o .m .s{font-size:9.5px;color:#88938B;margin-top:2px}
+.s1m .o .r{text-align:right}
+.s1m .o .r .p{font-size:12px;font-weight:600;color:#B53B39}
+.s1m .o .r .st{font-size:9px;margin-top:3px;padding:2px 7px;border-radius:20px;background:#FFF3E4;color:#A46B22;display:inline-block}
+.s1m .tab{background:#fff;border-top:1px solid #E7EAE4;color:#96A099}
+.s1m .ti.on{color:#245947;font-weight:600}
+
+/* ================= S2 iOS 原生 ================= */
+.s2 .num{background:#007AFF;color:#fff}
+.s2 .scr{background:#F2F2F7;color:#000}
+.s2 .sb{color:#000}
+.s2 .nv{display:flex;align-items:flex-end;justify-content:space-between;padding:2px 18px 6px}
+.s2 .nv .lg{font-size:26px;font-weight:700;letter-spacing:-.03em}
+.s2 .nv .acts{display:flex;gap:14px;color:#007AFF}
+.s2 .sr{display:flex;align-items:center;gap:7px;background:#E4E4EA;border-radius:10px;padding:7px 10px;margin:0 16px;color:#8E8E93}
+.s2 .sr span{font-size:12px}
+.s2 .grp{background:#fff;border-radius:12px;margin:16px 16px 0;overflow:hidden}
+.s2 .grp .gh{padding:11px 14px 9px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.s2 .grp .gh a{font-size:12px;color:#007AFF;font-weight:400;text-decoration:none}
+.s2 .li{display:flex;align-items:center;gap:11px;padding:10px 14px;border-top:.5px solid #E4E4EA}
+.s2 .li .im{width:48px;height:48px;border-radius:8px;background:#E9F4EC;color:#4E9A6A;overflow:hidden;flex:0 0 auto}
+.s2 .li .m{flex:1;min-width:0}
+.s2 .li .m .n{font-size:13px;font-weight:500}
+.s2 .li .m .s{font-size:11px;color:#8E8E93;margin-top:2px}
+.s2 .li .p{font-size:13px;font-weight:600}
+.s2 .li .p em{font-size:10px;font-style:normal;color:#8E8E93;font-weight:400}
+.s2 .chev{color:#C4C4C9;font-size:14px}
+.s2 .cta{margin:16px;background:#007AFF;color:#fff;border-radius:12px;text-align:center;padding:13px;font-size:14px;font-weight:600}
+.s2 .tab{background:rgba(249,249,249,.94);border-top:.5px solid #D6D6DB;color:#8E8E93}
+.s2 .ti.on{color:#007AFF}
+.s2m .scr{background:#F2F2F7;color:#000}
+.s2m .sb{color:#000}
+.s2m .nv{padding:2px 18px 8px;display:flex;align-items:flex-end;justify-content:space-between}
+.s2m .nv .lg{font-size:25px;font-weight:700;letter-spacing:-.03em}
+.s2m .nv .dt{font-size:12px;color:#8E8E93;padding-bottom:5px}
+.s2m .grp{background:#fff;border-radius:12px;margin:0 16px 14px;overflow:hidden}
+.s2m .grp .gh{padding:10px 14px 8px;font-size:12px;color:#8E8E93;letter-spacing:.02em}
+.s2m .kpis{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.s2m .k{padding:12px 14px}
+.s2m .k:nth-child(1){border-right:.5px solid #E4E4EA;border-bottom:.5px solid #E4E4EA}
+.s2m .k:nth-child(2){border-bottom:.5px solid #E4E4EA}
+.s2m .k:nth-child(3){border-right:.5px solid #E4E4EA}
+.s2m .k .v{font-size:21px;font-weight:600;letter-spacing:-.02em}
+.s2m .k .l{font-size:11px;color:#8E8E93;margin-top:2px}
+.s2m .k.g .v{color:#34C759}
+.s2m .k.o .v{color:#FF9500}
+.s2m .k.r .v{color:#FF3B30}
+.s2m .li{display:flex;align-items:center;gap:11px;padding:11px 14px;border-top:.5px solid #E4E4EA}
+.s2m .li .im{width:38px;height:38px;border-radius:8px;background:#F0F0F5;color:#8E8E93;overflow:hidden;flex:0 0 auto}
+.s2m .li .m{flex:1;min-width:0}
+.s2m .li .m .n{font-size:13px;font-weight:500}
+.s2m .li .m .s{font-size:11px;color:#8E8E93;margin-top:1px}
+.s2m .li .p{font-size:13px;font-weight:600}
+.s2m .pill{font-size:10px;padding:3px 8px;border-radius:20px;background:#E9F4EC;color:#248A3D}
+.s2m .pill.w{background:#FFF3E4;color:#B25E00}
+.s2m .tab{background:rgba(249,249,249,.94);border-top:.5px solid #D6D6DB;color:#8E8E93}
+.s2m .ti.on{color:#007AFF}
+
+/* ================= S3 极简黑白 ================= */
+.s3 .num{background:#111;color:#fff;border:1px solid #2A2A2A}
+.s3 .scr{background:#fff;color:#0A0A0A}
+.s3 .sb{color:#0A0A0A}
+.s3 .hd{padding:6px 20px 0;display:flex;align-items:flex-end;justify-content:space-between}
+.s3 .hd .mk{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#8A8A8A}
+.s3 .hd .bg{font-size:24px;font-weight:600;letter-spacing:-.04em;margin-top:6px}
+.s3 .sr{margin:16px 20px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid #111;padding-bottom:8px;color:#8A8A8A}
+.s3 .sr span{font-size:12px;letter-spacing:.04em}
+.s3 .nav{display:flex;gap:20px;padding:14px 20px 0;border-bottom:1px solid #E8E8E8}
+.s3 .nav div{font-size:11.5px;letter-spacing:.06em;color:#8A8A8A;padding-bottom:8px}
+.s3 .nav div.on{color:#111;border-bottom:1.5px solid #111;font-weight:600}
+.s3 .feat{margin:16px 20px 0}
+.s3 .feat .im{height:140px;background:#F2F2F0;color:#9A9A9A;border-radius:2px;overflow:hidden}
+.s3 .feat .cap{display:flex;align-items:baseline;justify-content:space-between;margin-top:11px}
+.s3 .feat .cap .t{font-size:15px;font-weight:600;letter-spacing:-.02em}
+.s3 .feat .cap .p{font-size:14px;font-weight:600}
+.s3 .feat .sub{font-size:11px;color:#8A8A8A;margin-top:4px;letter-spacing:.02em}
+.s3 .row{display:flex;gap:14px;padding:18px 20px 0}
+.s3 .row .it{flex:1}
+.s3 .row .it .im{height:74px;background:#F2F2F0;color:#9A9A9A;border-radius:2px;overflow:hidden}
+.s3 .row .it .n{font-size:11.5px;font-weight:600;margin-top:8px}
+.s3 .row .it .p{font-size:11.5px;color:#111;margin-top:3px}
+.s3 .row .it .l{font-size:9.5px;color:#9A9A9A;letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.s3 .bar{margin:20px 20px 0;border-top:1px solid #111;display:flex;justify-content:space-between;padding-top:9px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8A8A8A}
+.s3 .tab{background:#fff;border-top:1px solid #111;color:#9A9A9A}
+.s3 .tab .ti{font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+.s3 .ti.on{color:#111;font-weight:600}
+.s3m .scr{background:#fff;color:#0A0A0A}
+.s3m .sb{color:#0A0A0A}
+.s3m .hd{padding:6px 20px 14px;border-bottom:1px solid #111}
+.s3m .hd .mk{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8A8A8A}
+.s3m .hd .t{font-size:21px;font-weight:600;letter-spacing:-.04em;margin-top:6px}
+.s3m .blk{padding:18px 20px;border-bottom:1px solid #E8E8E8}
+.s3m .blk .lb{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#8A8A8A}
+.s3m .blk .big{font-size:34px;font-weight:600;letter-spacing:-.045em;margin-top:7px}
+.s3m .blk .big em{font-size:15px;font-style:normal;color:#8A8A8A}
+.s3m .blk .sm{font-size:11px;color:#8A8A8A;margin-top:5px}
+.s3m .duo{display:grid;grid-template-columns:1fr 1fr}
+.s3m .duo .blk:nth-child(1){border-right:1px solid #E8E8E8}
+.s3m .list{padding:16px 20px 0}
+.s3m .list .lh{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#8A8A8A;margin-bottom:11px}
+.s3m .o{display:flex;align-items:baseline;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EDEDED}
+.s3m .o .m .n{font-size:12.5px;font-weight:600}
+.s3m .o .m .s{font-size:10.5px;color:#8A8A8A;margin-top:2px}
+.s3m .o .p{font-size:13px;font-weight:600}
+.s3m .o .p em{display:block;font-size:9.5px;font-style:normal;color:#8A8A8A;font-weight:400;margin-top:2px;text-align:right}
+.s3m .tab{background:#fff;border-top:1px solid #111;color:#9A9A9A}
+.s3m .tab .ti{font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+.s3m .ti.on{color:#111;font-weight:600}
+
+/* ================= S4 柔和新拟态 ================= */
+.s4 .num{background:#DFE7DF;color:#2F5C46}
+.s4 .scr{background:#EDF1EC;color:#2A3A32}
+.s4 .sb{color:#3E7A5E}
+.s4 .hd{padding:6px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.s4 .hd .t{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.s4 .hd .sub{font-size:10.5px;color:#7C8F84;margin-top:2px}
+.s4 .hd .av{width:34px;height:34px;border-radius:50%;background:#EDF1EC;box-shadow:4px 4px 9px #D3DAD3,-4px -4px 9px #FFFFFF;color:#5C8A72;overflow:hidden}
+.s4 .sr{margin:15px 18px 0;display:flex;align-items:center;gap:9px;background:#EDF1EC;border-radius:16px;padding:12px 15px;box-shadow:inset 4px 4px 9px #D3DAD3,inset -4px -4px 9px #FFFFFF;color:#7C8F84}
+.s4 .sr span{font-size:11.5px}
+.s4 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:16px 18px 0}
+.s4 .tl{background:#EDF1EC;border-radius:20px;padding:13px;box-shadow:5px 5px 12px #D3DAD3,-5px -5px 12px #FFFFFF}
+.s4 .tl .ic2{width:34px;height:34px;border-radius:12px;background:#EDF1EC;box-shadow:3px 3px 7px #D3DAD3,-3px -3px 7px #FFFFFF;display:flex;align-items:center;justify-content:center;color:#3E7A5E;margin-bottom:11px}
+.s4 .tl .ic2 .ic{width:17px;height:17px}
+.s4 .tl .n{font-size:12.5px;font-weight:600}
+.s4 .tl .s{font-size:9.5px;color:#7C8F84;margin-top:3px}
+.s4 .tl .p{font-size:14px;font-weight:600;color:#2F5C46;margin-top:8px}
+.s4 .tl .p em{font-size:9.5px;font-style:normal;font-weight:400;color:#7C8F84}
+.s4 .hero{margin:14px 18px 0;border-radius:22px;background:#EDF1EC;box-shadow:6px 6px 14px #D3DAD3,-6px -6px 14px #FFFFFF;padding:15px;display:flex;gap:13px;align-items:center}
+.s4 .hero .im{width:78px;height:78px;border-radius:16px;background:#E2EAE2;color:#8AA396;overflow:hidden;flex:0 0 auto;box-shadow:inset 3px 3px 7px #D3DAD3,inset -3px -3px 7px #FFFFFF}
+.s4 .hero .t{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.s4 .hero .s{font-size:10px;color:#7C8F84;margin-top:4px;line-height:1.5}
+.s4 .hero .p{font-size:15px;font-weight:600;color:#B53B39;margin-top:7px}
+.s4 .hero .p em{font-size:10px;font-style:normal;color:#7C8F84;font-weight:400}
+.s4 .cta{margin:14px 18px 0;border-radius:18px;background:#EDF1EC;box-shadow:5px 5px 12px #D3DAD3,-5px -5px 12px #FFFFFF;padding:13px;text-align:center;font-size:13px;font-weight:600;color:#2F5C46}
+.s4 .tab{background:#EDF1EC;box-shadow:0 -4px 10px #DDE4DD;color:#8A9C91}
+.s4 .ti.on{color:#3E7A5E;font-weight:600}
+.s4m .scr{background:#EDF1EC;color:#2A3A32}
+.s4m .sb{color:#3E7A5E}
+.s4m .hd{padding:6px 18px 0;display:flex;justify-content:space-between;align-items:center}
+.s4m .hd .t{font-size:15.5px;font-weight:600}
+.s4m .hd .sub{font-size:10px;color:#7C8F84;margin-top:2px}
+.s4m .hd .bell{width:32px;height:32px;border-radius:11px;background:#EDF1EC;box-shadow:3px 3px 7px #D3DAD3,-3px -3px 7px #FFFFFF;display:flex;align-items:center;justify-content:center;color:#3E7A5E}
+.s4m .hd .bell .ic{width:15px;height:15px}
+.s4m .big{margin:16px 18px 0;border-radius:24px;background:#EDF1EC;box-shadow:7px 7px 16px #D3DAD3,-7px -7px 16px #FFFFFF;padding:18px;text-align:center}
+.s4m .big .l{font-size:10.5px;color:#7C8F84;letter-spacing:.06em}
+.s4m .big .v{font-size:31px;font-weight:600;color:#2F5C46;letter-spacing:-.03em;margin-top:8px}
+.s4m .big .v em{font-size:15px;color:#7C8F84;font-style:normal}
+.s4m .big .d{margin-top:10px;font-size:10px;color:#7C8F84}
+.s4m .big .d b{color:#3E7A5E;font-weight:600}
+.s4m .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;padding:14px 18px 0}
+.s4m .k{background:#EDF1EC;border-radius:17px;padding:12px 8px;text-align:center;box-shadow:4px 4px 9px #D3DAD3,-4px -4px 9px #FFFFFF}
+.s4m .k .v{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.s4m .k .l{font-size:9px;color:#7C8F84;margin-top:3px}
+.s4m .k.o .v{color:#A46B22}.s4m .k.r .v{color:#B53B39}.s4m .k.g .v{color:#3E7A5E}
+.s4m .lst{margin:16px 18px 0}
+.s4m .lst .lh{font-size:11.5px;font-weight:600;margin-bottom:10px}
+.s4m .o{background:#EDF1EC;border-radius:17px;padding:12px;margin-bottom:11px;display:flex;gap:11px;align-items:center;box-shadow:4px 4px 9px #D3DAD3,-4px -4px 9px #FFFFFF}
+.s4m .o .im{width:36px;height:36px;border-radius:12px;background:#E2EAE2;color:#8AA396;overflow:hidden;flex:0 0 auto}
+.s4m .o .m{flex:1;min-width:0}
+.s4m .o .m .n{font-size:11.5px;font-weight:600}
+.s4m .o .m .s{font-size:9.5px;color:#7C8F84;margin-top:2px}
+.s4m .o .r .p{font-size:12px;font-weight:600;color:#B53B39;text-align:right}
+.s4m .o .r .st{font-size:8.5px;color:#A46B22;margin-top:3px;text-align:right}
+.s4m .tab{background:#EDF1EC;box-shadow:0 -4px 10px #DDE4DD;color:#8A9C91}
+.s4m .ti.on{color:#3E7A5E;font-weight:600}
+
+/* ================= S5 玻璃拟态 visionOS ================= */
+.s5 .num{background:#3B2E6E;color:#D6CFFB}
+.s5 .scr{background:#151A2E;color:#F0F2FA}
+.s5 .scr::before{content:"";position:absolute;inset:0;background:
+ radial-gradient(circle at 22% 12%,rgba(94,214,183,.45),transparent 42%),
+ radial-gradient(circle at 84% 26%,rgba(127,119,221,.5),transparent 46%),
+ radial-gradient(circle at 52% 96%,rgba(216,90,48,.35),transparent 52%)}
+.s5 .body,.s5 .sb,.s5 .tab{position:relative;z-index:2}
+.s5 .sb{color:#fff}
+.s5 .hd{padding:6px 18px 0}
+.s5 .hd .t{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.s5 .hd .s{font-size:10.5px;color:rgba(255,255,255,.6);margin-top:3px}
+.s5 .sr{margin:14px 18px 0;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:11px 14px;backdrop-filter:blur(18px);color:rgba(255,255,255,.72)}
+.s5 .sr span{font-size:11.5px}
+.s5 .glass{margin:14px 18px 0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:22px;padding:14px;backdrop-filter:blur(22px)}
+.s5 .glass .cap{display:flex;align-items:center;justify-content:space-between}
+.s5 .glass .cap .b{font-size:9.5px;background:rgba(94,214,183,.28);border:1px solid rgba(94,214,183,.45);color:#9FE1CB;padding:3px 9px;border-radius:20px;letter-spacing:.05em}
+.s5 .glass .cap .f{font-size:9.5px;color:rgba(255,255,255,.55)}
+.s5 .glass .flex{display:flex;gap:13px;margin-top:12px;align-items:center}
+.s5 .glass .im{width:76px;height:76px;border-radius:17px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);overflow:hidden;flex:0 0 auto}
+.s5 .glass .t{font-size:14px;font-weight:600}
+.s5 .glass .s{font-size:10px;color:rgba(255,255,255,.6);margin-top:4px;line-height:1.5}
+.s5 .glass .p{font-size:16px;font-weight:600;color:#9FE1CB;margin-top:7px}
+.s5 .glass .p em{font-size:10px;font-style:normal;font-weight:400;color:rgba(255,255,255,.5);margin-left:4px}
+.s5 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 18px 0}
+.s5 .c{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.17);border-radius:19px;padding:11px;backdrop-filter:blur(18px)}
+.s5 .c .im{height:66px;border-radius:13px;background:rgba(255,255,255,.13);color:rgba(255,255,255,.45);overflow:hidden}
+.s5 .c .n{font-size:11px;font-weight:600;margin-top:8px}
+.s5 .c .p{font-size:12px;color:#9FE1CB;margin-top:4px;font-weight:600}
+.s5 .c .p em{font-size:9px;font-style:normal;font-weight:400;color:rgba(255,255,255,.45)}
+.s5 .tab{background:rgba(255,255,255,.1);border-top:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);backdrop-filter:blur(20px)}
+.s5 .ti.on{color:#9FE1CB;font-weight:600}
+.s5m .scr{background:#111726;color:#F0F2FA}
+.s5m .scr::before{content:"";position:absolute;inset:0;background:
+ radial-gradient(circle at 18% 8%,rgba(94,214,183,.38),transparent 44%),
+ radial-gradient(circle at 88% 34%,rgba(127,119,221,.42),transparent 48%)}
+.s5m .body,.s5m .sb,.s5m .tab{position:relative;z-index:2}
+.s5m .sb{color:#fff}
+.s5m .hd{padding:6px 18px 0;display:flex;justify-content:space-between;align-items:center}
+.s5m .hd .t{font-size:16px;font-weight:600}
+.s5m .hd .s{font-size:10px;color:rgba(255,255,255,.55);margin-top:2px}
+.s5m .hd .bell{width:32px;height:32px;border-radius:11px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:#fff}
+.s5m .hd .bell .ic{width:15px;height:15px}
+.s5m .big{margin:15px 18px 0;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:23px;padding:17px;backdrop-filter:blur(24px)}
+.s5m .big .l{font-size:10px;color:rgba(255,255,255,.6);letter-spacing:.06em}
+.s5m .big .v{font-size:30px;font-weight:600;letter-spacing:-.03em;color:#9FE1CB;margin-top:7px}
+.s5m .big .v em{font-size:14px;color:rgba(255,255,255,.55);font-style:normal}
+.s5m .big .bar{height:4px;border-radius:3px;background:rgba(255,255,255,.16);margin-top:13px;overflow:hidden}
+.s5m .big .bar i{display:block;height:100%;width:72%;background:#5DCAA5;border-radius:3px}
+.s5m .big .d{font-size:10px;color:rgba(255,255,255,.6);margin-top:8px;display:flex;justify-content:space-between}
+.s5m .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;padding:13px 18px 0}
+.s5m .k{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:17px;padding:12px 9px;backdrop-filter:blur(16px)}
+.s5m .k .v{font-size:17px;font-weight:600}
+.s5m .k .l{font-size:9px;color:rgba(255,255,255,.6);margin-top:3px}
+.s5m .k.o .v{color:#EF9F27}.s5m .k.r .v{color:#F09595}.s5m .k.g .v{color:#9FE1CB}
+.s5m .lst{margin:15px 18px 0}
+.s5m .lst .lh{font-size:11.5px;font-weight:600;margin-bottom:10px}
+.s5m .o{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:11px;margin-bottom:9px;display:flex;gap:10px;align-items:center;backdrop-filter:blur(14px)}
+.s5m .o .im{width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.14);color:rgba(255,255,255,.45);overflow:hidden;flex:0 0 auto}
+.s5m .o .m{flex:1;min-width:0}
+.s5m .o .m .n{font-size:11px;font-weight:600}
+.s5m .o .m .s{font-size:9.5px;color:rgba(255,255,255,.55);margin-top:2px}
+.s5m .o .r .p{font-size:11.5px;font-weight:600;color:#9FE1CB;text-align:right}
+.s5m .o .r .st{font-size:8.5px;color:#EF9F27;margin-top:3px;text-align:right}
+.s5m .tab{background:rgba(255,255,255,.1);border-top:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);backdrop-filter:blur(20px)}
+.s5m .ti.on{color:#9FE1CB;font-weight:600}
+
+/* ================= S6 活力橙果 ================= */
+.s6 .num{background:#FF6B2C;color:#fff}
+.s6 .scr{background:#FFF8F0;color:#1A1A1A}
+.s6 .sb{color:#1A1A1A}
+.s6 .hd{padding:4px 16px 0;display:flex;align-items:center;justify-content:space-between}
+.s6 .hd .loc{font-size:10px;color:#9A8B7E;display:flex;align-items:center;gap:4px}
+.s6 .hd .loc b{font-size:14px;color:#1A1A1A;font-weight:700;display:block;margin-top:1px}
+.s6 .hd .cd{background:#FFE7D6;border-radius:12px;padding:6px 10px;text-align:center}
+.s6 .hd .cd .d{font-size:9px;color:#C0561F;font-weight:700}
+.s6 .hd .cd .t{font-size:8.5px;color:#B98A6E;margin-top:1px}
+.s6 .sr{margin:12px 16px 0;display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #FF6B2C;border-radius:15px;padding:9px 13px}
+.s6 .sr span{font-size:11.5px;color:#B9A99A}
+.s6 .sr .go{margin-left:auto;font-size:10px;font-weight:700;color:#fff;background:#FF6B2C;border-radius:20px;padding:4px 11px}
+.s6 .cats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:15px 14px 0;text-align:center}
+.s6 .cat .g{width:42px;height:42px;border-radius:15px;background:#fff;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#FF6B2C;box-shadow:0 4px 10px rgba(255,107,44,.13)}
+.s6 .cat .g .ic{width:19px;height:19px}
+.s6 .cat span{display:block;font-size:9px;color:#7A6C60;margin-top:6px;font-weight:500}
+.s6 .flash{margin:15px 16px 0;background:#FF6B2C;border-radius:22px;padding:13px;color:#fff;display:flex;gap:12px;align-items:center}
+.s6 .flash .im{width:82px;height:82px;border-radius:17px;background:rgba(255,255,255,.22);color:rgba(255,255,255,.7);overflow:hidden;flex:0 0 auto}
+.s6 .flash .b{font-size:9px;background:#FFD166;color:#7A4A00;padding:3px 8px;border-radius:20px;font-weight:700;display:inline-block}
+.s6 .flash .t{font-size:14.5px;font-weight:700;margin-top:7px;letter-spacing:-.01em}
+.s6 .flash .s{font-size:10px;opacity:.85;margin-top:3px}
+.s6 .flash .p{font-size:17px;font-weight:700;margin-top:6px}
+.s6 .flash .p em{font-size:10px;font-weight:400;opacity:.75;margin-left:4px}
+.s6 .g{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:15px 16px 0}
+.s6 .card{background:#fff;border-radius:19px;padding:9px;box-shadow:0 4px 12px rgba(160,120,90,.08)}
+.s6 .card .im{height:80px;border-radius:14px;background:#FFF1E4;color:#D9A57A;overflow:hidden}
+.s6 .card .n{font-size:11.5px;font-weight:700;margin-top:8px;line-height:1.3}
+.s6 .card .tagline{font-size:9px;color:#C0561F;background:#FFE7D6;border-radius:5px;padding:2px 6px;display:inline-block;margin-top:6px;font-weight:600}
+.s6 .card .b{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
+.s6 .card .p{font-size:13.5px;font-weight:700;color:#E8452C}
+.s6 .card .p em{font-size:9.5px;font-weight:400}
+.s6 .card .add{width:23px;height:23px;border-radius:50%;background:#FF6B2C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;line-height:1;padding-bottom:2px}
+.s6 .tab{background:#fff;border-top:1px solid #FFE7D6;color:#B9A99A}
+.s6 .ti.on{color:#FF6B2C;font-weight:700}
+.s6m .scr{background:#FFF8F0;color:#1A1A1A}
+.s6m .sb{color:#1A1A1A}
+.s6m .top{background:#FF6B2C;color:#fff;padding:4px 18px 44px;border-radius:0 0 28px 28px}
+.s6m .top .r1{display:flex;justify-content:space-between;align-items:center}
+.s6m .top .who{font-size:10px;opacity:.82}
+.s6m .top .nm{font-size:15px;font-weight:700;margin-top:2px}
+.s6m .top .bell{width:31px;height:31px;border-radius:11px;background:rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center}
+.s6m .top .bell .ic{width:15px;height:15px}
+.s6m .top .rev{font-size:29px;font-weight:700;letter-spacing:-.02em;margin-top:15px}
+.s6m .top .rl{font-size:10px;opacity:.82;margin-top:2px}
+.s6m .kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:-32px 16px 0}
+.s6m .k{background:#fff;border-radius:16px;padding:11px 10px;box-shadow:0 6px 16px rgba(200,140,90,.14)}
+.s6m .k .v{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.s6m .k .l{font-size:9px;color:#9A8B7E;margin-top:3px}
+.s6m .k.o .v{color:#FF6B2C}.s6m .k.b .v{color:#3B82F6}.s6m .k.r .v{color:#E8452C}
+.s6m .qa{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:15px 16px 0}
+.s6m .q{background:#fff;border-radius:15px;padding:10px 3px;text-align:center;box-shadow:0 3px 9px rgba(200,140,90,.1)}
+.s6m .q .g{width:31px;height:31px;border-radius:11px;background:#FFF1E4;color:#FF6B2C;margin:0 auto 6px;display:flex;align-items:center;justify-content:center}
+.s6m .q .g .ic{width:16px;height:16px}
+.s6m .q span{font-size:9px;color:#7A6C60;font-weight:500}
+.s6m .lst{margin:15px 16px 0}
+.s6m .lst .lh{font-size:12.5px;font-weight:700;margin-bottom:9px;display:flex;justify-content:space-between;align-items:baseline}
+.s6m .lst .lh span{font-size:10px;color:#FF6B2C;font-weight:600}
+.s6m .o{background:#fff;border-radius:16px;padding:11px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;box-shadow:0 3px 9px rgba(200,140,90,.08)}
+.s6m .o .im{width:34px;height:34px;border-radius:11px;background:#FFF1E4;color:#D9A57A;overflow:hidden;flex:0 0 auto}
+.s6m .o .m{flex:1;min-width:0}
+.s6m .o .m .n{font-size:11.5px;font-weight:700}
+.s6m .o .m .s{font-size:9.5px;color:#9A8B7E;margin-top:2px}
+.s6m .o .r .p{font-size:12px;font-weight:700;color:#E8452C;text-align:right}
+.s6m .o .r .st{font-size:8.5px;color:#C0561F;background:#FFE7D6;border-radius:20px;padding:2px 7px;margin-top:3px;display:inline-block;font-weight:600}
+.s6m .tab{background:#fff;border-top:1px solid #FFE7D6;color:#B9A99A}
+.s6m .ti.on{color:#FF6B2C;font-weight:700}
+
+/* ================= S7 卡片杂志 ================= */
+.s7 .num{background:#F4F1EC;color:#C2452D}
+.s7 .scr{background:#F4F1EC;color:#14110E}
+.s7 .sb{color:#14110E}
+.s7 .hd{padding:6px 20px 0}
+.s7 .hd .m{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:#9A8F82}
+.s7 .hd .t{font-family:Georgia,"Songti SC","SimSun",serif;font-size:25px;font-weight:600;letter-spacing:-.01em;margin-top:7px;line-height:1.15}
+.s7 .hd .t em{font-style:italic;color:#C2452D}
+.s7 .sr{margin:15px 20px 0;display:flex;align-items:center;gap:9px;border:1px solid #D8D1C6;border-radius:3px;padding:9px 12px;color:#9A8F82;background:#FBF9F6}
+.s7 .sr span{font-size:11.5px}
+.s7 .big{margin:17px 20px 0}
+.s7 .big .im{height:148px;background:#E7E1D7;color:#A79A8A;overflow:hidden;border-radius:3px}
+.s7 .big .cap{margin-top:13px}
+.s7 .big .k{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#C2452D;font-weight:600}
+.s7 .big .t{font-family:Georgia,"Songti SC",serif;font-size:17px;font-weight:600;margin-top:6px;line-height:1.3}
+.s7 .big .d{font-size:11px;color:#7A7168;margin-top:7px;line-height:1.65}
+.s7 .big .f{display:flex;align-items:baseline;gap:10px;margin-top:10px}
+.s7 .big .p{font-size:17px;font-weight:700;color:#C2452D;font-family:Georgia,serif}
+.s7 .big .p em{font-size:10px;font-weight:400}
+.s7 .big .o{font-size:11px;color:#9A8F82;text-decoration:line-through}
+.s7 .big .btn{margin-left:auto;font-size:10.5px;background:#14110E;color:#F4F1EC;border-radius:3px;padding:7px 14px;letter-spacing:.08em}
+.s7 .duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:20px 20px 0}
+.s7 .duo .it .im{height:82px;background:#E7E1D7;color:#A79A8A;overflow:hidden;border-radius:3px}
+.s7 .duo .it .n{font-family:Georgia,"Songti SC",serif;font-size:12.5px;font-weight:600;margin-top:9px;line-height:1.3}
+.s7 .duo .it .p{font-size:12px;color:#C2452D;font-weight:600;margin-top:5px}
+.s7 .rule{margin:20px 20px 0;border-top:2px solid #14110E;display:flex;justify-content:space-between;padding-top:8px;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#9A8F82}
+.s7 .tab{background:#FBF9F6;border-top:1px solid #D8D1C6;color:#9A8F82}
+.s7 .ti.on{color:#C2452D;font-weight:600}
+.s7m .scr{background:#F4F1EC;color:#14110E}
+.s7m .sb{color:#14110E}
+.s7m .hd{padding:6px 20px 14px;border-bottom:2px solid #14110E}
+.s7m .hd .m{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:#9A8F82}
+.s7m .hd .t{font-family:Georgia,"Songti SC",serif;font-size:22px;font-weight:600;margin-top:6px}
+.s7m .hero{padding:18px 20px 16px;background:#14110E;color:#F4F1EC}
+.s7m .hero .m{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:#A79A8A}
+.s7m .hero .v{font-family:Georgia,serif;font-size:33px;font-weight:600;letter-spacing:-.02em;margin-top:8px}
+.s7m .hero .v em{font-size:15px;color:#A79A8A;font-style:normal}
+.s7m .hero .d{font-size:10.5px;color:#A79A8A;margin-top:7px}
+.s7m .two{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #D8D1C6}
+.s7m .two .c{padding:15px 20px}
+.s7m .two .c:first-child{border-right:1px solid #D8D1C6}
+.s7m .two .m{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#9A8F82}
+.s7m .two .v{font-family:Georgia,serif;font-size:22px;font-weight:600;margin-top:7px}
+.s7m .two .c:nth-child(1) .v{color:#C2452D}
+.s7m .list{padding:16px 20px 0}
+.s7m .list .lh{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#9A8F82;margin-bottom:12px;display:flex;justify-content:space-between}
+.s7m .o{padding:11px 0;border-bottom:1px solid #DED8CD;display:flex;gap:12px;align-items:flex-start}
+.s7m .o .im{width:44px;height:44px;background:#E7E1D7;color:#A79A8A;overflow:hidden;border-radius:2px;flex:0 0 auto}
+.s7m .o .m{flex:1;min-width:0}
+.s7m .o .m .n{font-family:Georgia,"Songti SC",serif;font-size:12.5px;font-weight:600}
+.s7m .o .m .s{font-size:10px;color:#9A8F82;margin-top:3px}
+.s7m .o .p{font-size:13px;font-weight:700;font-family:Georgia,serif}
+.s7m .o .p em{display:block;font-size:9px;font-style:normal;font-weight:400;color:#C2452D;letter-spacing:.08em;text-transform:uppercase;margin-top:4px;text-align:right}
+.s7m .tab{background:#FBF9F6;border-top:1px solid #D8D1C6;color:#9A8F82}
+.s7m .ti.on{color:#C2452D;font-weight:600}
+
+/* ================= S8 深色专业 ================= */
+.s8 .num{background:#0E1116;color:#34D399;border:1px solid #232A33}
+.s8 .scr{background:#0E1116;color:#E6EDF3;font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+.s8 .sb{color:#8B949E;font-family:ui-monospace,monospace}
+.s8 .hd{padding:6px 16px 0;display:flex;justify-content:space-between;align-items:center;font-family:-apple-system,"PingFang SC",sans-serif}
+.s8 .hd .t{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.s8 .hd .s{font-size:10px;color:#8B949E;margin-top:2px}
+.s8 .hd .dot{width:7px;height:7px;border-radius:50%;background:#34D399;box-shadow:0 0 8px #34D399}
+.s8 .sr{margin:13px 16px 0;display:flex;align-items:center;gap:8px;background:#161B22;border:1px solid #232A33;border-radius:9px;padding:9px 12px;color:#6E7681}
+.s8 .sr span{font-size:11px}
+.s8 .sr .k{margin-left:auto;font-size:9px;color:#6E7681;border:1px solid #232A33;border-radius:4px;padding:2px 6px}
+.s8 .mon{margin:13px 16px 0;background:#161B22;border:1px solid #232A33;border-radius:11px;padding:14px}
+.s8 .mon .lb{font-size:9.5px;color:#8B949E;letter-spacing:.1em;text-transform:uppercase}
+.s8 .mon .v{font-size:27px;font-weight:600;color:#34D399;letter-spacing:-.03em;margin-top:7px}
+.s8 .mon .v em{font-size:13px;color:#6E7681;font-weight:400}
+.s8 .mon .d{font-size:10px;color:#6E7681;margin-top:6px}
+.s8 .mon .spark{display:flex;align-items:flex-end;gap:3px;height:28px;margin-top:12px}
+.s8 .mon .spark i{flex:1;background:#1F6F4E;border-radius:2px 2px 0 0}
+.s8 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:9px 16px 0}
+.s8 .st{background:#161B22;border:1px solid #232A33;border-radius:9px;padding:11px}
+.s8 .st .l{font-size:9px;color:#8B949E;letter-spacing:.06em}
+.s8 .st .v{font-size:18px;font-weight:600;margin-top:5px}
+.s8 .st.a .v{color:#F59E0B}.s8 .st.b .v{color:#F87171}.s8 .st.c .v{color:#E6EDF3}.s8 .st.d .v{color:#34D399}
+.s8 .tbl{margin:13px 16px 0;background:#161B22;border:1px solid #232A33;border-radius:11px;overflow:hidden}
+.s8 .tbl .th{display:flex;justify-content:space-between;padding:9px 12px;font-size:9px;color:#6E7681;letter-spacing:.1em;text-transform:uppercase;background:#1B2129}
+.s8 .tr{display:flex;align-items:center;gap:9px;padding:10px 12px;border-top:1px solid #1E252D;font-size:10.5px}
+.s8 .tr .id{color:#6E7681}
+.s8 .tr .m{flex:1;min-width:0}
+.s8 .tr .m .n{font-size:11px;color:#E6EDF3;font-family:-apple-system,"PingFang SC",sans-serif}
+.s8 .tr .m .s{font-size:9px;color:#6E7681;margin-top:2px;font-family:-apple-system,"PingFang SC",sans-serif}
+.s8 .tr .p{color:#34D399;font-weight:600}
+.s8 .tr .s2{font-size:8.5px;padding:2px 6px;border-radius:3px;border:1px solid #2A3341;color:#8B949E}
+.s8 .tab{background:#11161C;border-top:1px solid #232A33;color:#6E7681}
+.s8 .tab .ti{font-size:8px;font-family:-apple-system,"PingFang SC",sans-serif}
+.s8 .ti.on{color:#34D399;font-weight:600}
+.s8m .scr{background:#0E1116;color:#E6EDF3}
+.s8m .sb{color:#8B949E}
+.s8m .hd{padding:6px 16px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.s8m .hd .t{font-size:15px;font-weight:600}
+.s8m .hd .s{font-size:9.5px;color:#6E7681;margin-top:3px;font-family:ui-monospace,monospace}
+.s8m .hd .live{font-size:8.5px;color:#34D399;border:1px solid #1F6F4E;background:#0F2A20;border-radius:4px;padding:3px 7px;display:flex;align-items:center;gap:5px}
+.s8m .hd .live i{width:5px;height:5px;border-radius:50%;background:#34D399;display:block}
+.s8m .sum{margin:14px 16px 0;background:#161B22;border:1px solid #232A33;border-radius:12px;padding:15px}
+.s8m .sum .l{font-size:9.5px;color:#8B949E;letter-spacing:.12em;text-transform:uppercase}
+.s8m .sum .row{display:flex;align-items:baseline;justify-content:space-between;margin-top:9px}
+.s8m .sum .v{font-size:29px;font-weight:600;color:#34D399;letter-spacing:-.035em}
+.s8m .sum .v em{font-size:14px;color:#6E7681;font-weight:400}
+.s8m .sum .delta{font-size:10px;color:#34D399;font-family:ui-monospace,monospace}
+.s8m .sum .bar{height:5px;border-radius:3px;background:#1E252D;margin-top:13px;display:flex;gap:2px;overflow:hidden}
+.s8m .sum .bar i{display:block;height:100%}
+.s8m .sum .bar i:nth-child(1){flex:9;background:#34D399}
+.s8m .sum .bar i:nth-child(2){flex:1.5;background:#F59E0B}
+.s8m .sum .bar i:nth-child(3){flex:1;background:#F87171}
+.s8m .sum .lg{display:flex;gap:14px;margin-top:9px;font-size:9px;color:#8B949E;font-family:ui-monospace,monospace}
+.s8m .sum .lg s{display:inline-block;width:7px;height:7px;border-radius:2px;text-decoration:none;margin-right:5px}
+.s8m .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:9px 16px 0}
+.s8m .st{background:#161B22;border:1px solid #232A33;border-radius:9px;padding:11px}
+.s8m .st .l{font-size:9px;color:#8B949E;letter-spacing:.06em}
+.s8m .st .v{font-size:18px;font-weight:600;margin-top:5px}
+.s8m .st.a .v{color:#F59E0B}.s8m .st.b .v{color:#F87171}.s8m .st.c .v{color:#E6EDF3}.s8m .st.d .v{color:#34D399}
+.s8m .tbl{margin:12px 16px 0;background:#161B22;border:1px solid #232A33;border-radius:11px;overflow:hidden}
+.s8m .tbl .th{display:flex;justify-content:space-between;padding:9px 12px;font-size:9px;color:#6E7681;letter-spacing:.1em;text-transform:uppercase;background:#1B2129}
+.s8m .tr{display:flex;align-items:center;gap:9px;padding:10px 12px;border-top:1px solid #1E252D;font-size:10.5px}
+.s8m .tr .id{color:#6E7681;font-family:ui-monospace,monospace}
+.s8m .tr .m{flex:1;min-width:0}
+.s8m .tr .m .n{font-size:11px;color:#E6EDF3}
+.s8m .tr .m .s{font-size:9px;color:#6E7681;margin-top:2px}
+.s8m .tr .p{color:#34D399;font-weight:600;font-family:ui-monospace,monospace}
+.s8m .tr .s2{font-size:8.5px;padding:2px 6px;border-radius:3px;border:1px solid #2A3341;color:#8B949E;font-family:ui-monospace,monospace}
+.s8m .tab{background:#11161C;border-top:1px solid #232A33;color:#6E7681}
+.s8m .ti.on{color:#34D399;font-weight:600}
+
+/* ================= S9 Bento 便当格 ================= */
+.s9 .num{background:#2F6BFF;color:#fff}
+.s9 .scr{background:#FAFAFC;color:#0B0B0F}
+.s9 .sb{color:#0B0B0F}
+.s9 .hd{padding:8px 16px 0;display:flex;align-items:flex-end;justify-content:space-between}
+.s9 .hd .t{font-size:22px;font-weight:600;letter-spacing:-.03em}
+.s9 .hd .s{font-size:10.5px;color:#86868B;margin-top:3px}
+.s9 .hd .av{width:32px;height:32px;border-radius:50%;background:#EAF0FF;color:#2F6BFF;overflow:hidden}
+.s9 .sr{margin:14px 16px 0;display:flex;align-items:center;gap:8px;background:#F0F0F3;border-radius:12px;padding:10px 13px;color:#86868B}
+.s9 .sr span{font-size:11.5px}
+.s9 .bento{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 0}
+.s9 .tile{border-radius:19px;padding:13px;position:relative;overflow:hidden}
+.s9 .tile.wide{grid-column:span 2}
+.s9 .tile.dark{background:#0B0B0F;color:#fff}
+.s9 .tile.blue{background:#2F6BFF;color:#fff}
+.s9 .tile.grey{background:#fff;border:1px solid #E8E8ED}
+.s9 .tile.mint{background:#E6F7F0;color:#0B4A38}
+.s9 .tile.amber{background:#FFF3E0;color:#6B3E00}
+.s9 .tile .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.62}
+.s9 .tile .v{font-size:26px;font-weight:600;letter-spacing:-.035em;margin-top:8px;line-height:1}
+.s9 .tile .v em{font-size:13px;font-weight:400;opacity:.6}
+.s9 .tile .s{font-size:10px;opacity:.68;margin-top:7px}
+.s9 .tile .im{height:74px;border-radius:13px;background:rgba(0,0,0,.06);color:rgba(0,0,0,.3);overflow:hidden;margin-top:11px}
+.s9 .tile.dark .im,.s9 .tile.blue .im{background:rgba(255,255,255,.16);color:rgba(255,255,255,.55)}
+.s9 .tile .pr{display:flex;align-items:baseline;gap:7px;margin-top:10px}
+.s9 .tile .pr b{font-size:16px;font-weight:600}
+.s9 .tile .pr s{font-size:10px;opacity:.5}
+.s9 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:10px 16px 0}
+.s9 .mini{background:#fff;border:1px solid #E8E8ED;border-radius:16px;padding:11px 8px;text-align:center}
+.s9 .mini .im{height:46px;border-radius:11px;background:#F2F2F5;color:#B0B0B6;overflow:hidden}
+.s9 .mini .n{font-size:9.5px;font-weight:600;margin-top:7px}
+.s9 .mini .p{font-size:10.5px;color:#2F6BFF;font-weight:600;margin-top:3px}
+.s9 .tab{background:#fff;border-top:1px solid #E8E8ED;color:#86868B}
+.s9 .ti.on{color:#0B0B0F;font-weight:600}
+.s9m .scr{background:#FAFAFC;color:#0B0B0F}
+.s9m .sb{color:#0B0B0F}
+.s9m .hd{padding:8px 16px 0;display:flex;align-items:flex-end;justify-content:space-between}
+.s9m .hd .t{font-size:21px;font-weight:600;letter-spacing:-.03em}
+.s9m .hd .s{font-size:10.5px;color:#86868B;margin-top:3px}
+.s9m .hd .bell{width:32px;height:32px;border-radius:50%;background:#F0F0F3;display:flex;align-items:center;justify-content:center;color:#0B0B0F}
+.s9m .hd .bell .ic{width:15px;height:15px}
+.s9m .bento{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 0}
+.s9m .tile{border-radius:19px;padding:14px;position:relative;overflow:hidden}
+.s9m .tile.wide{grid-column:span 2}
+.s9m .tile.dark{background:#0B0B0F;color:#fff}
+.s9m .tile.blue{background:#2F6BFF;color:#fff}
+.s9m .tile.grey{background:#fff;border:1px solid #E8E8ED}
+.s9m .tile.mint{background:#E6F7F0;color:#0B4A38}
+.s9m .tile.amber{background:#FFF3E0;color:#6B3E00}
+.s9m .tile.rose{background:#FFECEC;color:#7A1212}
+.s9m .tile .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.62}
+.s9m .tile .v{font-size:27px;font-weight:600;letter-spacing:-.035em;margin-top:8px;line-height:1}
+.s9m .tile .v em{font-size:13px;font-weight:400;opacity:.6}
+.s9m .tile .s{font-size:10px;opacity:.7;margin-top:7px;line-height:1.5}
+.s9m .qa{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:12px 16px 0}
+.s9m .q{background:#fff;border:1px solid #E8E8ED;border-radius:16px;padding:11px 3px;text-align:center}
+.s9m .q .g{width:30px;height:30px;border-radius:11px;background:#F0F0F3;color:#0B0B0F;margin:0 auto 6px;display:flex;align-items:center;justify-content:center}
+.s9m .q .g .ic{width:15px;height:15px}
+.s9m .q span{font-size:8.5px;color:#86868B}
+.s9m .lst{padding:13px 16px 0}
+.s9m .lst .lh{font-size:11.5px;font-weight:600;margin-bottom:9px}
+.s9m .o{background:#fff;border:1px solid #E8E8ED;border-radius:16px;padding:11px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.s9m .o .im{width:34px;height:34px;border-radius:11px;background:#F2F2F5;color:#B0B0B6;overflow:hidden;flex:0 0 auto}
+.s9m .o .m{flex:1;min-width:0}
+.s9m .o .m .n{font-size:11.5px;font-weight:600}
+.s9m .o .m .s{font-size:9.5px;color:#86868B;margin-top:2px}
+.s9m .o .r .p{font-size:12px;font-weight:600;text-align:right}
+.s9m .o .r .st{font-size:8.5px;color:#2F6BFF;margin-top:3px;text-align:right}
+.s9m .tab{background:#fff;border-top:1px solid #E8E8ED;color:#86868B}
+.s9m .ti.on{color:#0B0B0F;font-weight:600}
+
+/* ================= S10 东方食集 ================= */
+.s10 .num{background:#8C2F1F;color:#FBF6EE}
+.s10 .scr{background:#FBF6EE;color:#2B2320}
+.s10 .sb{color:#2B2320}
+.s10 .hd{padding:6px 18px 0;display:flex;align-items:center;gap:11px}
+.s10 .seal{width:36px;height:36px;border-radius:7px;background:#8C2F1F;color:#FBF6EE;display:flex;align-items:center;justify-content:center;font-family:"Songti SC","SimSun",serif;font-size:15px;font-weight:600;letter-spacing:-.05em;flex:0 0 auto}
+.s10 .hd .t{font-family:"Songti SC","SimSun",Georgia,serif;font-size:17px;font-weight:600;letter-spacing:.06em}
+.s10 .hd .s{font-size:9.5px;color:#9A8C7E;margin-top:3px;letter-spacing:.1em}
+.s10 .sr{margin:14px 18px 0;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #E6DBC9;border-radius:6px;padding:10px 13px;color:#A2937F}
+.s10 .sr span{font-size:11.5px;letter-spacing:.04em}
+.s10 .banner{margin:15px 18px 0;background:#8C2F1F;border-radius:6px;padding:16px;color:#FBF6EE;position:relative;overflow:hidden}
+.s10 .banner::after{content:"";position:absolute;right:-26px;top:-26px;width:96px;height:96px;border:1px solid rgba(251,246,238,.16);border-radius:50%}
+.s10 .banner .k{font-size:9.5px;letter-spacing:.3em;opacity:.7;text-transform:uppercase}
+.s10 .banner .t{font-family:"Songti SC","SimSun",serif;font-size:19px;font-weight:600;letter-spacing:.1em;margin-top:9px}
+.s10 .banner .s{font-size:10.5px;opacity:.78;margin-top:7px;letter-spacing:.06em}
+.s10 .banner .f{display:flex;align-items:baseline;gap:10px;margin-top:13px}
+.s10 .banner .p{font-size:20px;font-weight:600;color:#E8C98C}
+.s10 .banner .p em{font-size:10px;font-weight:400}
+.s10 .banner .o{font-size:11px;opacity:.55;text-decoration:line-through}
+.s10 .cats{display:flex;gap:9px;padding:16px 18px 0}
+.s10 .cat{flex:1;background:#fff;border:1px solid #E6DBC9;border-radius:6px;padding:11px 5px;text-align:center}
+.s10 .cat .g{width:34px;height:34px;border-radius:50%;background:#F6EEE1;color:#8C2F1F;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.s10 .cat .g .ic{width:17px;height:17px}
+.s10 .cat span{display:block;font-family:"Songti SC",serif;font-size:10px;margin-top:8px;letter-spacing:.08em;color:#4A3E36}
+.s10 .sec{display:flex;align-items:center;gap:9px;padding:18px 18px 0}
+.s10 .sec .t{font-family:"Songti SC","SimSun",serif;font-size:13.5px;font-weight:600;letter-spacing:.1em;white-space:nowrap}
+.s10 .sec .ln{flex:1;height:1px;background:#E0D4C0}
+.s10 .sec .m{font-size:9.5px;color:#A2937F;letter-spacing:.14em;white-space:nowrap}
+.s10 .list{padding:12px 18px 0}
+.s10 .it{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid #EFE6D8;align-items:center}
+.s10 .it .im{width:62px;height:62px;border-radius:6px;background:#F2E9DA;color:#B8A88F;overflow:hidden;flex:0 0 auto}
+.s10 .it .m{flex:1;min-width:0}
+.s10 .it .m .n{font-family:"Songti SC","SimSun",serif;font-size:12.5px;font-weight:600;letter-spacing:.06em}
+.s10 .it .m .s{font-size:9.5px;color:#A2937F;margin-top:4px;letter-spacing:.04em}
+.s10 .it .m .tag{display:inline-block;font-size:8.5px;color:#8C2F1F;border:1px solid #D9BFA6;border-radius:3px;padding:1px 5px;margin-top:6px;letter-spacing:.1em}
+.s10 .it .r{text-align:right}
+.s10 .it .r .p{font-size:14px;font-weight:600;color:#8C2F1F;font-family:Georgia,serif}
+.s10 .it .r .p em{font-size:9.5px;font-weight:400}
+.s10 .it .r .add{margin-top:7px;font-size:9.5px;color:#FBF6EE;background:#8C2F1F;border-radius:3px;padding:3px 10px;letter-spacing:.08em}
+.s10 .tab{background:#FBF6EE;border-top:1px solid #E6DBC9;color:#A2937F}
+.s10 .tab .ti{font-family:"Songti SC",serif;letter-spacing:.08em}
+.s10 .ti.on{color:#8C2F1F;font-weight:600}
+.s10m .scr{background:#FBF6EE;color:#2B2320}
+.s10m .sb{color:#2B2320}
+.s10m .hd{padding:6px 18px 0;display:flex;align-items:center;gap:11px}
+.s10m .hd .seal{width:34px;height:34px;border-radius:7px;background:#8C2F1F;color:#FBF6EE;display:flex;align-items:center;justify-content:center;font-family:"Songti SC",serif;font-size:14px;font-weight:600;flex:0 0 auto}
+.s10m .hd .t{font-family:"Songti SC","SimSun",serif;font-size:16px;font-weight:600;letter-spacing:.08em}
+.s10m .hd .s{font-size:9.5px;color:#A2937F;margin-top:3px;letter-spacing:.1em}
+.s10m .hd .bell{margin-left:auto;width:32px;height:32px;border:1px solid #E6DBC9;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#8C2F1F;background:#fff}
+.s10m .hd .bell .ic{width:15px;height:15px}
+.s10m .board{margin:15px 18px 0;border:1px solid #D9C7A8;border-radius:6px;overflow:hidden;background:#fff}
+.s10m .board .cap{background:#8C2F1F;color:#FBF6EE;padding:9px 14px;font-family:"Songti SC",serif;font-size:11.5px;letter-spacing:.2em;display:flex;justify-content:space-between;align-items:center}
+.s10m .board .cap span{font-size:9.5px;letter-spacing:.1em;opacity:.8}
+.s10m .board .bd{padding:15px 14px}
+.s10m .board .k{font-size:9.5px;color:#A2937F;letter-spacing:.16em}
+.s10m .board .v{font-family:Georgia,"Songti SC",serif;font-size:31px;font-weight:600;letter-spacing:-.02em;margin-top:8px;color:#8C2F1F}
+.s10m .board .v em{font-size:14px;color:#A2937F;font-style:normal}
+.s10m .board .d{font-size:10px;color:#A2937F;margin-top:7px;letter-spacing:.04em}
+.s10m .duo{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:13px 18px 0}
+.s10m .c{background:#fff;border:1px solid #E6DBC9;border-radius:6px;padding:12px}
+.s10m .c .k{font-size:9px;color:#A2937F;letter-spacing:.14em}
+.s10m .c .v{font-family:Georgia,serif;font-size:19px;font-weight:600;margin-top:7px}
+.s10m .c:nth-child(1) .v{color:#8C2F1F}
+.s10m .c:nth-child(2) .v{color:#2F5C46}
+.s10m .sec{display:flex;align-items:center;gap:9px;margin:17px 18px 0}
+.s10m .sec .t{font-family:"Songti SC",serif;font-size:12.5px;font-weight:600;letter-spacing:.12em;white-space:nowrap}
+.s10m .sec .ln{flex:1;height:1px;background:#E0D4C0}
+.s10m .lst{margin:11px 18px 0}
+.s10m .o{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid #EFE6D8;align-items:center}
+.s10m .o .im{width:44px;height:44px;border-radius:6px;background:#F2E9DA;color:#B8A88F;overflow:hidden;flex:0 0 auto}
+.s10m .o .m{flex:1;min-width:0}
+.s10m .o .m .n{font-family:"Songti SC",serif;font-size:12px;font-weight:600;letter-spacing:.06em}
+.s10m .o .m .s{font-size:9.5px;color:#A2937F;margin-top:3px}
+.s10m .o .r{text-align:right}
+.s10m .o .r .p{font-size:13px;font-weight:600;color:#8C2F1F;font-family:Georgia,serif}
+.s10m .o .r .st{font-size:9px;color:#A2937F;margin-top:4px;letter-spacing:.08em}
+.s10m .tab{background:#FBF6EE;border-top:1px solid #E6DBC9;color:#A2937F}
+.s10m .tab .ti{font-family:"Songti SC",serif;letter-spacing:.08em}
+.s10m .ti.on{color:#8C2F1F;font-weight:600}
+
+/* ================= 对比表 ================= */
+.cmp{background:#141618;border:1px solid #23262A;border-radius:18px;padding:26px;margin-top:36px;overflow-x:auto}
+.cmp h2{font-size:16px;font-weight:600;margin-bottom:18px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:900px}
+th{text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#6E7681;font-weight:500;padding:0 14px 12px 0;border-bottom:1px solid #23262A}
+td{padding:13px 14px 13px 0;border-bottom:1px solid #1C1F22;color:#C6CDD6;vertical-align:top}
+td:first-child{color:#E8EAED;font-weight:600;white-space:nowrap}
+td .mini-sw{display:flex;gap:3px}
+td .mini-sw i{width:15px;height:15px;border-radius:4px;border:1px solid rgba(255,255,255,.1)}
+.star{color:#5DCAA5;letter-spacing:2px}
+.dim{color:#6E7681}
+
+/* ================= 推荐 ================= */
+.rec{background:#131A16;border:1px solid #23402F;border-radius:18px;padding:28px;margin-top:26px}
+.rec h2{font-size:16px;font-weight:600;margin-bottom:8px}
+.rec>p{font-size:12.5px;color:#9BA3AE;margin-bottom:20px}
+.podium{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.pod{background:#161C18;border:1px solid #2A3A2F;border-radius:14px;padding:18px}
+.pod .r{font-size:11px;letter-spacing:.16em;color:#5DCAA5;font-weight:600}
+.pod .n{font-size:15px;font-weight:600;margin-top:8px}
+.pod .w{font-size:12px;color:#9BA3AE;margin-top:9px;line-height:1.7}
+.foot{margin-top:40px;padding-top:24px;border-top:1px solid #23262A;font-size:12px;color:#6E7681;line-height:1.8}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+<symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.4 12 3l9 7.4V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M2.5 3h2.2l2.3 12h12l2-8.5H6"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.4 15.4 4.1 4.1"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M10.3 20a2 2 0 0 0 3.4 0"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 2.6 21 7.4v9.2L12 21.4 3 16.6V7.4z"/><path d="M3 7.4 12 12l9-4.6M12 12v9.4"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+<symbol id="i-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13.5" rx="2.6"/><path d="M2.5 10h19M16.5 14.2h1.5"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.3 4.3l1.6 1.6M18.1 18.1l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.3 19.7l1.6-1.6M18.1 5.9l1.6-1.6"/></symbol>
+<symbol id="i-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3 8.5h3l1.6-2.4h8.8L18 8.5h3v11H3z"/><circle cx="12" cy="13.6" r="3.4"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3 12.5V3.5h9L21 12.5 12.5 21z"/><circle cx="7.6" cy="7.6" r="1.3"/></symbol>
+<symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M20 4C10 4 4 9 4 16c0 1.6.4 3 1 4M4 20c8 0 16-5 16-16"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+<symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M2.5 6.5h11v10h-11zM13.5 10h4l3 3v3.5h-7z"/><circle cx="6.5" cy="18.5" r="1.6"/><circle cx="17" cy="18.5" r="1.6"/></symbol>
+<symbol id="i-refund" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9.5h12a5 5 0 0 1 0 10h-6"/><path d="M7.5 5.5 3.5 9.5l4 4"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21.5 20h-19z"/><path d="M12 9.5v4.5M12 17h.01"/></symbol>
+</svg>
+
+<div class="wrap">
+
+<header class="hero">
+  <p class="kicker">Chunlian Fresh · Mobile UI Exploration</p>
+  <h1>春连鲜选 · <em>10 套移动端界面设计方案</em></h1>
+  <p class="lede">覆盖顾客端（生鲜购物 App）与商家端（后台管理 App）两套手机应用。每套方案都给出：风格定位与参考来源、可直接落地的设计令牌（色板 / 圆角 / 字体层级）、顾客端首页与商家端工作台两屏高保真稿，以及适用端与风险提示。方案之间不是配色差异，而是<strong>完整的设计语言差异</strong>——包括信息密度、卡片形态、导航方式与视觉重心。</p>
+  <div class="metaline">
+    <div>方案数量<b>10 套</b></div>
+    <div>高保真稿<b>20 屏</b></div>
+    <div>覆盖界面<b>顾客端 16 页 · 商家端 9 屏</b></div>
+    <div>图片素材位<b>已编号占位</b></div>
+  </div>
+</header>
+
+<section class="rules">
+  <h2>设计基线（来自项目既有约束，10 套方案全部遵守）</h2>
+  <ul>
+    <li><b>实收与应收分列</b>——工作台首屏并列展示，视觉上绝不相加，用不同色相区分。</li>
+    <li><b>退款只计已到账</b>——「退款待核实」是独立待办项，不做成进度条。</li>
+    <li><b>金额一律整数分</b>——展示层统一 <b>¥</b> 与两位小数，不做浮点累加。</li>
+    <li><b>店主单手操作</b>——商家端核心操作落在拇指热区（屏幕下 1/3）。</li>
+    <li><b>弱网与离线</b>——每套都保留了骨架屏 / 空态 / 重试的视觉位置。</li>
+    <li><b>信息层级不超过 3 层</b>——顾客端底部 4 Tab，商家端底部 5 Tab 封顶。</li>
+  </ul>
+</section>
+
+<!-- ============ 01 ============ -->
+<article class="set" id="s1">
+  <div class="set-head">
+    <div class="num">01</div>
+    <div>
+      <h3>有机鲜绿 · Organic Fresh</h3>
+      <p class="ref">参考：Apple Health / Fitness 的柔和卡片 + 农场直供品牌调性</p>
+    </div>
+    <div class="tags"><span class="tag">温和可信</span><span class="tag">延续现有品牌色</span><span class="tag">落地成本最低</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s1"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd">
+              <div class="loc"><svg class="ic" style="width:12px;height:12px"><use href="#i-pin"></use></svg>配送到<b>杭州·滨江区长河街道</b></div>
+              <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>搜索「本地小青菜」</span></div>
+            </div>
+            <div class="chips"><span class="chip on">今日达</span><span class="chip">本地直采</span><span class="chip">净菜</span><span class="chip">肉禽蛋</span></div>
+            <div class="hero">
+              <span class="badge">今日特价 · 限 50 份</span>
+              <div class="ph"><img class="real real--contain" src="../../assets/design/goods/P-01_本地小青菜.png" alt="高山有机小青菜"></div>
+              <div>
+                <div class="t">高山有机小青菜</div>
+                <div class="s">清晨现摘 · 4 小时内冷链到家</div>
+                <div class="pr">¥5.90 <s>¥8.80</s></div>
+              </div>
+            </div>
+            <div class="sec"><b>为你优选</b><span>按上架时间排序 ›</span></div>
+            <div class="g">
+              <div class="card"><div class="im"><img class="real real--contain" src="../../assets/design/goods/P-02_沙瓤番茄.png" alt="本地番茄"></div><div class="n">本地番茄 500g</div><div class="d">沙瓤 · 当日采摘</div><div class="b"><div class="p">¥6.80<em>/份</em></div><div class="add">+</div></div></div>
+              <div class="card"><div class="im"><img class="real real--contain" src="../../assets/design/goods/P-03_散养土鸡蛋.png" alt="散养土鸡蛋"></div><div class="n">散养土鸡蛋 10 枚</div><div class="d">7 日鲜 · 无抗</div><div class="b"><div class="p">¥15.90<em>/盒</em></div><div class="add">+</div></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>首页</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>分类</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>购物车</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>我的</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s1m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="top">
+              <div class="who">春连鲜选 · 长河店</div>
+              <div class="nm">早安，王老板</div>
+              <div class="rev">¥3,860.00</div>
+              <div class="rl">今日实收（已到账）</div>
+            </div>
+            <div class="kpi">
+              <div class="k c"><div class="v">¥420.00</div><div class="l">应收 · COD 未收</div></div>
+              <div class="k a"><div class="v">6</div><div class="l">待配送</div></div>
+              <div class="k b"><div class="v">2</div><div class="l">退款待核实</div></div>
+            </div>
+            <div class="qa">
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-truck"></use></svg></div><span>订单履约</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-box"></use></svg></div><span>商品库存</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-chart"></use></svg></div><span>经营统计</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-wallet"></use></svg></div><span>资金流水</span></div>
+            </div>
+            <div class="lst">
+              <b>最近订单</b>
+              <div class="o"><div class="av"><div class="slot">A</div></div><div class="m"><div class="n">李女士 · 3 件</div><div class="s">送达 10:20 · COD</div></div><div class="r"><div class="p">¥68.00</div><span class="st">待收款</span></div></div>
+              <div class="o"><div class="av"><div class="slot">A</div></div><div class="m"><div class="n">张先生 · 5 件</div><div class="s">待配送 · 已付款</div></div><div class="r"><div class="p">¥124.50</div><span class="st">待配送</span></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>工作台</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>统计</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#173F34"></i><span>#173F34</span></div>
+        <div class="sw"><i style="background:#245947"></i><span>#245947</span></div>
+        <div class="sw"><i style="background:#D7A766"></i><span>#D7A766</span></div>
+        <div class="sw"><i style="background:#F7F8F4"></i><span>#F7F8F4</span></div>
+        <div class="sw"><i style="background:#B53B39"></i><span>#B53B39</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>圆角</dt><dd>卡片 18–22 / 按钮 15 / 胶囊 20</dd>
+        <dt>阴影</dt><dd>0 4px 14px rgba(23,63,52,.07)</dd>
+        <dt>字号</dt><dd>标题 16 / 正文 11.5 / 辅助 9.5</dd>
+        <dt>字重</dt><dd>常规 400 · 强调 600</dd>
+        <dt>主色用法</dt><dd>仅用于主行动与选中态，不做大面积铺底</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>直接沿用现有品牌色 <code>#245947</code> 与 <code>#D7A766</code>，与已上线的网页版、两个安卓包视觉连续，无需重做图标与资产，是唯一能「不换皮直接升级」的方案。</div>
+      <div class="note warn"><b>风险：</b>深绿在生鲜品类中辨识度中等，与竞品（叮咚/美团买菜）拉开距离靠的是金色点缀而非主色，品牌记忆点偏弱。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 02 ============ -->
+<article class="set" id="s2">
+  <div class="set-head">
+    <div class="num">02</div>
+    <div>
+      <h3>iOS 原生 · Native Clarity</h3>
+      <p class="ref">参考：Apple 系统 App（健康 / 设置 / App Store）的克制与层级</p>
+    </div>
+    <div class="tags"><span class="tag">学习成本最低</span><span class="tag">Apple 风格</span><span class="tag">无障碍最佳</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s2"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="nv"><div class="lg">鲜选</div><div class="acts"><svg class="ic"><use href="#i-bell"></use></svg><svg class="ic"><use href="#i-cart"></use></svg></div></div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>搜索</span></div>
+            <div class="grp">
+              <div class="gh">今日特价<a href="#">全部</a></div>
+              <div class="li"><div class="im"><div class="slot">C-HERO-01</div></div><div class="m"><div class="n">高山有机小青菜</div><div class="s">今日达 · 限 50 份</div></div><div class="p">¥5.90<br><em style="text-decoration:line-through">¥8.80</em></div><span class="chev">›</span></div>
+            </div>
+            <div class="grp">
+              <div class="gh">为你优选<a href="#">更多</a></div>
+              <div class="li"><div class="im"><div class="slot">P-01</div></div><div class="m"><div class="n">本地番茄 500g</div><div class="s">沙瓤 · 当日采摘</div></div><div class="p">¥6.80</div><span class="chev">›</span></div>
+              <div class="li"><div class="im"><div class="slot">P-02</div></div><div class="m"><div class="n">散养土鸡蛋 10 枚</div><div class="s">7 日鲜 · 无抗</div></div><div class="p">¥15.90</div><span class="chev">›</span></div>
+              <div class="li"><div class="im"><div class="slot">P-03</div></div><div class="m"><div class="n">现杀土鸡半只</div><div class="s">冷鲜 · 当日屠宰</div></div><div class="p">¥32.00</div><span class="chev">›</span></div>
+            </div>
+            <div class="cta">查看今日配送时段</div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>首页</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>分类</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>购物车</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>我的</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s2m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="nv"><div class="lg">工作台</div><div class="dt">10月15日 周三</div></div>
+            <div class="grp">
+              <div class="gh">今日资金</div>
+              <div class="kpis">
+                <div class="k g"><div class="v">¥3,860.00</div><div class="l">实收（已到账）</div></div>
+                <div class="k o"><div class="v">¥420.00</div><div class="l">应收 · COD 未收</div></div>
+                <div class="k r"><div class="v">2</div><div class="l">退款待核实</div></div>
+                <div class="k"><div class="v">6</div><div class="l">待配送订单</div></div>
+              </div>
+            </div>
+            <div class="grp">
+              <div class="gh">待办</div>
+              <div class="li"><div class="im"><div class="slot">B</div></div><div class="m"><div class="n">张先生 · 5 件</div><div class="s">已付款 · 待配送</div></div><span class="pill">待配送</span></div>
+              <div class="li"><div class="im"><div class="slot">B</div></div><div class="m"><div class="n">李女士 · 3 件</div><div class="s">已送达 · COD</div></div><span class="pill w">待收款</span></div>
+              <div class="li"><div class="im"><div class="slot">B</div></div><div class="m"><div class="n">小青菜 库存 4 份</div><div class="s">低于预警线 10</div></div><span class="pill w">补货</span></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>工作台</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>统计</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#007AFF"></i><span>#007AFF</span></div>
+        <div class="sw"><i style="background:#34C759"></i><span>#34C759</span></div>
+        <div class="sw"><i style="background:#FF9500"></i><span>#FF9500</span></div>
+        <div class="sw"><i style="background:#FF3B30"></i><span>#FF3B30</span></div>
+        <div class="sw"><i style="background:#F2F2F7"></i><span>#F2F2F7</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>圆角</dt><dd>分组卡 12 / 行内缩略图 8</dd>
+        <dt>分隔线</dt><dd>0.5px #E4E4EA，行内左缩进对齐文字</dd>
+        <dt>字号</dt><dd>大标题 26 / 行标题 13 / 说明 11</dd>
+        <dt>导航</dt><dd>大标题 + 分组插入式列表（Inset Grouped）</dd>
+        <dt>图标</dt><dd>SF Symbols 风格，1.7px 描边，非填充</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>这是「最不需要用户学习」的方案。任何用过 iPhone 的人都能零成本上手，商家端年纪偏大的店主尤其受益；同时天然满足 iOS 无障碍（动态字号、对比度）要求。</div>
+      <div class="note warn"><b>风险：</b>系统感强 = 品牌感弱。生鲜是情绪驱动品类，「像系统设置」的首页很难激发购买欲，需要用商品大图来补情绪。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 03 ============ -->
+<article class="set" id="s3">
+  <div class="set-head">
+    <div class="num">03</div>
+    <div>
+      <h3>极简黑白 · Monochrome Editorial</h3>
+      <p class="ref">参考：Apple Store 产品页 + 无印良品 + 高端食材电商</p>
+    </div>
+    <div class="tags"><span class="tag">高级感</span><span class="tag">排版驱动</span><span class="tag">适合高端定位</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s3"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd">
+              <div><div class="mk">Chunlian</div><div class="bg">鲜选</div></div>
+              <div style="font-size:10px;letter-spacing:.14em;color:#8A8A8A;padding-bottom:5px">杭州 · 长河</div>
+            </div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>搜索品类或产地</span></div>
+            <div class="nav"><div class="on">今日</div><div>本地直采</div><div>净菜</div><div>肉禽蛋</div></div>
+            <div class="feat">
+              <div class="im"><div class="slot">C-HERO-01 · 主推大图 1200×900</div></div>
+              <div class="cap"><div class="t">高山有机小青菜</div><div class="p">¥5.90</div></div>
+              <div class="sub">清晨现摘 · 4 小时内冷链到家 · 限 50 份</div>
+            </div>
+            <div class="row">
+              <div class="it"><div class="im"><div class="slot">P-01</div></div><div class="n">本地番茄</div><div class="p">¥6.80</div><div class="l">500g / 份</div></div>
+              <div class="it"><div class="im"><div class="slot">P-02</div></div><div class="n">散养土鸡蛋</div><div class="p">¥15.90</div><div class="l">10 枚 / 盒</div></div>
+            </div>
+            <div class="bar"><span>Local · Fresh · Daily</span><span>02 / 08</span></div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>Shop</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>Browse</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>Bag</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>Me</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s3m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div class="mk">Chunlian Merchant</div><div class="t">工作台</div></div>
+            <div class="blk">
+              <div class="lb">今日实收 · 已到账</div>
+              <div class="big">¥3,860<em>.00</em></div>
+              <div class="sm">较昨日 +12.4% · 共 27 单</div>
+            </div>
+            <div class="duo">
+              <div class="blk"><div class="lb">应收 · COD</div><div class="big" style="font-size:26px">¥420<em>.00</em></div><div class="sm">4 单未收</div></div>
+              <div class="blk"><div class="lb">退款待核实</div><div class="big" style="font-size:26px">2</div><div class="sm">未确认到账</div></div>
+            </div>
+            <div class="list">
+              <div class="lh">待办订单</div>
+              <div class="o"><div class="m"><div class="n">张先生 · 5 件</div><div class="s">已付款 · 待配送</div></div><div class="p">¥124.50<em>待配送</em></div></div>
+              <div class="o"><div class="m"><div class="n">李女士 · 3 件</div><div class="s">已送达 · COD</div></div><div class="p">¥68.00<em>待收款</em></div></div>
+              <div class="o"><div class="m"><div class="n">陈先生 · 2 件</div><div class="s">待配送 · 扫码预付</div></div><div class="p">¥45.00<em>待配送</em></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>Desk</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>Orders</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>Goods</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>Stats</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>Setup</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#0A0A0A"></i><span>#0A0A0A</span></div>
+        <div class="sw"><i style="background:#8A8A8A"></i><span>#8A8A8A</span></div>
+        <div class="sw"><i style="background:#E8E8E8"></i><span>#E8E8E8</span></div>
+        <div class="sw"><i style="background:#F2F2F0"></i><span>#F2F2F0</span></div>
+        <div class="sw"><i style="background:#C2452D"></i><span>#C2452D</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>圆角</dt><dd>仅 0 / 2 / 3px，刻意接近直角</dd>
+        <dt>分隔线</dt><dd>1px 实黑用于强调，1px #E8E8E8 用于行</dd>
+        <dt>字号</dt><dd>品牌字 24 / 标题 15 / 正文 11.5 / 微标 9.5</dd>
+        <dt>字距</dt><dd>大写微标 letter-spacing .3em，中文标题 .06em</dd>
+        <dt>图片比例</dt><dd>主推 4:3，列表项 1:1，统一不圆角</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>把「卖菜」做成「选品」。留白与字体层级本身传递「我们只卖好东西」，客单价与复购可以做得比同行高；同时因为几乎没有装饰元素，开发实现成本极低、渲染性能最好。</div>
+      <div class="note warn"><b>风险：</b>缺乏色彩引导，促销信息（满减、限时）不好表达；对商品摄影质量极度依赖，图不美则整体垮掉。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 04 ============ -->
+<article class="set" id="s4">
+  <div class="set-head">
+    <div class="num">04</div>
+    <div>
+      <h3>柔和新拟态 · Soft Neumorphism</h3>
+      <p class="ref">参考：iOS 早期拟物语言 + 现代柔和界面（同色系双阴影）</p>
+    </div>
+    <div class="tags"><span class="tag">手感强</span><span class="tag">低饱和护眼</span><span class="tag">适合中老年店主</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s4"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd">
+              <div><div class="t">早上好，小林</div><div class="sub">长河街道 · 今日 10:00 前下单</div></div>
+              <div class="av"><div class="slot">U</div></div>
+            </div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>想吃什么？搜一搜</span></div>
+            <div class="tiles">
+              <div class="tl"><div class="ic2"><svg class="ic"><use href="#i-leaf"></use></svg></div><div class="n">今日鲜蔬</div><div class="s">28 款在售</div><div class="p">¥3.90<em> 起</em></div></div>
+              <div class="tl"><div class="ic2"><svg class="ic"><use href="#i-tag"></use></svg></div><div class="n">限时特价</div><div class="s">每日 9:00 更新</div><div class="p">立省 32%</div></div>
+            </div>
+            <div class="hero">
+              <div class="im"><div class="slot">C-HERO-01</div></div>
+              <div><div class="t">高山有机小青菜</div><div class="s">清晨现摘 · 4 小时冷链</div><div class="p">¥5.90 <em>¥8.80</em></div></div>
+            </div>
+            <div class="cta">开始挑选今日食材</div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>首页</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>分类</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>购物车</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>我的</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s4m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div><div class="t">长河店 · 工作台</div><div class="sub">10月15日 周三 · 正常营业</div></div><div class="bell"><svg class="ic"><use href="#i-bell"></use></svg></div></div>
+            <div class="big">
+              <div class="l">今日实收（已到账）</div>
+              <div class="v">¥3,860<em>.00</em></div>
+              <div class="d">共 27 单 · 较昨日 <b>+12.4%</b></div>
+            </div>
+            <div class="kpis">
+              <div class="k g"><div class="v">¥420</div><div class="l">应收 COD</div></div>
+              <div class="k o"><div class="v">6</div><div class="l">待配送</div></div>
+              <div class="k r"><div class="v">2</div><div class="l">退款待核实</div></div>
+            </div>
+            <div class="lst">
+              <div class="lh">需要处理</div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">张先生 · 5 件</div><div class="s">已付款 · 待配送</div></div><div class="r"><div class="p">¥124.50</div><div class="st">待配送</div></div></div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">李女士 · 3 件</div><div class="s">已送达 · COD</div></div><div class="r"><div class="p">¥68.00</div><div class="st">待收款</div></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>工作台</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>统计</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#EDF1EC"></i><span>#EDF1EC</span></div>
+        <div class="sw"><i style="background:#D3DAD3"></i><span>#D3DAD3</span></div>
+        <div class="sw"><i style="background:#3E7A5E"></i><span>#3E7A5E</span></div>
+        <div class="sw"><i style="background:#2F5C46"></i><span>#2F5C46</span></div>
+        <div class="sw"><i style="background:#FFFFFF"></i><span>#FFFFFF</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>圆角</dt><dd>卡片 17–24 / 图标底座 11–12</dd>
+        <dt>阴影</dt><dd>双向：+5px #D3DAD3 与 −5px #FFFFFF</dd>
+        <dt>凹陷态</dt><dd>输入框与进度条用 inset 双阴影</dd>
+        <dt>字号</dt><dd>数字 30 / 标题 15.5 / 正文 11.5</dd>
+        <dt>对比度</dt><dd>正文 ≥ 7:1，满足 AAA</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>元素像实体按键，<b>可点击性一目了然</b>，对不熟悉触屏的店主与年长顾客非常友好；低饱和绿背景长时间看不刺眼，适合店主全天挂在后台。</div>
+      <div class="note warn"><b>风险：</b>双阴影在不同亮度屏幕上观感差异大，需要做亮度自适应；卡片边界弱，信息密集列表页容易糊成一片。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 05 ============ -->
+<article class="set" id="s5">
+  <div class="set-head">
+    <div class="num">05</div>
+    <div>
+      <h3>玻璃拟态 · Glass Depth</h3>
+      <p class="ref">参考：Apple visionOS / iOS 26 液态玻璃 的空间层次</p>
+    </div>
+    <div class="tags"><span class="tag">最前沿</span><span class="tag">氛围感强</span><span class="tag">深色为主</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s5"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div class="t">鲜选</div><div class="s">杭州 · 长河街道 · 10:00 前下单当日达</div></div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>搜索食材、产地或菜谱</span></div>
+            <div class="glass">
+              <div class="cap"><span class="b">今日特价</span><span class="f">限 50 份</span></div>
+              <div class="flex">
+                <div class="im"><div class="slot">C-HERO-01</div></div>
+                <div><div class="t">高山有机小青菜</div><div class="s">清晨现摘 · 4 小时冷链到家</div><div class="p">¥5.90 <em>¥8.80</em></div></div>
+              </div>
+            </div>
+            <div class="g2">
+              <div class="c"><div class="im"><div class="slot">P-01</div></div><div class="n">本地番茄 500g</div><div class="p">¥6.80 <em>¥8.00</em></div></div>
+              <div class="c"><div class="im"><div class="slot">P-02</div></div><div class="n">散养土鸡蛋 10 枚</div><div class="p">¥15.90</div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>首页</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>分类</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>购物车</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>我的</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s5m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div><div class="t">长河店工作台</div><div class="s">10月15日 · 营业中</div></div><div class="bell"><svg class="ic"><use href="#i-bell"></use></svg></div></div>
+            <div class="big">
+              <div class="l">今日实收 · 已到账</div>
+              <div class="v">¥3,860<em>.00</em></div>
+              <div class="bar"><i></i></div>
+              <div class="d"><span>目标 ¥5,000</span><span>已完成 77%</span></div>
+            </div>
+            <div class="kpis">
+              <div class="k g"><div class="v">¥420</div><div class="l">应收 COD</div></div>
+              <div class="k o"><div class="v">6</div><div class="l">待配送</div></div>
+              <div class="k r"><div class="v">2</div><div class="l">退款待核实</div></div>
+            </div>
+            <div class="lst">
+              <div class="lh">待处理</div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">张先生 · 5 件</div><div class="s">已付款 · 待配送</div></div><div class="r"><div class="p">¥124.50</div><div class="st">待配送</div></div></div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">李女士 · 3 件</div><div class="s">已送达 · COD</div></div><div class="r"><div class="p">¥68.00</div><div class="st">待收款</div></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>工作台</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>统计</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#151A2E"></i><span>#151A2E</span></div>
+        <div class="sw"><i style="background:#5DCAA5"></i><span>#5DCAA5</span></div>
+        <div class="sw"><i style="background:#7F77DD"></i><span>#7F77DD</span></div>
+        <div class="sw"><i style="background:#D85A30"></i><span>#D85A30</span></div>
+        <div class="sw"><i style="background:#F0F2FA"></i><span>#F0F2FA</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>圆角</dt><dd>玻璃层 19–23</dd>
+        <dt>玻璃</dt><dd>rgba(255,255,255,.12) + blur(20px) + 1px 高光边</dd>
+        <dt>背景</dt><dd>深色底 + 三处色斑（青 / 紫 / 陶土）</dd>
+        <dt>字号</dt><dd>数字 30 / 标题 16 / 正文 11.5</dd>
+        <dt>文字</dt><dd>主文字 #F0F2FA，次要 rgba(255,255,255,.6)</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>视觉冲击力最强，截图传播效果好；层次靠透明度而非线条，界面显得轻、不拥挤，适合商品图质量一般的场景（模糊层会弱化图片缺陷）。</div>
+      <div class="note warn"><b>风险：</b>blur 在低端安卓机上掉帧明显，本项目已有低配机适配诉求，需提供降级方案；深色背景在白天户外可读性差，且玻璃上小字对比度容易不达标。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 06 ============ -->
+<article class="set" id="s6">
+  <div class="set-head">
+    <div class="num">06</div>
+    <div>
+      <h3>活力橙果 · Vibrant Citrus</h3>
+      <p class="ref">参考：叮咚买菜 / 美团买菜 的转化导向 + Duolingo 的欢快感</p>
+    </div>
+    <div class="tags"><span class="tag">转化率最高</span><span class="tag">国内用户最熟悉</span><span class="tag">促销友好</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s6"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd">
+              <div><div class="loc"><svg class="ic" style="width:11px;height:11px"><use href="#i-pin"></use></svg>配送至</div><b>长河街道 · 10:00 前下单</b></div>
+              <div class="cd"><div class="d">今日达</div><div class="t">剩 1h 24m</div></div>
+            </div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>青菜</span><div class="go">搜索</div></div>
+            <div class="cats">
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-leaf"></use></svg></div><span>蔬菜</span></div>
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-tag"></use></svg></div><span>特价</span></div>
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-box"></use></svg></div><span>肉禽</span></div>
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-cart"></use></svg></div><span>净菜</span></div>
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-grid"></use></svg></div><span>全部</span></div>
+            </div>
+            <div class="flash">
+              <div class="im"><div class="slot">C-HERO-01</div></div>
+              <div>
+                <span class="b">限时秒杀</span>
+                <div class="t">高山有机小青菜</div>
+                <div class="s">已抢 32 / 50 份</div>
+                <div class="p">¥5.90 <em>¥8.80</em></div>
+              </div>
+            </div>
+            <div class="g">
+              <div class="card"><div class="im"><div class="slot">P-01</div></div><div class="n">本地番茄 500g</div><div class="tagline">2 件 9 折</div><div class="b"><div class="p">¥6.80</div><div class="add">+</div></div></div>
+              <div class="card"><div class="im"><div class="slot">P-02</div></div><div class="n">散养土鸡蛋 10 枚</div><div class="tagline">爆款</div><div class="b"><div class="p">¥15.90</div><div class="add">+</div></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>首页</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>分类</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>购物车</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>我的</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s6m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="top">
+              <div class="r1"><div><div class="who">早上好</div><div class="nm">长河店 · 王老板</div></div><div class="bell"><svg class="ic"><use href="#i-bell"></use></svg></div></div>
+              <div class="rev">¥3,860.00</div>
+              <div class="rl">今日实收 · 已到账 · 27 单</div>
+            </div>
+            <div class="kpi">
+              <div class="k r"><div class="v">¥420.00</div><div class="l">应收 COD</div></div>
+              <div class="k o"><div class="v">6</div><div class="l">待配送</div></div>
+              <div class="k b"><div class="v">2</div><div class="l">退款待核实</div></div>
+            </div>
+            <div class="qa">
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-truck"></use></svg></div><span>配送</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-box"></use></svg></div><span>库存</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-chart"></use></svg></div><span>统计</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-wallet"></use></svg></div><span>流水</span></div>
+            </div>
+            <div class="lst">
+              <div class="lh">待处理订单 <span>查看全部 ›</span></div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">张先生 · 5 件</div><div class="s">已付款 · 待配送</div></div><div class="r"><div class="p">¥124.50</div><span class="st">待配送</span></div></div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">李女士 · 3 件</div><div class="s">已送达 · COD</div></div><div class="r"><div class="p">¥68.00</div><span class="st">待收款</span></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>工作台</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>统计</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#FF6B2C"></i><span>#FF6B2C</span></div>
+        <div class="sw"><i style="background:#FFD166"></i><span>#FFD166</span></div>
+        <div class="sw"><i style="background:#E8452C"></i><span>#E8452C</span></div>
+        <div class="sw"><i style="background:#3B82F6"></i><span>#3B82F6</span></div>
+        <div class="sw"><i style="background:#FFF8F0"></i><span>#FFF8F0</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>圆角</dt><dd>卡片 19 / 图标底座 15 / 胶囊 20</dd>
+        <dt>强调</dt><dd>主色 #FF6B2C 用于按钮与倒计时，红色 #E8452C 专用于价格</dd>
+        <dt>字号</dt><dd>价格 13.5–17 / 标题 14.5 / 正文 11.5</dd>
+        <dt>字重</dt><dd>700 用于价格与分类名，营造「喊出来」的力度</dd>
+        <dt>图标</dt><dd>彩色圆角底座 + 单色描边图标</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>国内生鲜用户的<b>肌肉记忆</b>就在这套语言里——橙色主色、倒计时、秒杀、2 件 9 折。上手零成本，转化路径最短；促销位（秒杀 / 爆款 / 折扣标签）是天生为运营留的坑位。</div>
+      <div class="note warn"><b>风险：</b>同质化最严重，与叮咚/美团放在一起几乎认不出；高饱和橙色长时间使用视觉疲劳，且商家端用它显得不够「专业」。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 07 ============ -->
+<article class="set" id="s7">
+  <div class="set-head">
+    <div class="num">07</div>
+    <div>
+      <h3>卡片杂志 · Card Magazine</h3>
+      <p class="ref">参考：Apple Newsroom / 小红书精选 / Kinfolk 风格食品品牌</p>
+    </div>
+    <div class="tags"><span class="tag">内容驱动</span><span class="tag">衬线标题</span><span class="tag">高客单</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s7"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div class="m">Chunlian Fresh · 每日鲜选</div><div class="t">今天，<em>吃点新鲜的</em></div></div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>搜索食材 · 产地 · 菜谱</span></div>
+            <div class="big">
+              <div class="im"><div class="slot">C-HERO-01 · 主推大图 1200×900</div></div>
+              <div class="cap">
+                <div class="k">今日封面 · 长河直采基地</div>
+                <div class="t">高山有机小青菜，清晨五点的手工</div>
+                <div class="d">从海拔 620 米的合作农场到你的厨房，全程 4 小时冷链，不经过任何中间环节。</div>
+                <div class="f"><span class="p">¥5.90<em>/份</em></span><span class="o">¥8.80</span><span class="btn">加入菜篮</span></div>
+              </div>
+            </div>
+            <div class="duo">
+              <div class="it"><div class="im"><div class="slot">P-01</div></div><div class="n">本地番茄，沙瓤的那一种</div><div class="p">¥6.80</div></div>
+              <div class="it"><div class="im"><div class="slot">P-02</div></div><div class="n">散养土鸡蛋，无抗七日鲜</div><div class="p">¥15.90</div></div>
+            </div>
+            <div class="rule"><span>Local</span><span>Fresh</span><span>Daily</span></div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>今日</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>全部</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>菜篮</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>我的</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s7m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div class="m">Chunlian Merchant · 长河店</div><div class="t">今日经营</div></div>
+            <div class="hero">
+              <div class="m">实收 · 已到账</div>
+              <div class="v">¥3,860<em>.00</em></div>
+              <div class="d">10月15日 周三 · 27 单 · 较昨日 +12.4%</div>
+            </div>
+            <div class="two">
+              <div class="c"><div class="m">应收 · COD</div><div class="v">¥420.00</div></div>
+              <div class="c"><div class="m">退款待核实</div><div class="v" style="color:#C2452D">2</div></div>
+            </div>
+            <div class="list">
+              <div class="lh"><span>待办订单</span><span>共 6 单</span></div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">张先生 · 5 件</div><div class="s">已付款 · 待配送 · 10:20</div></div><div class="p">¥124.50<em>待配送</em></div></div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">李女士 · 3 件</div><div class="s">已送达 · COD · 09:55</div></div><div class="p">¥68.00<em>待收款</em></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>经营</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>报表</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#14110E"></i><span>#14110E</span></div>
+        <div class="sw"><i style="background:#C2452D"></i><span>#C2452D</span></div>
+        <div class="sw"><i style="background:#F4F1EC"></i><span>#F4F1EC</span></div>
+        <div class="sw"><i style="background:#D8D1C6"></i><span>#D8D1C6</span></div>
+        <div class="sw"><i style="background:#7A7168"></i><span>#7A7168</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>标题字体</dt><dd>衬线（Georgia / 宋体），商品名走衬线</dd>
+        <dt>正文字体</dt><dd>无衬线，仅用于描述与金额</dd>
+        <dt>圆角</dt><dd>仅 2–3px，图片为直角矩形</dd>
+        <dt>图片比例</dt><dd>主推 4:3 大图，副推 16:10</dd>
+        <dt>留白</dt><dd>左右边距 20，段落间距 ≥ 13</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>把商品当内容讲。每件菜都有「产地 + 人 + 做法」的故事位，天然适配公众号/朋友圈传播，复购靠内容而不是折扣；衬线标题在生鲜品类里极少见，辨识度极高。</div>
+      <div class="note warn"><b>风险：</b>首屏信息量最小，急性购买用户需要多滑一屏；必须持续产出文案与摄影，运营成本高于其他 9 套。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 08 ============ -->
+<article class="set" id="s8">
+  <div class="set-head">
+    <div class="num">08</div>
+    <div>
+      <h3>深色专业 · Pro Terminal</h3>
+      <p class="ref">参考：Linear / Bloomberg Terminal / Vercel Dashboard</p>
+    </div>
+    <div class="tags"><span class="tag">商家端首选</span><span class="tag">数据密度高</span><span class="tag">专业感</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s8"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div><div class="t">今日经营</div><div class="s">10-15 WED · 长河店</div></div><div class="dot"></div></div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>搜索订单号 / 顾客 / 商品</span><span class="k">⌘K</span></div>
+            <div class="mon">
+              <div class="lb">实收 · 已到账</div>
+              <div class="v">¥3,860<em>.00</em></div>
+              <div class="d">27 单 · 客单价 ¥142.96</div>
+              <div class="spark"><i style="height:38%"></i><i style="height:55%"></i><i style="height:44%"></i><i style="height:70%"></i><i style="height:62%"></i><i style="height:86%"></i><i style="height:100%"></i></div>
+            </div>
+            <div class="grid2">
+              <div class="st a"><div class="l">应收 · COD 未收</div><div class="v">¥420.00</div></div>
+              <div class="st d"><div class="l">毛利率</div><div class="v">31.2%</div></div>
+            </div>
+            <div class="tbl">
+              <div class="th"><span>待处理</span><span>6 单</span></div>
+              <div class="tr"><span class="id">#1042</span><div class="m"><div class="n">张先生</div><div class="s">已付款 · 待配送</div></div><span class="p">124.50</span></div>
+              <div class="tr"><span class="id">#1041</span><div class="m"><div class="n">李女士</div><div class="s">已送达 · COD</div></div><span class="p">68.00</span></div>
+              <div class="tr"><span class="id">#1040</span><div class="m"><div class="n">陈先生</div><div class="s">退款待核实</div></div><span class="s2">REFUND</span></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>工作台</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>统计</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s8m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd">
+              <div><div class="t">资金总览</div><div class="s">2026-10-15 18:29 · 实时</div></div>
+              <div class="live"><i></i>LIVE</div>
+            </div>
+            <div class="sum">
+              <div class="l">实收 · 已到账</div>
+              <div class="row"><span class="v">¥3,860<em>.00</em></span><span class="delta">+12.4%</span></div>
+              <div class="bar"><i></i><i></i><i></i></div>
+              <div class="lg"><span><s style="background:#34D399"></s>已收 3,860</span><span><s style="background:#F59E0B"></s>应收 420</span><span><s style="background:#F87171"></s>退款 68</span></div>
+            </div>
+            <div class="grid2">
+              <div class="st a"><div class="l">待配送</div><div class="v">6</div></div>
+              <div class="st b"><div class="l">退款待核实</div><div class="v">2</div></div>
+              <div class="st c"><div class="l">库存预警</div><div class="v">3</div></div>
+              <div class="st d"><div class="l">已完成订单</div><div class="v">27</div></div>
+            </div>
+            <div class="tbl">
+              <div class="th"><span>最近流水</span><span>查看全部</span></div>
+              <div class="tr"><span class="id">#1042</span><div class="m"><div class="n">张先生 · 5 件</div><div class="s">在线支付 · 18:12</div></div><span class="p">124.50</span></div>
+              <div class="tr"><span class="id">#1041</span><div class="m"><div class="n">李女士 · 3 件</div><div class="s">COD 已核销 · 17:48</div></div><span class="p">68.00</span></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-wallet"></use></svg>资金</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>统计</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 资金总览</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#0E1116"></i><span>#0E1116</span></div>
+        <div class="sw"><i style="background:#161B22"></i><span>#161B22</span></div>
+        <div class="sw"><i style="background:#34D399"></i><span>#34D399</span></div>
+        <div class="sw"><i style="background:#F59E0B"></i><span>#F59E0B</span></div>
+        <div class="sw"><i style="background:#F87171"></i><span>#F87171</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>圆角</dt><dd>卡片 9–12，按钮 9</dd>
+        <dt>描边</dt><dd>1px #232A33，不用阴影</dd>
+        <dt>数字字体</dt><dd>等宽（SF Mono / Roboto Mono），金额右对齐</dd>
+        <dt>字号</dt><dd>核心数字 27–31 / 表体 10.5 / 标签 9</dd>
+        <dt>语义色</dt><dd>绿=已到账，橙=应收/待办，红=退款/异常</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>商家端本质是<b>经营工具</b>而非消费界面。深色 + 等宽数字让店主一眼扫出异常，信息密度是浅色方案的 1.5 倍；晚上对账不刺眼，也显得「这是个正经系统」。</div>
+      <div class="note warn"><b>风险：</b>不适合顾客端——生鲜需要食欲感，深色会抑制购买冲动。建议<b>只用于商家端</b>，顾客端另选一套（推荐 06 或 01）形成「一浅一深」的组合。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 09 ============ -->
+<article class="set" id="s9">
+  <div class="set-head">
+    <div class="num">09</div>
+    <div>
+      <h3>便当格 · Bento Grid</h3>
+      <p class="ref">参考：Apple 发布会 / iOS 小组件 的模块化卡片布局</p>
+    </div>
+    <div class="tags"><span class="tag">Apple 风</span><span class="tag">模块化</span><span class="tag">扩展性好</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s9"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div><div class="t">鲜选</div><div class="s">长河街道 · 今日 10:00 前下单</div></div><div class="av"><div class="slot">U</div></div></div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>搜索食材</span></div>
+            <div class="bento">
+              <div class="tile wide dark">
+                <div class="k">今日特价</div>
+                <div class="im"><div class="slot">C-HERO-01 · 主推大图</div></div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:11px">
+                  <div><div style="font-size:13px;font-weight:600">高山有机小青菜</div><div class="s">限 50 份</div></div>
+                  <div class="pr"><b>¥5.90</b><s>¥8.80</s></div>
+                </div>
+              </div>
+              <div class="tile blue"><div class="k">配送</div><div class="v">今日达</div><div class="s">剩 1h 24m</div></div>
+              <div class="tile mint"><div class="k">在售</div><div class="v">128<em>款</em></div><div class="s">本地直采 42 款</div></div>
+            </div>
+            <div class="row3">
+              <div class="mini"><div class="im"><div class="slot">P-01</div></div><div class="n">本地番茄</div><div class="p">¥6.80</div></div>
+              <div class="mini"><div class="im"><div class="slot">P-02</div></div><div class="n">土鸡蛋</div><div class="p">¥15.90</div></div>
+              <div class="mini"><div class="im"><div class="slot">P-03</div></div><div class="n">土鸡半只</div><div class="p">¥32.00</div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>首页</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>分类</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>购物车</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>我的</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s9m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd"><div><div class="t">工作台</div><div class="s">10月15日 周三 · 长河店</div></div><div class="bell"><svg class="ic"><use href="#i-bell"></use></svg></div></div>
+            <div class="bento">
+              <div class="tile wide dark">
+                <div class="k">今日实收 · 已到账</div>
+                <div class="v">¥3,860<em>.00</em></div>
+                <div class="s">27 单 · 客单价 ¥142.96 · 较昨日 +12.4%</div>
+              </div>
+              <div class="tile amber"><div class="k">应收 · COD</div><div class="v">¥420</div><div class="s">4 单未收</div></div>
+              <div class="tile rose"><div class="k">退款待核实</div><div class="v">2</div><div class="s">未确认到账</div></div>
+              <div class="tile mint"><div class="k">待配送</div><div class="v">6</div><div class="s">最早 10:20</div></div>
+              <div class="tile grey"><div class="k">库存预警</div><div class="v">3</div><div class="s">小青菜仅 4 份</div></div>
+            </div>
+            <div class="qa">
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-truck"></use></svg></div><span>配送</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-box"></use></svg></div><span>库存</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-chart"></use></svg></div><span>统计</span></div>
+              <div class="q"><div class="g"><svg class="ic"><use href="#i-wallet"></use></svg></div><span>流水</span></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>工作台</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>商品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>统计</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 工作台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#0B0B0F"></i><span>#0B0B0F</span></div>
+        <div class="sw"><i style="background:#2F6BFF"></i><span>#2F6BFF</span></div>
+        <div class="sw"><i style="background:#E6F7F0"></i><span>#E6F7F0</span></div>
+        <div class="sw"><i style="background:#FFF3E0"></i><span>#FFF3E0</span></div>
+        <div class="sw"><i style="background:#FAFAFC"></i><span>#FAFAFC</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>圆角</dt><dd>格子统一 19，内嵌图 13</dd>
+        <dt>栅格</dt><dd>2 列，间距 10；跨列格用于主推</dd>
+        <dt>格子配色</dt><dd>黑 / 蓝 / 薄荷 / 琥珀 / 玫红，各绑定一种语义</dd>
+        <dt>字号</dt><dd>格子数字 26–27 / 标签 9.5</dd>
+        <dt>边框</dt><dd>仅浅色格需要 1px #E8E8ED</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>同一套栅格可以同时承载顾客端（商品格）与商家端（数据格），两端视觉语言统一但内容各异；新增功能只需加一个格子，<b>扩展性最好</b>，也最像 Apple 自己的产品。</div>
+      <div class="note warn"><b>风险：</b>彩色格子一旦超过 5 种就会显乱，需要严格限定语义色；顾客端格子偏「工具感」，买菜的冲动感需要靠主推大格撑起来。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 10 ============ -->
+<article class="set" id="s10">
+  <div class="set-head">
+    <div class="num">10</div>
+    <div>
+      <h3>东方食集 · Oriental Warm</h3>
+      <p class="ref">参考：老字号食铺 / 故宫文创 / 中式茶空间 的当代转译</p>
+    </div>
+    <div class="tags"><span class="tag">本土亲切</span><span class="tag">差异化最强</span><span class="tag">社区生鲜契合</span></div>
+  </div>
+  <div class="set-body">
+    <div class="phones">
+      <figure class="stage">
+        <div class="phone s10"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd">
+              <div class="seal">春连</div>
+              <div><div class="t">春连鲜选</div><div class="s">本地直采 · 当日送达</div></div>
+            </div>
+            <div class="sr"><svg class="ic" style="width:14px;height:14px"><use href="#i-search"></use></svg><span>搜寻今日时鲜</span></div>
+            <div class="banner">
+              <div class="k">今日 · 时令</div>
+              <div class="t">高山有机小青菜</div>
+              <div class="s">清晨现摘 · 四小时内冷链到家</div>
+              <div class="f"><span class="p">¥5.90<em>/份</em></span><span class="o">¥8.80</span></div>
+            </div>
+            <div class="cats">
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-leaf"></use></svg></div><span>时蔬</span></div>
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-box"></use></svg></div><span>肉禽</span></div>
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-cart"></use></svg></div><span>净菜</span></div>
+              <div class="cat"><div class="g"><svg class="ic"><use href="#i-tag"></use></svg></div><span>特惠</span></div>
+            </div>
+            <div class="sec"><span class="t">本店推荐</span><span class="ln"></span><span class="m">今日八品</span></div>
+            <div class="list">
+              <div class="it"><div class="im"><div class="slot">P-01</div></div><div class="m"><div class="n">本地番茄</div><div class="s">沙瓤 · 当日采摘 · 500g</div><span class="tag">限时九折</span></div><div class="r"><div class="p">¥6.80<em>/份</em></div><div class="add">加入</div></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>市集</div>
+            <div class="ti"><svg class="ic"><use href="#i-grid"></use></svg>品类</div>
+            <div class="ti"><svg class="ic"><use href="#i-cart"></use></svg>菜篮</div>
+            <div class="ti"><svg class="ic"><use href="#i-user"></use></svg>我的</div>
+          </div>
+        </div></div>
+        <figcaption>顾客端 · 首页</figcaption>
+      </figure>
+      <figure class="stage">
+        <div class="phone s10m"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="r"><i></i><i></i><i></i><b></b></span></div>
+          <div class="body">
+            <div class="hd">
+              <div class="seal">春连</div>
+              <div><div class="t">长河店 · 掌柜台</div><div class="s">10月15日 · 营业中</div></div>
+              <div class="bell"><svg class="ic"><use href="#i-bell"></use></svg></div>
+            </div>
+            <div class="board">
+              <div class="cap"><span>今日进项 · 实收</span><span>已到账</span></div>
+              <div class="bd">
+                <div class="k">¥ CNY</div>
+                <div class="v">¥3,860<em>.00</em></div>
+                <div class="d">共二十七单 · 较昨日增一成二</div>
+              </div>
+            </div>
+            <div class="duo">
+              <div class="c"><div class="k">应收 · 货到付款</div><div class="v">¥420.00</div></div>
+              <div class="c"><div class="k">退款 · 待核实</div><div class="v">2</div></div>
+            </div>
+            <div class="sec"><span class="t">待办</span><span class="ln"></span></div>
+            <div class="lst">
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">张先生 · 五件</div><div class="s">已付款 · 待配送</div></div><div class="r"><div class="p">¥124.50</div><div class="st">待配送</div></div></div>
+              <div class="o"><div class="im"><div class="slot">A</div></div><div class="m"><div class="n">李女士 · 三件</div><div class="s">已送达 · 货到付款</div></div><div class="r"><div class="p">¥68.00</div><div class="st">待收款</div></div></div>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="ti on"><svg class="ic"><use href="#i-home"></use></svg>掌柜台</div>
+            <div class="ti"><svg class="ic"><use href="#i-list"></use></svg>订单</div>
+            <div class="ti"><svg class="ic"><use href="#i-box"></use></svg>货品</div>
+            <div class="ti"><svg class="ic"><use href="#i-chart"></use></svg>账目</div>
+            <div class="ti"><svg class="ic"><use href="#i-gear"></use></svg>设置</div>
+          </div>
+        </div></div>
+        <figcaption>商家端 · 掌柜台</figcaption>
+      </figure>
+    </div>
+    <aside class="spec">
+      <h4>色板</h4>
+      <div class="pal">
+        <div class="sw"><i style="background:#8C2F1F"></i><span>#8C2F1F</span></div>
+        <div class="sw"><i style="background:#E8C98C"></i><span>#E8C98C</span></div>
+        <div class="sw"><i style="background:#2F5C46"></i><span>#2F5C46</span></div>
+        <div class="sw"><i style="background:#FBF6EE"></i><span>#FBF6EE</span></div>
+        <div class="sw"><i style="background:#E6DBC9"></i><span>#E6DBC9</span></div>
+      </div>
+      <h4>设计令牌</h4>
+      <dl>
+        <dt>字体</dt><dd>标题宋体（Songti SC / SimSun），正文黑体</dd>
+        <dt>字距</dt><dd>中文标题 letter-spacing .06–.1em</dd>
+        <dt>圆角</dt><dd>6px，配 1px 暖色描边，像纸质标签</dd>
+        <dt>分隔</dt><dd>1px #EFE6D8，段间用「标题 + 细线 + 小字」分隔</dd>
+        <dt>印章</dt><dd>36px 朱红方块，承载品牌识别</dd>
+      </dl>
+      <div class="note"><b>为什么适合：</b>社区生鲜的核心人群是家庭采购者，「像一家熟悉的本地食铺」比「像硅谷产品」更能建立信任。这套方案在同类 App 中<b>几乎不可能撞脸</b>，也天然适合线下门店物料统一（招牌、袋子、小票）。</div>
+      <div class="note warn"><b>风险：</b>宋体在小字号安卓机上有渲染差异，需要内置字体子集；暖色低对比的界面在强光下可读性弱于方案 02/06，商家端建议提高描边对比。</div>
+    </aside>
+  </div>
+</article>
+
+<!-- ============ 对比表 ============ -->
+<section class="cmp">
+  <h2>十套方案横向对比</h2>
+  <table>
+    <thead>
+      <tr><th>方案</th><th>主色</th><th>顾客端</th><th>商家端</th><th>开发成本</th><th>差异化</th><th>最大风险</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>01 有机鲜绿</td><td><div class="mini-sw"><i style="background:#245947"></i><i style="background:#D7A766"></i><i style="background:#F7F8F4"></i></div></td><td class="star">★★★★☆</td><td class="star">★★★☆☆</td><td>低</td><td>低</td><td class="dim">品牌记忆点弱</td></tr>
+      <tr><td>02 iOS 原生</td><td><div class="mini-sw"><i style="background:#007AFF"></i><i style="background:#F2F2F7"></i></div></td><td class="star">★★★☆☆</td><td class="star">★★★★☆</td><td>低</td><td>低</td><td class="dim">缺少购买冲动感</td></tr>
+      <tr><td>03 极简黑白</td><td><div class="mini-sw"><i style="background:#0A0A0A"></i><i style="background:#C2452D"></i></div></td><td class="star">★★★☆☆</td><td class="star">★★★★★</td><td>低</td><td>高</td><td class="dim">依赖摄影质量</td></tr>
+      <tr><td>04 柔和新拟态</td><td><div class="mini-sw"><i style="background:#EDF1EC"></i><i style="background:#3E7A5E"></i></div></td><td class="star">★★★☆☆</td><td class="star">★★★★☆</td><td>中</td><td>中</td><td class="dim">屏幕亮度适配</td></tr>
+      <tr><td>05 玻璃拟态</td><td><div class="mini-sw"><i style="background:#151A2E"></i><i style="background:#5DCAA5"></i></div></td><td class="star">★★★★☆</td><td class="star">★★★☆☆</td><td>高</td><td>很高</td><td class="dim">低端机掉帧</td></tr>
+      <tr><td>06 活力橙果</td><td><div class="mini-sw"><i style="background:#FF6B2C"></i><i style="background:#FFD166"></i></div></td><td class="star">★★★★★</td><td class="star">★★★☆☆</td><td>低</td><td>低</td><td class="dim">同质化严重</td></tr>
+      <tr><td>07 卡片杂志</td><td><div class="mini-sw"><i style="background:#14110E"></i><i style="background:#C2452D"></i></div></td><td class="star">★★★★☆</td><td class="star">★★★★☆</td><td>中</td><td>很高</td><td class="dim">内容运营成本高</td></tr>
+      <tr><td>08 深色专业</td><td><div class="mini-sw"><i style="background:#0E1116"></i><i style="background:#34D399"></i></div></td><td class="star">★☆☆☆☆</td><td class="star">★★★★★</td><td>中</td><td>高</td><td class="dim">不适用顾客端</td></tr>
+      <tr><td>09 便当格</td><td><div class="mini-sw"><i style="background:#0B0B0F"></i><i style="background:#2F6BFF"></i></div></td><td class="star">★★★★☆</td><td class="star">★★★★★</td><td>低</td><td>高</td><td class="dim">彩色格需限色</td></tr>
+      <tr><td>10 东方食集</td><td><div class="mini-sw"><i style="background:#8C2F1F"></i><i style="background:#E8C98C"></i></div></td><td class="star">★★★★★</td><td class="star">★★★★☆</td><td>中</td><td>极高</td><td class="dim">宋体渲染差异</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 推荐 ============ -->
+<section class="rec">
+  <h2>选型建议</h2>
+  <p>如果目标是「一次做完两个端、都能打」，以下是三种组合思路。也可以从 10 套里各取顾客端/商家端混搭。</p>
+  <div class="podium">
+    <div class="pod">
+      <div class="r">组合 A · 稳妥派</div>
+      <div class="n">01 顾客端 + 08 深色专业 商家端</div>
+      <div class="w">顾客端沿用现有品牌色，零资产重做；商家端换成深色经营台，信息密度与专业度立刻拉满。两端一浅一深，天然区分「买东西」和「做生意」两种心智。改动最小、风险最低。</div>
+    </div>
+    <div class="pod">
+      <div class="r">组合 B · 增长派</div>
+      <div class="n">06 活力橙果 顾客端 + 09 便当格 商家端</div>
+      <div class="w">顾客端用国内用户最熟的橙色转化语言，促销位充足、下单路径最短；商家端用便当格做数据看板，和顾客端共享同一套栅格与圆角规范，两端实现可以复用组件。</div>
+    </div>
+    <div class="pod">
+      <div class="r">组合 C · 品牌派</div>
+      <div class="n">10 东方食集 顾客端 + 03 极简黑白 商家端</div>
+      <div class="w">顾客端做成「本地食铺」，和社区生鲜的信任关系最契合，几乎不可能撞脸；商家端走极简报表风，把账目做得像一份干净的清单。适合想长期经营品牌、愿意投入摄影与文案的团队。</div>
+    </div>
+  </div>
+</section>
+
+<div class="foot">
+  <p>说明：本页为设计方案稿，商品图、头像、品牌标识均以带编号的虚线占位框标出，实际素材到位后直接替换即可。所有金额展示遵循项目约定——整数分存储、展示层统一两位小数，实收与应收分列不相加。</p>
+  <p>下一步：确认方案后，将输出完整设计规范（Design Token 表 + 组件库清单 + 全部 25 个界面的高保真稿），并映射到 Kotlin Compose（两个安卓端）与 Vue 3（顾客网页端）的实现约定。</p>
+</div>
+
+</div>
+</body>
+</html>

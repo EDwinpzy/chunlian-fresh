@@ -24,8 +24,7 @@ SOFTWARE.
 
 说明：
 
-本许可仅覆盖本仓库自有代码（backend-extension、customer-miniapp、
-merchant-android、infrastructure、docs）。
+本许可仅覆盖本仓库自有代码（apps、backend、infrastructure、docs）。
 
 项目依赖的 ShopXO 核心为 MIT 许可，但其部分官方插件、示例素材与
 第三方图片的商用授权需单独核对。接入商用前请确认：

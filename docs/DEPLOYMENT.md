@@ -1,153 +1,87 @@
-# 部署手册｜春连鲜选（后端）
+# 部署与恢复｜春连鲜选
 
-> 来源：方案 §13、§20.1。本手册可直接交给运维照单执行。
->
-> **范围说明**：本仓库仅保留后端。原手册中「构建顾客微信小程序」「构建原生安卓管理端」
-> 两步以及 UI / Android 相关发布门槛，已随两个前端一并删除。
+## 1. 当前生产
 
-## 1. 生产拓扑
+2026-10-15 已发布 `chunlian-20261015-shop-config-v1`：店铺资料、展示文案和生鲜分类由店家 App 配置，网页与顾客 App 读取统一配置。保留既有商家公开免登录设置。恢复点为 `/opt/chunlian/backups/chunlian-fresh/20261015T101121Z/`；发布健康检查和订单/流水数量恢复核验通过。
 
-```mermaid
-flowchart TB
-  A[客户端<br/>商家端 App / 顾客端小程序<br/>（已移出本仓库）] -->|HTTPS| N[Nginx / TLS]
-  N --> C[ShopXO 6.9.2<br/>ThinkPHP 8]
-  C --> D[顾客订单扩展<br/>修订/取消/配送时间]
-  C --> E[商家移动 API<br/>身份认证/商品/订单/统计]
-  D --> F[(MySQL 单库)]
-  E --> F
-  C --> F
-  C --> G[微信支付 / 退款 API]
-  D --> H[异步任务 / Outbox 重试]
-  E --> I[前台轮询]
-```
+2026-10-16 已发布 `chunlian-20261016-customer-ui-v1`：顾客网页和顾客 App 更新订单与个人中心界面，订单搜索自动触发；顾客 App 升级至 1.0.4（versionCode 5）。店主 App 1.0.4（versionCode 5）沿用已发布包。下载清单、网页资源及顾客/店主 APK 均经线上 HTTPS 复核；两份 APK 的完整下载大小与清单 SHA-256 一致。
 
-## 2. 资源规格
+2026-10-17 已发布 `chunlian-20261017-all-clients-v1`：顾客网页和后端同步更新，顾客 App 与店主 App 均升级至 1.0.5（versionCode 6）。店主分类管理按一级分类展示商品数、状态筛选、排序和下架提示；分类状态文案统一为“已下架”。部署备份恢复检查通过，公网网页、静态资源和只读 API 检查 28/28 通过；两款 APK、下载清单与下载页均经项目 CA 的 HTTPS 完整下载复核，大小和 SHA-256 一致。备份点为 `/opt/chunlian/backups/chunlian-fresh/20261016T202653Z/`；服务与 APK 回退文件位于 `/opt/chunlian/releases/chunlian-20261017-all-clients-v1/rollback/`。
 
-| 资源 | 起步建议 | 备注 |
-|---|---|---|
-| 云服务器 | 2 vCPU / 4GB RAM / 40–60GB SSD | 单店、低并发先用一台 |
-| 系统 | Ubuntu LTS | 实际需按 ShopXO 依赖兼容性选择 |
-| Web | Nginx + PHP-FPM | 强制 HTTPS |
-| PHP | 按锁定 ShopXO 版本与 composer 兼容性选择受支持版本 | 不直接指定未经验证的最新版本 |
-| 数据库 | MySQL 8.x 或项目验证支持的维护版本 | 只监听内网/本机 |
-| 缓存 | 优先使用 ShopXO 已验证的缓存方案 | 不强加 Redis |
-| 文件 | 首期本地上传目录 + 异地备份 | 增长后迁对象存储 |
-| 通知重试 | Cron + 数据库 outbox 单 worker | 不必 Kafka/RabbitMQ |
-| SSL | ACME/Let's Encrypt（适用时） | 域名和证书自动续期 |
-
-## 3. 环境区分
-
-| 环境 | 说明 |
+| 项目 | 当前状态 |
 |---|---|
-| **dev** | 本地容器或虚拟机，假支付、假退款、**不存真实个人信息** |
-| **staging** | 与生产结构接近，有微信/商户测试能力时做支付联调 |
-| **prod** | 正式域名、正式商户号、独立数据库和备份目标；**不要在生产直接改源码调试** |
+| 主机 | panshi-cloud，103.236.97.137，共享服务器 |
+| 项目路径 | /var/www/chunlian |
+| 网页 | https://103.236.97.137:8096/app/ |
+| Android 下载 | https://103.236.97.137:8096/downloads/ ；顾客1.0.5/code6，店主1.0.5/code6 |
+| API | https://103.236.97.137:8096/api/v1/ |
+| 网络 | NAT 8096；私有CA；Android内置限定IP信任，网页需安装公开CA |
+| 服务 | nginx、php8.3-fpm active，维护标记已解除 |
+| 商家管理 | `CHUNLIAN_MERCHANT_OPEN_ACCESS=1`；任何安装者都可取得完整商家管理会话 |
+| 新结构 | payment_qr_url、veg_notification_seen、veg_shop_profile、veg_fresh_category_root、veg_fresh_category_state 已存在 |
+| 资金方式 | OFFLINE_QR人工扫码核款/补款/退款和COD，无微信商户API |
+| 正式二维码 | 空；店主在App上传真实收款码 |
+| 容量快照 | 本次发布前约21GiB可用 |
 
-生产域名示例（**不是已购买域名**）：`api.example.cn`（商城 API/必要图片）、`admin.example.cn`（ShopXO 高级后台）。可共用同一台云服务器，API 与后台使用不同入口、严格访问控制；首次版本不强制 CDN / Redis / 分布式服务。
+## 2. 本次验证
 
-## 4. 部署执行顺序（Runbook）
+店铺配置发布：服务包189文件，SHA-256 `9a215eb227fb68c7ba4acd8fa73ae5bcdc4db8551f8b17555cd600dea153c678`；独立 MySQL 迁移及重复执行通过，配置服务隔离检查37断言、网页配置回归12/12，公网严格CA只读28/28，生产首页截图通过。原有订单、修订、资金流水及店铺设置指纹一致；未写入测试业务数据。新增分类完成一次性旧分类兼容登记（6个根类）。
 
-1. 确认经营主体、域名、服务器区域、备案与支付商户号条件。
-2. 开通云服务器，建议 2 vCPU / 4GB RAM / SSD 40–60GB 起步；管理入口仅授权本人；安全组只放行 `22/80/443`，**数据库 3306 不向公网放行**。
-3. 创建非 root 运维账号 + SSH 密钥登录，禁用密码登录。
-4. 安装 Nginx、PHP-FPM、MySQL、所需扩展及证书；按官方要求配置站点根目录到 `public/`，禁止暴露敏感目录。
-5. 从 GitHub 克隆**指定 ShopXO commit/tag**，记录依赖版本和文件校验；**不要生产环境直接跟踪 `master`**。
-6. `composer install --no-dev --optimize-autoloader`，使用锁定依赖和生产模式，配置站点 `public` 根目录、HTTPS、重写规则、写权限和环境密钥。
-7. 创建数据库并安装 ShopXO，开启 HTTPS，检查后台登录、商品 CRUD、原生购物车与订单 API。
-8. 配置 COD 支付方式、开启后台「线下支付正常进行」与「下单指定时间」，核对缓存清理、原生预约时间功能。
-9. 按顺序部署扩展：**备份 → 迁移 `veg_*` 表 → 缓存更新 → 健康检查**：
+备份已下载到受控 `dist/private/backup-20261015-shop-config/`，数据库、代码配置、上传文件的完整 SHA-256 均核对一致。真实 MySQL 分类并发锁回归尚未补充，本次验证了迁移及生产只读分类接口。
 
-   ```bash
-   cd backend-extension
-   php scripts/migrate.php --dry-run       # 先预演
-   php scripts/migrate.php --apply         # 正式执行
-   ```
+两款正式 APK 沿用原签名，单测16+15项、包体25项通过；公网重新下载核对完整SHA一致，下载页截图通过。下载文件位于 `shopxo/public/downloads/`，独立于网页切换目录。
 
-10. 启动定时任务：
+以下为历史验证记录：
 
-    ```bash
-    # crontab -e （运维账号）
-    * * * * * cd /var/www/chunlian/backend-extension && php scripts/outbox-worker.php --once >> /var/log/chunlian/outbox.log 2>&1
-    */5 * * * * cd /var/www/chunlian/backend-extension && php scripts/payment-verify.php >> /var/log/chunlian/payment.log 2>&1
-    0 3 * * * /var/www/chunlian/infrastructure/backup/backup_db.sh >> /var/log/chunlian/backup.log 2>&1
-    ```
+后端165项/490条断言、自检46/46；隔离业务144/144、边界并发192/192、通知竞态18/18；网页mock20/20、真实隔离流程2/2；顾客安卓Debug/Release各13项、店主各8项单测，lint及正式构建通过；APK核验25/25、生产只读18/18。
 
-    > **禁止在 HTTP 请求内无限重试**。
+2026-10-15 免登录增量：PHP 包语法检查与策略 10 项断言通过；商家 API 拒绝缺少设备标识，开放会话可访问工作台，注销后会话失效；店主 Android Debug/Release 单测各14/14，Release lint/签名构建通过，APK核验25/25；emulator-5558 冷启动直达工作台，设置页显示公开免登录模式；生产只读复验18/18。未写入订单、商品、资金或收款码。
 
-11. 微信支付商户号及密钥**仅保存在服务器安全配置中**；用**小额真实测试订单**验证回调、查单、退款及对账。
-12. 开启监控与备份：每天备份数据库 + 商品图片到**另一存储位置**，数据库备份加密，定期恢复演练；设置错误日志采样、告警和磁盘容量阈值。
-13. 建立灰度/回滚流程：保留上一个稳定后端构建与数据库备份；迁移需说明正向修复及兼容回滚路径。
-14. 客户端联调（可选）：两个前端已移出本仓库（代码已从 git 历史清除，归档于 `_archive/chunlian-full-history-20261013.bundle`）。恢复后需在微信公众平台配置合法服务器域名，Android 端配置 Release Base URL 与签名。
+首次 apply 因 512 MiB 空间守卫拒绝且未切换；核对缓存引用后清理超过12小时且无活跃引用的 Docker 构建缓存约538.3MB，重试成功。没有删除运行镜像、容器、数据卷、数据库或 MyTV 发布/回滚资产。生产只执行 GET 验证、免登录会话烟测及获准的代码发布，没有订单、资金或商品测试写入。
 
-## 5. 环境变量模板
+服务包184载荷文件，SHA-256 `8fcd35b8104d316d495032901c420cdd733d0e1ca831685e620525d955edf63a`；远端 dry-check 和发布健康检查通过。公开网页/资产/API 从公网严格校验证书和 IP，18/18 通过；订单与资金流水计数恢复核验通过。
 
-见 `infrastructure/.env.example`。关键项：
+## 3. 备份与文件回滚
 
-| 变量 | 说明 |
-|---|---|
-| `APP_ENV` | `dev` / `staging` / `prod` |
-| `APP_URL` | 正式 HTTPS 域名 |
-| `DB_HOST` `DB_PORT` `DB_NAME` `DB_USER` `DB_PASS` | 数据库（仅内网监听） |
-| `WXPAY_MCHID` `WXPAY_SERIAL_NO` `WXPAY_PRIVATE_KEY_PATH` `WXPAY_APIV3_KEY` | 微信支付商户配置 |
-| `WXPAY_NOTIFY_URL` | 支付回调地址 |
-| `MERCHANT_API_SECRET` | 商家 API 会话签名密钥 |
-| `UPLOAD_MAX_MB` | 图片上传上限 |
-| `BUSINESS_TIMEZONE` | 经营时区，默认 `Asia/Shanghai` |
+本次恢复点：`/opt/chunlian/backups/chunlian-fresh/20261015T101121Z/`。发布脚本恢复检查核对订单和流水数量；完整逐字段恢复演练未在本次重复执行。2026-10-14 与 2026-10-13 恢复点仍保留。
 
-> **所有密钥不提交 Git，不下发到任何客户端。**
+文件回滚目录：`/opt/chunlian/releases/chunlian-20261015-shop-config-v1/rollback/`。该目录含代码、nginx 和应用配置；PHP-FPM 池配置本次未改变。先只读检查：
 
-## 6. Nginx 配置要点
-
-见 `infrastructure/nginx/chunlian.conf`。核心：
-
-- `root /var/www/chunlian/shopxo/public;`（**不暴露仓库根目录**）
-- 强制 HTTPS + HSTS
-- 拒绝访问 `.env`、`.git`、`vendor`、`runtime`、`*.sql`、`*.md`
-- PHP-FPM 限制 `max_execution_time`，避免支付回调超时
-- `/api/v1/webhook/*` 单独限速规则，避免被刷
-
-## 7. 备份与运维
-
-### 7.1 备份策略
-
-| 对象 | 频率 | 保留 | 位置 |
-|---|---|---|---|
-| MySQL 全量 | 每日 | 7–30 天 | **异地存储**（对象存储/另一台机器） |
-| 商品图片目录 | 每日增量 | 30 天 | 异地存储 |
-| 代码 / 配置 | 每次发布 | 全部版本 | Git 私有仓库 |
-
-> **不得只在原服务器存备份。**
-
-### 7.2 监控项
-
-- 接口错误率、5xx 数量
-- CPU / 内存 / 磁盘使用率
-- 数据库连接数、慢查询
-- 支付回调失败数、退款任务失败数
-- `veg_outbox_event` 中 `status='DEAD'` 的数量
-- 待处理订单数量（长时间 `PENDING` 告警）
-
-### 7.3 升级流程
-
-```
-备份 → staging 验证 → 执行迁移（先 --dry-run） → 发布后观察 → 出问题回滚代码并按迁移策略恢复/补偿数据
+```text
+python3 /opt/chunlian/rollback-existing.py --release chunlian-20261015-shop-config-v1
 ```
 
-### 7.4 日常维护
+维护者获准恢复后才加 `--apply`。恢复期间暂停请求并保留被替换版本；失败保持维护状态。该脚本不恢复数据库，保留兼容新增二维码列、通知与店铺配置表和发布后订单。切回旧通知代码可能重复提醒，但不会因此删除事件或资金记录。
 
-- 打安全补丁
-- 检查订单通知（`veg_outbox_event` 积压）
-- 检查支付对账（微信商户平台 vs `veg_payment_ledger`）
-- 保留日志但**脱敏**（不打印完整手机号/地址/密钥）
+禁止直接拿旧数据库备份覆盖发布后的订单。数据库恢复须另行审核数据范围、维护窗口和业务损失。
 
-## 8. 发布门槛
+## 4. 后续发布流程
 
-以下全部通过才可发布：
+1. 更新源码后在隔离QA验证业务、边界、并发、客户端和包体；记录脚本及源文件SHA。
+2. 重新核对磁盘，准备备份及恢复演练空间；生产不构建客户端。
+3. 本机 `python infrastructure/scripts/build-delivery.py --release <版本>` 构建确定性包，上传已审查的部署、备份和回滚脚本。
+4. 先运行release-existing.py默认dry-check，通过后在获准窗口加 `--apply`；脚本维护门禁、排空旧请求、备份恢复核验，再执行新增结构和文件切换。
+5. `python infrastructure/scripts/production-readonly.py` 公网只读复验，核对业务指纹和服务状态；下载受限备份并核SHA。
 
-- [ ] T01–T30 核心业务测试通过
-- [ ] C-01~C-08 并发与资金一致性测试通过
-- [ ] 支付/退款资金对账通过
-- [ ] 备份恢复演练通过（含 binlog 时间点恢复）
-- [ ] 微信审核条件满足（如后续恢复小程序前端）
+### Android App 在线更新
 
-> 微信审核及支付开通时间**不受开发排期完全控制**。
+顾客端已签名构建为 1.0.5（versionCode 6），店主端为 1.0.5（versionCode 6）。两端支持启动时检查更新和“我的”页手动检查；发现新版本后，用户可选择下载，App 校验文件大小与 SHA-256 后打开 Android 系统安装器，由用户确认安装。更新检查只在启动或手动触发时进行，不包含后台推送或静默安装。2026-10-16 已发布 `chunlian-20261016-category-products-v1`：店主商品管理按生鲜分类展示商品，并提供“全部 / 在售中 / 已下架”筛选；APK、清单和下载页已通过严格 TLS 公网完整性复核。随后发布 `chunlian-20261016-customer-ui-v1`，更新顾客网页和顾客 App。2026-10-17 发布 `chunlian-20261017-all-clients-v1`，顾客、店主 Android 同步升级至 1.0.5（code6），后端和顾客网页同步上线；APK、清单、下载页和网页资源均通过项目 CA HTTPS 与 SHA-256 复核。
+
+当前已安装的生产版本没有更新检查能力。首次启用时，用户需先从现有 `/downloads/` 下载页手动安装带更新能力的版本；此后 App 才能检查后续版本。更新包必须沿用已发布 App 的签名证书，否则 Android 会拒绝覆盖安装。
+
+发布 Android 更新时：
+
+1. 顾客端和店主端分别执行 `assembleRelease -PSIGNING_PROPERTIES=<签名配置路径>`，使用同一项目签名证书；将签名产物更新到 `dist/release/customer-release.apk` 和 `dist/release/merchant-release.apk`。本地保留当前 APK 各一份；需要回退时，仅在 `dist/release/archive/previous-public/` 保留上一轮已发布的顾客端和店主端 APK 各一份。
+2. 在 Windows Android SDK Build Tools 34.0.0 上运行 `python infrastructure/scripts/verify-delivery.py --build-tools <Build Tools目录> --release <发布标识> --release-notes <更新说明>`。通过签名、包名、版本和网络配置核验后，脚本生成引用固定名 APK 的 `dist/release/android-release.json` 和核验记录；不要额外生成带版本号的 APK 副本。
+3. 将 `customer-release.apk`、`merchant-release.apk` 上传到 `/var/www/chunlian/shopxo/public/downloads/`，核对文件完整后更新 `download-index.html`，让首次安装入口显示并下载当前版本；最后再上传 `android-release.json`。下载页和 App 更新器都使用相同的固定文件名；清单必须包含 `application_id`、版本号、SHA-256 和文件大小。清单的公开 URL 为 `https://103.236.97.137:8096/downloads/android-release.json`；必须最后替换清单。新清单通过线上核验后，清除服务器上不再引用的版本号 APK；本地最多保留当前包和最近一次已发布的回退包。
+4. 发布后分别检查清单、两个 APK 和 `download-index.html` 可通过 HTTPS 获取；核对 APK 的 SHA-256 与清单一致，并确认下载页的手动安装入口能下载新版本。
+
+关闭 `CHUNLIAN_MERCHANT_OPEN_ACCESS` 可阻止新公开会话，但不会自动撤销已签发的30天会话；如需立即收回权限，必须同时撤销相关会话。后续清理outbox与seen标记须采用协调的保留策略；当前未启用自动清理或每日异地备份计划。
+
+## 5. 文件权限与交付边界
+
+服务器包文件0644、目录0755，root归属、时间归一；切换后的扩展代码、插件和网页root:www-data，文件0640/目录0750，服务只能读代码。上传和ShopXO运行目录保留必要写权限。相同源码和版本重复构包SHA一致。
+
+源码ZIP排除所有层级docs/evidence、私钥/JKS/口令、本机配置、缓存和构建输出，保留QA脚本及明确标注不可付款的合成图片。公开CA可交付；签名JKS、CA/服务器私钥和生产备份仅保存在受控dist/private/。
+
+共享磁盘余量有限，图片/日志/备份增长可能影响其他服务。任何清理先核对当前引用；不得删除其他项目发布和回滚资产。证书到期2027-10-13，需提前续签。

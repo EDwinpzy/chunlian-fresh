@@ -1,0 +1,638 @@
+@import './tokens.css';
+
+/* ============================================================
+   春连鲜选 · 顾客端全局样式
+   来源：方案 §7.3 的 SCSS 版本在这里转成普通 CSS（网页版不用 rpx）
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans CJK SC',
+    'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  font-size: var(--font-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 金额与数字一律等宽，保证纵向对齐（方案 §4.3） */
+.num,
+.price,
+.money {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: var(--font-body);
+  color: var(--color-text-primary);
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* ---------- 页面骨架 ---------- */
+
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-canvas);
+  display: flex;
+  flex-direction: column;
+}
+
+.page-body {
+  flex: 1;
+  padding: 0 var(--page-padding);
+}
+
+/* 有底部 TabBar 的页面要留出空间，否则最后一张卡片会被盖住 */
+.page-body--tabbar {
+  padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 12px);
+}
+
+/* 有固定底部操作条的页面 */
+.page-body--actionbar {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
+
+.section {
+  margin-top: var(--space-6);
+}
+
+.section-title {
+  font-size: var(--font-section);
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0 0 var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-title__more {
+  font-size: var(--font-caption);
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.asset-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- 卡片 ---------- */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.card--flat {
+  border: none;
+  border-radius: var(--radius-xl);
+}
+
+/* ---------- 文本工具类 ---------- */
+
+.muted {
+  color: var(--color-text-secondary);
+}
+
+.mini {
+  font-size: var(--font-mini);
+  color: var(--color-text-muted);
+}
+
+.caption {
+  font-size: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.price {
+  color: var(--color-price);
+  font-weight: 700;
+}
+
+/* ---------- 按钮 ---------- */
+
+.btn {
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-product);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 var(--space-5);
+  transition: opacity var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+  user-select: none;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.985);
+  opacity: 0.9;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--color-brand-700);
+  color: var(--color-on-brand);
+}
+
+.btn--secondary {
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+}
+
+.btn--ghost {
+  border: 1px solid var(--color-divider);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.btn--danger {
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-surface);
+}
+
+.btn--text {
+  min-height: auto;
+  padding: 0;
+  color: var(--color-brand-600);
+  font-weight: 500;
+  background: none;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--sm {
+  min-height: 36px;
+  font-size: var(--font-caption);
+  padding: 0 var(--space-4);
+}
+
+/* ---------- 状态标签 ---------- */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+  font-size: var(--font-mini);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.pill--success {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.pill--warning {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+
+.pill--danger {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+.pill--info {
+  color: var(--color-brand-600);
+  background: var(--color-info-bg);
+}
+
+.pill--muted {
+  color: var(--color-text-secondary);
+  background: var(--color-canvas);
+}
+
+/* ---------- 底部固定操作条 ---------- */
+
+.action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-divider);
+  padding: 10px var(--page-padding);
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* ---------- 分隔线 ---------- */
+
+.divider {
+  height: 1px;
+  background: var(--color-divider);
+  border: none;
+  margin: var(--space-3) 0;
+}
+
+/* ---------- 骨架屏 ---------- */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-neutral-100) 25%,
+    var(--color-neutral-50) 37%,
+    var(--color-neutral-100) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* ---------- 路由过渡 ---------- */
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--motion-base) var(--motion-ease);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ---------- 安全区工具 ---------- */
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* ---------- 隐藏滚动条但保留滚动 ---------- */
+
+.scroll-x {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================================
+   组件补充 —— 对齐 docs/design/DESIGN-SYSTEM.md v1.0 §7
+   与安卓端 CustomerComponents.kt / Common.kt 一一对应
+   ============================================================ */
+
+/* ---------- 桌面端内容居中 ---------- */
+
+.page-shell {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+/* ---------- 主推卡（规范 §7.3 card--featured） ---------- */
+
+.featured-card {
+  background: var(--color-brand-700);
+  color: var(--color-on-brand);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  min-height: 126px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+  overflow: hidden;
+}
+
+.featured-card__badge {
+  align-self: flex-start;
+  background: var(--color-gold-400);
+  color: var(--color-gold-700);
+  border-radius: var(--radius-pill);
+  padding: 3px 9px;
+  font-size: var(--font-mini);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+}
+
+.featured-card__title {
+  font-size: var(--font-product);
+  font-weight: var(--weight-semibold);
+  margin-top: auto;
+}
+
+.featured-card__sub {
+  font-size: var(--font-mini);
+  color: var(--color-on-brand-muted);
+  margin-top: 3px;
+}
+
+/* 深绿底上的金色价格必须用 gold-300，gold-400 在深绿上对比度偏弱 */
+.featured-card__price {
+  color: var(--color-on-brand-accent);
+  font-size: var(--font-headline);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  margin-top: 5px;
+}
+
+/* ---------- 商品卡（规范 §7.3 card--product） ---------- */
+
+.product-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2);
+  box-shadow: var(--elevation-1);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--motion-fast) var(--motion-ease);
+}
+
+.product-card:active {
+  transform: scale(0.985);
+}
+
+.product-card__media {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-brand-50);
+}
+
+.product-card__name {
+  font-size: var(--font-product);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-product);
+  margin-top: var(--space-2);
+}
+
+.product-card__spec {
+  font-size: var(--font-mini);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.product-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+}
+
+/* 加入购物车按钮：圆形深绿 */
+.product-card__add {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-brand-700);
+  color: var(--color-on-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* ---------- 价格（规范 §7.7） ---------- */
+
+.price-text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  color: var(--color-price);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.price-text__symbol {
+  font-size: var(--font-mini);
+  font-weight: var(--weight-semibold);
+}
+
+.price-text__unit {
+  font-size: var(--font-mini);
+  font-weight: var(--weight-normal);
+  color: var(--color-text-muted);
+}
+
+.price-original {
+  color: var(--color-text-muted);
+  font-size: var(--font-mini);
+  text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 分类胶囊（对应 SelectionChip） ---------- */
+
+.chip-row {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: none;
+  border-radius: var(--radius-pill);
+  padding: 7px 14px;
+  font-size: var(--font-caption);
+  background: var(--color-neutral-100);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: background var(--motion-fast) var(--motion-ease);
+}
+
+/* 选中态用实心深绿 + 白字。淡绿底在奶油白背景上几乎看不出选中，
+   顾客会反复点两次确认「到底选了哪个」。 */
+.chip--active {
+  background: var(--color-brand-700);
+  color: var(--color-on-brand);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---------- 提示条（规范 §7.5） ---------- */
+
+.notice {
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-caption);
+  line-height: var(--leading-caption);
+}
+
+.notice--info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.notice--warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.notice--danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+/* ---------- 快捷入口（店主端 / 顾客端通用九宫格） ---------- */
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.quick-grid__item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-mini);
+  color: var(--color-text-secondary);
+}
+
+.quick-grid__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- 商品双列网格 ---------- */
+
+.goods-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/* ---------- 金额右对齐行（对应 KeyValueRow） ---------- */
+
+.kv-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 3px 0;
+  font-size: var(--font-caption);
+}
+
+.kv-row__label {
+  color: var(--color-text-secondary);
+}
+
+.kv-row__value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.kv-row--emphasize .kv-row__label,
+.kv-row--emphasize .kv-row__value {
+  font-size: var(--font-body);
+  color: var(--color-text-primary);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---------- 焦点可见（无障碍，规范 §8） ---------- */
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}

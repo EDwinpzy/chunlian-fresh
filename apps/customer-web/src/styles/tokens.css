@@ -1,0 +1,202 @@
+/**
+ * 春连鲜选 · 设计 Token（顾客端网页版）
+ *
+ * 来源：docs/design/DESIGN-SYSTEM.md v1.0（风格方案 01 有机鲜绿）。
+ *
+ * 三端的色值必须逐字一致：
+ *   - 网页版     apps/customer-web/src/styles/tokens.css（本文件）
+ *   - 顾客端安卓 apps/customer-android/.../ui/theme/Theme.kt
+ *   - 店主端安卓 apps/merchant-android/.../core/designsystem/Theme.kt
+ * 顾客在浏览器和 App 里看到同一个品牌色，是「同一个店」的视觉前提。
+ *
+ * 命名约定：色阶用 50–900（50 最浅、900 最深），
+ * 语义别名（--color-brand-700 → --color-canvas 之类）是页面直接消费的那一层。
+ */
+
+:root {
+  /* ============================================================
+     品牌绿
+     ============================================================ */
+  --color-brand-50: #f2f7f4;
+  --color-brand-100: #e3eee6; /* 次级按钮底、选中行底、图标底座 */
+  --color-brand-200: #c4dcd0; /* 描边、进度槽 */
+  --color-brand-300: #9cc4b2; /* 禁用态主色 */
+  --color-brand-400: #6ba48c;
+  --color-brand-500: #43806a; /* 悬停 */
+  --color-brand-600: #245947; /* 主色：互动边框、主要图标 */
+  --color-brand-700: #173f34; /* 深色：主按钮底、品牌标题 */
+  --color-brand-800: #0f2c24;
+  --color-brand-900: #081b16;
+
+  /* ============================================================
+     金色点缀
+     只做装饰：特价徽标、印章、分隔装饰。
+     绝不做按钮文字主体色 —— #d7a766 在白底上对比度仅约 2.1:1。
+     ============================================================ */
+  --color-gold-50: #fdf8ef;
+  --color-gold-100: #f8eedb;
+  --color-gold-200: #efd9b0;
+  --color-gold-300: #e3c48c; /* 深绿底上的金色文字（对比度 6.4:1 ✅） */
+  --color-gold-400: #d7a766; /* 主金 */
+  --color-gold-500: #c08f4b;
+  --color-gold-600: #a46b22; /* 金色作为文字时的最浅可用值（4.6:1） */
+  --color-gold-700: #7a4e14;
+
+  /* ============================================================
+     中性（微暖）
+     底色带一点黄绿倾向，不是纯灰 —— 这样白色卡片「浮」在底上不显脏。
+     ============================================================ */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8f9f5; /* 全局背景 Canvas */
+  --color-neutral-100: #f1f3ee;
+  --color-neutral-150: #e7eae4; /* 1px 分隔线 / 卡片边框 */
+  --color-neutral-200: #dce0d9;
+  --color-neutral-300: #c3c9c2;
+  --color-neutral-400: #a2aaa4; /* 占位符 */
+  --color-neutral-500: #88938b;
+  --color-neutral-600: #66736b;
+  --color-neutral-700: #4a554e;
+  --color-neutral-800: #313b35;
+  --color-neutral-900: #1e2823; /* 正文主色 */
+
+  /* ============================================================
+     语义别名 —— 页面直接用这一层
+     ============================================================ */
+  --color-canvas: var(--color-neutral-50);
+  --color-surface: var(--color-neutral-0);
+  --color-divider: var(--color-neutral-150);
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-neutral-500);
+  --color-accent: var(--color-gold-400);
+
+  /* ============================================================
+     语义色
+     ============================================================ */
+  /**
+   * 价格色。
+   * 比 --color-danger 更暖、更偏橙 —— 读起来是「标价」而不是「报错」。
+   * 价格是每天要看几十次的高频信息，用错误红会持续制造轻微焦虑。
+   * 这两个色相接近但语义完全不同，不要合并。
+   */
+  --color-price: #b94c3f;
+  --color-success: #277653;
+  --color-warning: #a46b22; /* 未收款、退款处理中 */
+  --color-danger: #b53b39;
+  --color-info: var(--color-brand-600);
+
+  /* 语义色的浅底（标签、提示条） */
+  --color-success-bg: #e9f4ec;
+  --color-warning-bg: #fff3e4;
+  --color-danger-bg: #fcedeb;
+  --color-info-bg: #eef3f0;
+
+  /* 深绿底上的文字 */
+  --color-on-brand: #ffffff;
+  --color-on-brand-muted: rgba(255, 255, 255, 0.65);
+  --color-on-brand-accent: var(--color-gold-300);
+
+  /* ============================================================
+     半透明层
+     悬浮元素（吸顶栏、Tab 栏、浮层、遮罩）需要半透明才能透出底下的内容。
+     这些值单独成令牌，避免散落在各处写成 rgba(255,255,255,.96) 这类魔法数。
+     ============================================================ */
+  --color-surface-translucent: rgba(255, 255, 255, 0.96); /* 吸顶栏、Tab 栏 */
+  --color-canvas-translucent: rgba(248, 249, 245, 0.94); /* 奶油白吸顶栏 */
+  --color-scrim: rgba(20, 30, 25, 0.42); /* 浮层遮罩 */
+  --color-image-mask: rgba(248, 249, 245, 0.72); /* 售罄蒙层 */
+  --color-media-placeholder: var(--color-brand-50); /* 图片未加载时的底色 */
+
+  /* 轻提示（Toast）需要足够不透明才能在任意背景上读清 */
+  --color-toast-bg: rgba(30, 40, 35, 0.92);
+  --color-toast-success: rgba(39, 118, 83, 0.95);
+  --color-toast-warning: rgba(164, 107, 34, 0.95);
+  --color-toast-danger: rgba(181, 59, 57, 0.95);
+
+  /* ============================================================
+     间距（8pt 栅格）
+     ============================================================ */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* ============================================================
+     圆角
+     15/18/22 这套偏大的取值是「有机」气质的主要来源。
+     圆角小于 12 会让界面显得硬、像工具软件。
+     ============================================================ */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 15px; /* 按钮 */
+  --radius-lg: 18px; /* 标准卡片 */
+  --radius-xl: 22px; /* 主推卡、大卡片、图片容器 */
+  --radius-sheet: 24px; /* 浮层 */
+  --radius-pill: 999px;
+
+  /* ============================================================
+     字号（375pt 基准）
+     只用两个字重层级：400 Normal / 600 SemiBold，大数字可用 700 Bold。
+     中文在低字重下笔画会糊，不使用 300/500 之外的中间值。
+     ============================================================ */
+  --font-display: 28px; /* 大数字 / 营业额 */
+  --font-title: 24px; /* 页面标题 */
+  --font-headline: 20px; /* 价格大号 */
+  --font-section: 18px; /* 区块标题 */
+  --font-product: 15px; /* 商品名称 */
+  --font-body: 14px;
+  --font-caption: 12px;
+  --font-mini: 11px;
+  --font-price: var(--font-headline); /* 历史别名 */
+
+  --leading-display: 34px;
+  --leading-title: 31px;
+  --leading-headline: 26px;
+  --leading-section: 24px;
+  --leading-product: 21px;
+  --leading-body: 22px;
+  --leading-caption: 18px;
+  --leading-mini: 15px;
+
+  --weight-normal: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ============================================================
+     层级阴影
+     默认卡片不用阴影，靠 1px 边框分层 —— 阴影是稀缺资源。
+     阴影颜色用深绿而不是纯黑，纯黑在奶油白底上会显脏。
+     ============================================================ */
+  --elevation-1: 0 2px 8px rgba(23, 63, 52, 0.05); /* 可点击卡片 */
+  --elevation-2: 0 4px 14px rgba(23, 63, 52, 0.07); /* 主推卡、悬浮指标卡 */
+  --elevation-3: 0 6px 24px rgba(23, 63, 52, 0.07); /* 底部操作条、悬浮按钮 */
+  --elevation-sheet: 0 -8px 32px rgba(23, 63, 52, 0.12); /* 底部浮层 */
+
+  /* 历史别名 */
+  --shadow-floating: var(--elevation-3);
+  --shadow-sheet: var(--elevation-sheet);
+
+  /* ============================================================
+     布局
+     ============================================================ */
+  --page-padding: 16px;
+  --content-max: 560px; /* 网页版最大内容宽，居中 */
+  --tabbar-height: 56px;
+  --header-height: 48px;
+  --touch-target: 48px;
+
+  /* ============================================================
+     动效
+     按压反馈统一为 scale(0.985) + opacity .9，150ms。
+     不做弹跳、不做旋转。
+     ============================================================ */
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --motion-slow: 300ms;
+  --motion-ease: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+}

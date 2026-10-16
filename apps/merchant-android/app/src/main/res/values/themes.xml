@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      不继承 Material3 的动态取色主题：方案 §7A.1 明确要求
+      「关闭随系统变化的动态品牌主色，由独立品牌 Token 主导视觉」。
+      店主手机壁纸换一个颜色，App 的品牌绿不该跟着变。
+      这里只给一个中性底座，真正的配色由 Compose 的 ChunlianTheme 提供。
+    -->
+    <style name="Theme.ChunlianMerchant" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#173F34</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">#F8F9F5</item>
+    </style>
+</resources>

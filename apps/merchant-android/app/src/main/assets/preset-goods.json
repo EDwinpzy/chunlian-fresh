@@ -1,0 +1,1240 @@
+{
+  "version": 1,
+  "products": [
+    {
+      "id": "G-001",
+      "name": "本地小青菜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "青菜",
+        "小白菜",
+        "油菜"
+      ],
+      "imageAsset": "preset-images/P-01.jpg"
+    },
+    {
+      "id": "G-002",
+      "name": "上海青",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "小油菜",
+        "瓢儿白",
+        "青江菜"
+      ],
+      "imageAsset": "preset-images/P-21.jpg"
+    },
+    {
+      "id": "G-003",
+      "name": "有机菠菜",
+      "specText": "约400g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "菠菜",
+        "赤根菜",
+        "波斯菜"
+      ],
+      "imageAsset": "preset-images/P-22.jpg"
+    },
+    {
+      "id": "G-004",
+      "name": "油麦菜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "莜麦菜",
+        "苦菜",
+        "牛俐生菜"
+      ],
+      "imageAsset": "preset-images/P-23.jpg"
+    },
+    {
+      "id": "G-005",
+      "name": "生菜",
+      "specText": "约400g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "球生菜",
+        "叶用莴苣",
+        "鹅仔菜"
+      ],
+      "imageAsset": "preset-images/P-24.jpg"
+    },
+    {
+      "id": "G-006",
+      "name": "空心菜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "蕹菜",
+        "通菜",
+        "竹叶菜"
+      ],
+      "imageAsset": "preset-images/P-25.jpg"
+    },
+    {
+      "id": "G-007",
+      "name": "茼蒿",
+      "specText": "约400g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "蓬蒿",
+        "蒿子杆",
+        "皇帝菜"
+      ],
+      "imageAsset": "preset-images/P-26.jpg"
+    },
+    {
+      "id": "G-008",
+      "name": "小白菜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "白菜苗",
+        "青菜苗"
+      ],
+      "imageAsset": "preset-images/P-27.jpg"
+    },
+    {
+      "id": "G-009",
+      "name": "芥蓝",
+      "specText": "约400g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "广东芥蓝",
+        "白花芥蓝"
+      ],
+      "imageAsset": "preset-images/P-28.jpg"
+    },
+    {
+      "id": "G-010",
+      "name": "苋菜",
+      "specText": "约400g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "红苋菜",
+        "米苋",
+        "赤苋"
+      ],
+      "imageAsset": "preset-images/P-29.jpg"
+    },
+    {
+      "id": "G-011",
+      "name": "韭菜",
+      "specText": "约300g/把",
+      "unit": "把",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "韭",
+        "起阳草",
+        "懒人菜"
+      ],
+      "imageAsset": "preset-images/P-30.jpg"
+    },
+    {
+      "id": "G-012",
+      "name": "芹菜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "西芹",
+        "香芹",
+        "旱芹"
+      ],
+      "imageAsset": "preset-images/P-31.jpg"
+    },
+    {
+      "id": "G-013",
+      "name": "娃娃菜",
+      "specText": "1棵(约400g)",
+      "unit": "棵",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "微型大白菜",
+        "小白菜心"
+      ],
+      "imageAsset": "preset-images/P-32.jpg"
+    },
+    {
+      "id": "G-014",
+      "name": "沙瓤番茄",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "西红柿",
+        "番茄",
+        "洋柿子"
+      ],
+      "imageAsset": "preset-images/P-02.jpg"
+    },
+    {
+      "id": "G-015",
+      "name": "水果黄瓜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "小黄瓜",
+        "荷兰黄瓜",
+        "无刺黄瓜"
+      ],
+      "imageAsset": "preset-images/P-33.jpg"
+    },
+    {
+      "id": "G-016",
+      "name": "紫皮茄子",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "茄子",
+        "长茄",
+        "落苏"
+      ],
+      "imageAsset": "preset-images/P-06.jpg"
+    },
+    {
+      "id": "G-017",
+      "name": "青椒",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "菜椒",
+        "灯笼椒",
+        "甜椒"
+      ],
+      "imageAsset": "preset-images/P-34.jpg"
+    },
+    {
+      "id": "G-018",
+      "name": "螺丝椒",
+      "specText": "约300g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "皱皮椒",
+        "尖椒",
+        "辣妹子"
+      ],
+      "imageAsset": "preset-images/P-35.jpg"
+    },
+    {
+      "id": "G-019",
+      "name": "丝瓜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "水瓜",
+        "胜瓜",
+        "天丝瓜"
+      ],
+      "imageAsset": "preset-images/P-36.jpg"
+    },
+    {
+      "id": "G-020",
+      "name": "苦瓜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "凉瓜",
+        "癞葡萄",
+        "锦荔枝"
+      ],
+      "imageAsset": "preset-images/P-37.jpg"
+    },
+    {
+      "id": "G-021",
+      "name": "冬瓜",
+      "specText": "约1kg/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "白瓜",
+        "枕瓜",
+        "东瓜"
+      ],
+      "imageAsset": "preset-images/P-38.jpg"
+    },
+    {
+      "id": "G-022",
+      "name": "南瓜",
+      "specText": "约1kg/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "老南瓜",
+        "倭瓜",
+        "饭瓜"
+      ],
+      "imageAsset": "preset-images/P-39.jpg"
+    },
+    {
+      "id": "G-023",
+      "name": "贝贝南瓜",
+      "specText": "1个(约500g)",
+      "unit": "个",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "板栗南瓜",
+        "迷你南瓜"
+      ],
+      "imageAsset": "preset-images/P-40.jpg"
+    },
+    {
+      "id": "G-024",
+      "name": "西葫芦",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "角瓜",
+        "美洲南瓜",
+        "搅瓜"
+      ],
+      "imageAsset": "preset-images/P-41.jpg"
+    },
+    {
+      "id": "G-025",
+      "name": "秋葵",
+      "specText": "约300g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "羊角豆",
+        "黄秋葵",
+        "咖啡黄葵"
+      ],
+      "imageAsset": "preset-images/P-42.jpg"
+    },
+    {
+      "id": "G-026",
+      "name": "玉米",
+      "specText": "2根/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "玉米",
+        "水果玉米",
+        "粟米"
+      ],
+      "imageAsset": "preset-images/P-16.jpg"
+    },
+    {
+      "id": "G-027",
+      "name": "糯玉米",
+      "specText": "2根/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "黏玉米",
+        "黏苞米"
+      ],
+      "imageAsset": "preset-images/P-43.jpg"
+    },
+    {
+      "id": "G-028",
+      "name": "黄心土豆",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "土豆",
+        "马铃薯",
+        "洋芋"
+      ],
+      "imageAsset": "preset-images/P-44.jpg"
+    },
+    {
+      "id": "G-029",
+      "name": "红皮土豆",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "小土豆",
+        "红土豆",
+        "红皮洋芋"
+      ],
+      "imageAsset": "preset-images/P-11.jpg"
+    },
+    {
+      "id": "G-030",
+      "name": "胡萝卜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "胡萝卜",
+        "红萝卜",
+        "丁香萝卜"
+      ],
+      "imageAsset": "preset-images/P-20.jpg"
+    },
+    {
+      "id": "G-031",
+      "name": "带泥莲藕",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "莲藕",
+        "藕",
+        "湖藕"
+      ],
+      "imageAsset": "preset-images/P-05.jpg"
+    },
+    {
+      "id": "G-032",
+      "name": "山药",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "山药",
+        "淮山",
+        "薯蓣"
+      ],
+      "imageAsset": "preset-images/P-17.jpg"
+    },
+    {
+      "id": "G-033",
+      "name": "白萝卜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "萝卜",
+        "莱菔",
+        "菜头"
+      ],
+      "imageAsset": "preset-images/P-45.jpg"
+    },
+    {
+      "id": "G-034",
+      "name": "红薯",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "地瓜",
+        "番薯",
+        "山芋"
+      ],
+      "imageAsset": "preset-images/P-46.jpg"
+    },
+    {
+      "id": "G-035",
+      "name": "紫薯",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "紫心地瓜",
+        "紫番薯"
+      ],
+      "imageAsset": "preset-images/P-47.jpg"
+    },
+    {
+      "id": "G-036",
+      "name": "芋头",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "毛芋",
+        "香芋",
+        "芋艿"
+      ],
+      "imageAsset": "preset-images/P-48.jpg"
+    },
+    {
+      "id": "G-037",
+      "name": "洋葱",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "圆葱",
+        "球葱",
+        "玉葱"
+      ],
+      "imageAsset": "preset-images/P-49.jpg"
+    },
+    {
+      "id": "G-038",
+      "name": "莴笋",
+      "specText": "1根(约500g)",
+      "unit": "根",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "青笋",
+        "莴苣",
+        "千金菜"
+      ],
+      "imageAsset": "preset-images/P-50.jpg"
+    },
+    {
+      "id": "G-039",
+      "name": "荸荠",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "马蹄",
+        "地栗",
+        "乌芋"
+      ],
+      "imageAsset": "preset-images/P-51.jpg"
+    },
+    {
+      "id": "G-040",
+      "name": "西兰花",
+      "specText": "约400g/个",
+      "unit": "个",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "绿花菜",
+        "青花菜",
+        "西蓝花"
+      ],
+      "imageAsset": "preset-images/P-12.jpg"
+    },
+    {
+      "id": "G-041",
+      "name": "花菜",
+      "specText": "约500g/个",
+      "unit": "个",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "白花菜",
+        "菜花",
+        "椰菜花"
+      ],
+      "imageAsset": "preset-images/P-52.jpg"
+    },
+    {
+      "id": "G-042",
+      "name": "四季豆",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "豆角",
+        "芸豆",
+        "菜豆"
+      ],
+      "imageAsset": "preset-images/P-53.jpg"
+    },
+    {
+      "id": "G-043",
+      "name": "荷兰豆",
+      "specText": "约250g/份",
+      "unit": "份",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "甜豆",
+        "软荚豌豆"
+      ],
+      "imageAsset": "preset-images/P-54.jpg"
+    },
+    {
+      "id": "G-044",
+      "name": "黄豆芽",
+      "specText": "约300g/份",
+      "unit": "份",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "豆芽",
+        "黄芽菜"
+      ],
+      "imageAsset": "preset-images/P-55.jpg"
+    },
+    {
+      "id": "G-045",
+      "name": "绿豆芽",
+      "specText": "约300g/份",
+      "unit": "份",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "豆芽",
+        "银芽"
+      ],
+      "imageAsset": "preset-images/P-56.jpg"
+    },
+    {
+      "id": "G-046",
+      "name": "豌豆尖",
+      "specText": "约250g/份",
+      "unit": "份",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "豆苗",
+        "龙须菜",
+        "豌豆苗"
+      ],
+      "imageAsset": "preset-images/P-57.jpg"
+    },
+    {
+      "id": "G-047",
+      "name": "鲜香菇",
+      "specText": "约200g/盒",
+      "unit": "盒",
+      "suggestedCategory": "菌菇类",
+      "aliases": [
+        "香菇",
+        "冬菇",
+        "花菇"
+      ],
+      "imageAsset": "preset-images/P-07.jpg"
+    },
+    {
+      "id": "G-048",
+      "name": "金针菇",
+      "specText": "约200g/袋",
+      "unit": "袋",
+      "suggestedCategory": "菌菇类",
+      "aliases": [
+        "金菇",
+        "智力菇",
+        "朴菇"
+      ],
+      "imageAsset": "preset-images/P-58.jpg"
+    },
+    {
+      "id": "G-049",
+      "name": "杏鲍菇",
+      "specText": "约300g/份",
+      "unit": "份",
+      "suggestedCategory": "菌菇类",
+      "aliases": [
+        "刺芹侧耳",
+        "鸡腿菇"
+      ],
+      "imageAsset": "preset-images/P-59.jpg"
+    },
+    {
+      "id": "G-050",
+      "name": "平菇",
+      "specText": "约300g/份",
+      "unit": "份",
+      "suggestedCategory": "菌菇类",
+      "aliases": [
+        "侧耳",
+        "秀珍菇",
+        "凤尾菇"
+      ],
+      "imageAsset": "preset-images/P-60.jpg"
+    },
+    {
+      "id": "G-051",
+      "name": "白玉菇",
+      "specText": "约200g/袋",
+      "unit": "袋",
+      "suggestedCategory": "菌菇类",
+      "aliases": [
+        "白雪菇",
+        "海鲜菇"
+      ],
+      "imageAsset": "preset-images/P-61.jpg"
+    },
+    {
+      "id": "G-052",
+      "name": "鲜木耳",
+      "specText": "约200g/盒",
+      "unit": "盒",
+      "suggestedCategory": "菌菇类",
+      "aliases": [
+        "黑木耳",
+        "云耳",
+        "光木耳"
+      ],
+      "imageAsset": "preset-images/P-62.jpg"
+    },
+    {
+      "id": "G-053",
+      "name": "散养土鸡蛋",
+      "specText": "10枚/盒",
+      "unit": "盒",
+      "suggestedCategory": "蛋豆类",
+      "aliases": [
+        "土鸡蛋",
+        "柴鸡蛋",
+        "笨鸡蛋"
+      ],
+      "imageAsset": "preset-images/P-03.jpg"
+    },
+    {
+      "id": "G-054",
+      "name": "洋鸡蛋",
+      "specText": "10枚/盒",
+      "unit": "盒",
+      "suggestedCategory": "蛋豆类",
+      "aliases": [
+        "鸡蛋",
+        "鲜鸡蛋",
+        "洋鸡子"
+      ],
+      "imageAsset": "preset-images/P-63.jpg"
+    },
+    {
+      "id": "G-055",
+      "name": "卤水老豆腐",
+      "specText": "1块(约400g)",
+      "unit": "块",
+      "suggestedCategory": "蛋豆类",
+      "aliases": [
+        "老豆腐",
+        "北豆腐",
+        "板豆腐"
+      ],
+      "imageAsset": "preset-images/P-64.jpg"
+    },
+    {
+      "id": "G-056",
+      "name": "嫩豆腐",
+      "specText": "1盒(约350g)",
+      "unit": "盒",
+      "suggestedCategory": "蛋豆类",
+      "aliases": [
+        "南豆腐",
+        "水豆腐",
+        "石膏豆腐"
+      ],
+      "imageAsset": "preset-images/P-08.jpg"
+    },
+    {
+      "id": "G-057",
+      "name": "豆干",
+      "specText": "约250g/份",
+      "unit": "份",
+      "suggestedCategory": "蛋豆类",
+      "aliases": [
+        "香干",
+        "白干",
+        "豆腐干"
+      ],
+      "imageAsset": "preset-images/P-65.jpg"
+    },
+    {
+      "id": "G-058",
+      "name": "千张",
+      "specText": "约250g/份",
+      "unit": "份",
+      "suggestedCategory": "蛋豆类",
+      "aliases": [
+        "豆腐皮",
+        "百叶",
+        "干豆腐"
+      ],
+      "imageAsset": "preset-images/P-66.jpg"
+    },
+    {
+      "id": "G-059",
+      "name": "现磨豆浆",
+      "specText": "1袋(约500ml)",
+      "unit": "袋",
+      "suggestedCategory": "蛋豆类",
+      "aliases": [
+        "豆奶",
+        "豆乳"
+      ],
+      "imageAsset": "preset-images/P-67.jpg"
+    },
+    {
+      "id": "G-060",
+      "name": "五花肉",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "猪肉",
+        "三层肉",
+        "肋条肉"
+      ],
+      "imageAsset": "preset-images/P-14.jpg"
+    },
+    {
+      "id": "G-061",
+      "name": "前腿肉",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "猪前腿",
+        "夹心肉",
+        "前槽"
+      ],
+      "imageAsset": "preset-images/P-68.jpg"
+    },
+    {
+      "id": "G-062",
+      "name": "里脊肉",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "猪里脊",
+        "扁担肉",
+        "腰柳"
+      ],
+      "imageAsset": "preset-images/P-69.jpg"
+    },
+    {
+      "id": "G-063",
+      "name": "猪肋排",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "排骨",
+        "小排",
+        "肋条骨"
+      ],
+      "imageAsset": "preset-images/P-70.jpg"
+    },
+    {
+      "id": "G-064",
+      "name": "猪蹄",
+      "specText": "1只(约600g)",
+      "unit": "只",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "猪脚",
+        "元蹄",
+        "猪手"
+      ],
+      "imageAsset": "preset-images/P-71.jpg"
+    },
+    {
+      "id": "G-065",
+      "name": "猪肝",
+      "specText": "约300g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "猪肝",
+        "肝尖",
+        "猪肝片"
+      ],
+      "imageAsset": "preset-images/P-72.jpg"
+    },
+    {
+      "id": "G-066",
+      "name": "冷鲜土鸡半只",
+      "specText": "半只(约800g)",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "土鸡",
+        "散养鸡",
+        "笨鸡"
+      ],
+      "imageAsset": "preset-images/P-04.jpg"
+    },
+    {
+      "id": "G-067",
+      "name": "鸡胸肉",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "鸡脯肉",
+        "鸡柳",
+        "鸡胸脯"
+      ],
+      "imageAsset": "preset-images/P-73.jpg"
+    },
+    {
+      "id": "G-068",
+      "name": "鸡翅中",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "翅中",
+        "中翅",
+        "鸡中翼"
+      ],
+      "imageAsset": "preset-images/P-74.jpg"
+    },
+    {
+      "id": "G-069",
+      "name": "牛腩",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "牛肉",
+        "牛腩肉",
+        "坑腩"
+      ],
+      "imageAsset": "preset-images/P-75.jpg"
+    },
+    {
+      "id": "G-070",
+      "name": "羊肉卷",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "肉禽类",
+      "aliases": [
+        "羊腿肉",
+        "涮羊肉",
+        "羊肉片"
+      ],
+      "imageAsset": "preset-images/P-76.jpg"
+    },
+    {
+      "id": "G-071",
+      "name": "活虾",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水产类",
+      "aliases": [
+        "基围虾",
+        "明虾",
+        "对虾"
+      ],
+      "imageAsset": "preset-images/P-15.jpg"
+    },
+    {
+      "id": "G-072",
+      "name": "活鲫鱼",
+      "specText": "1条(约500g)",
+      "unit": "条",
+      "suggestedCategory": "水产类",
+      "aliases": [
+        "鲫鱼",
+        "鲫瓜子",
+        "喜头鱼"
+      ],
+      "imageAsset": "preset-images/P-77.jpg"
+    },
+    {
+      "id": "G-073",
+      "name": "活草鱼",
+      "specText": "1条(约1.5kg)",
+      "unit": "条",
+      "suggestedCategory": "水产类",
+      "aliases": [
+        "草鱼",
+        "鲩鱼",
+        "白鲩"
+      ],
+      "imageAsset": "preset-images/P-78.jpg"
+    },
+    {
+      "id": "G-074",
+      "name": "冰鲜鲈鱼",
+      "specText": "1条(约600g)",
+      "unit": "条",
+      "suggestedCategory": "水产类",
+      "aliases": [
+        "海鲈鱼",
+        "花鲈",
+        "寨花"
+      ],
+      "imageAsset": "preset-images/P-79.jpg"
+    },
+    {
+      "id": "G-075",
+      "name": "花蛤",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水产类",
+      "aliases": [
+        "蛤蜊",
+        "蚬子",
+        "花甲"
+      ],
+      "imageAsset": "preset-images/P-80.jpg"
+    },
+    {
+      "id": "G-076",
+      "name": "鱿鱼",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水产类",
+      "aliases": [
+        "枪乌贼",
+        "柔鱼",
+        "句公"
+      ],
+      "imageAsset": "preset-images/P-81.jpg"
+    },
+    {
+      "id": "G-077",
+      "name": "带鱼段",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水产类",
+      "aliases": [
+        "刀鱼",
+        "牙带鱼",
+        "裙带鱼"
+      ],
+      "imageAsset": "preset-images/P-82.jpg"
+    },
+    {
+      "id": "G-078",
+      "name": "本地草莓",
+      "specText": "约300g/盒",
+      "unit": "盒",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "草莓",
+        "士多啤梨"
+      ],
+      "imageAsset": "preset-images/P-13.jpg"
+    },
+    {
+      "id": "G-079",
+      "name": "红富士苹果",
+      "specText": "约1kg/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "苹果",
+        "富士",
+        "红富士"
+      ],
+      "imageAsset": "preset-images/P-83.jpg"
+    },
+    {
+      "id": "G-080",
+      "name": "香蕉",
+      "specText": "约1kg/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "芭蕉",
+        "大蕉",
+        "弓蕉"
+      ],
+      "imageAsset": "preset-images/P-84.jpg"
+    },
+    {
+      "id": "G-081",
+      "name": "皇冠梨",
+      "specText": "约1kg/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "梨",
+        "鸭梨",
+        "雪梨"
+      ],
+      "imageAsset": "preset-images/P-85.jpg"
+    },
+    {
+      "id": "G-082",
+      "name": "砂糖橘",
+      "specText": "约1kg/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "橘子",
+        "沙糖桔",
+        "十月桔"
+      ],
+      "imageAsset": "preset-images/P-86.jpg"
+    },
+    {
+      "id": "G-083",
+      "name": "巨峰葡萄",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "葡萄",
+        "提子",
+        "蒲桃"
+      ],
+      "imageAsset": "preset-images/P-87.jpg"
+    },
+    {
+      "id": "G-084",
+      "name": "西瓜",
+      "specText": "约3kg/个",
+      "unit": "个",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "西瓜",
+        "寒瓜",
+        "夏瓜"
+      ],
+      "imageAsset": "preset-images/P-88.jpg"
+    },
+    {
+      "id": "G-085",
+      "name": "红心火龙果",
+      "specText": "1个(约500g)",
+      "unit": "个",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "火龙果",
+        "仙人掌果",
+        "红龙果"
+      ],
+      "imageAsset": "preset-images/P-89.jpg"
+    },
+    {
+      "id": "G-086",
+      "name": "猕猴桃",
+      "specText": "6个/盒",
+      "unit": "盒",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "奇异果",
+        "阳桃",
+        "毛桃"
+      ],
+      "imageAsset": "preset-images/P-90.jpg"
+    },
+    {
+      "id": "G-087",
+      "name": "柠檬",
+      "specText": "2个/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "洋柠檬",
+        "益母果",
+        "黎檬"
+      ],
+      "imageAsset": "preset-images/P-91.jpg"
+    },
+    {
+      "id": "G-088",
+      "name": "小葱",
+      "specText": "约150g/把",
+      "unit": "把",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "香葱",
+        "葱",
+        "细香葱"
+      ],
+      "imageAsset": "preset-images/P-09.jpg"
+    },
+    {
+      "id": "G-089",
+      "name": "大葱",
+      "specText": "约300g/把",
+      "unit": "把",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "山东大葱",
+        "葱白",
+        "青葱"
+      ],
+      "imageAsset": "preset-images/P-92.jpg"
+    },
+    {
+      "id": "G-090",
+      "name": "香菜",
+      "specText": "约100g/把",
+      "unit": "把",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "芫荽",
+        "胡荽",
+        "盐荽"
+      ],
+      "imageAsset": "preset-images/P-93.jpg"
+    },
+    {
+      "id": "G-091",
+      "name": "小米椒",
+      "specText": "约100g/份",
+      "unit": "份",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "朝天椒",
+        "小米辣",
+        "指天椒"
+      ],
+      "imageAsset": "preset-images/P-18.jpg"
+    },
+    {
+      "id": "G-092",
+      "name": "青尖椒",
+      "specText": "约250g/份",
+      "unit": "份",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "尖椒",
+        "线椒",
+        "青辣椒"
+      ],
+      "imageAsset": "preset-images/P-94.jpg"
+    },
+    {
+      "id": "G-093",
+      "name": "蒜头",
+      "specText": "约250g/份",
+      "unit": "份",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "大蒜",
+        "蒜",
+        "蒜瓣"
+      ],
+      "imageAsset": "preset-images/P-19.jpg"
+    },
+    {
+      "id": "G-094",
+      "name": "生姜",
+      "specText": "约250g/份",
+      "unit": "份",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "姜",
+        "老姜",
+        "姜块"
+      ],
+      "imageAsset": "preset-images/P-10.jpg"
+    },
+    {
+      "id": "G-095",
+      "name": "蒜苗",
+      "specText": "约250g/把",
+      "unit": "把",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "青蒜",
+        "蒜叶",
+        "蒜毛"
+      ],
+      "imageAsset": "preset-images/P-95.jpg"
+    },
+    {
+      "id": "G-096",
+      "name": "蒜薹",
+      "specText": "约250g/份",
+      "unit": "份",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "蒜苔",
+        "蒜毫",
+        "青蒜薹"
+      ],
+      "imageAsset": "preset-images/P-96.jpg"
+    }
+  ]
+}

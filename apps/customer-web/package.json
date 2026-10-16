@@ -1,0 +1,27 @@
+{
+  "name": "chunlian-customer-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "春连鲜选 · 顾客端网页版（移动优先 H5）",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:only": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test:e2e": "playwright test",
+    "test:e2e:staging": "playwright test --config=playwright.staging.config.js"
+  },
+  "dependencies": {
+    "pinia": "^2.2.6",
+    "vue": "^3.5.13",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "~5.6.3",
+    "vite": "^6.4.4",
+    "vue-tsc": "^2.1.10"
+  }
+}

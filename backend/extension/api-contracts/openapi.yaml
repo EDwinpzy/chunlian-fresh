@@ -1,0 +1,1515 @@
+openapi: 3.0.3
+
+info:
+  title: 春连鲜选 API (Chunlian Fresh)
+  description: |
+    个人生鲜卖菜系统双端 API —— 顾客微信小程序 + 商家 Android App。
+
+    **核心约定**
+    - 所有金额使用 `*_fen` 整数（分），禁止浮点。
+    - 所有写操作必须携带 `Idempotency-Key`（UUID v4）。
+    - 订单状态拆成四维：`fulfillment` / `payment_state` / `receipt_state` / `revision_state`。
+    - 订单写操作携带 `X-Order-Version`，服务端强校验乐观锁。
+
+    **不存在性声明**：本文件描述的是**本项目拟新增接口**，并非声称 ShopXO 官方已存在同名路由。
+    真实路由可按 ShopXO API 规范调整，但语义保持不变。
+  version: 1.0.0
+  contact:
+    name: 春连鲜选 项目组
+  license:
+    name: MIT
+
+servers:
+  - url: https://api.example.cn
+    description: 生产环境（示例域名，非已购买）
+  - url: http://localhost:8080
+    description: 本地开发
+
+tags:
+  - name: catalog
+    description: 公开商品目录
+  - name: customer
+    description: 顾客端（微信小程序）
+  - name: merchant
+    description: 商家端（Android App）
+  - name: webhook
+    description: 第三方回调
+
+paths:
+  /api/v1/catalog/categories:
+    get:
+      tags: [catalog]
+      summary: 分类列表
+      security: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Category'
+
+  /api/v1/catalog/products:
+    get:
+      tags: [catalog]
+      summary: 商品列表 / 搜索
+      security: []
+      parameters:
+        - name: category_id
+          in: query
+          schema: { type: string }
+        - name: keyword
+          in: query
+          schema: { type: string }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PagedProducts'
+
+  /api/v1/catalog/products/{id}:
+    get:
+      tags: [catalog]
+      summary: 商品详情与 SKU
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/customer/addresses:
+    get:
+      tags: [customer]
+      summary: 我的地址列表
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Address'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [customer]
+      summary: 保存地址
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInput'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Address'
+
+  /api/v1/customer/orders/preview:
+    post:
+      tags: [customer]
+      summary: 下单金额预览
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderPreviewRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrderAmountBreakdown'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/customer/orders:
+    post:
+      tags: [customer]
+      summary: 下单
+      description: |
+        金额全部由服务端计算，请求不接受任何金额字段。
+        `payment_method=COD` 直接返回待配送；`WECHAT` 返回支付参数。
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CreateOrderResult'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+    get:
+      tags: [customer]
+      summary: 我的订单
+      parameters:
+        - name: status
+          in: query
+          description: 展示映射（非状态字段本身）
+          schema:
+            type: string
+            enum: [ALL, PENDING_PAYMENT, PENDING_DISPATCH, DELIVERING, DELIVERED, FINISHED, CANCELLED]
+        - name: keyword
+          in: query
+          description: 按订单号或订单中的商品名称搜索
+          schema: { type: string }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PagedOrders'
+
+  /api/v1/customer/orders/{id}:
+    get:
+      tags: [customer]
+      summary: 订单详情（校验归属）
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrderView'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/customer/orders/{id}/revisions/preview:
+    post:
+      tags: [customer]
+      summary: 修改预览（服务器重新计价 + 库存校验）
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevisionRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RevisionPreview'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/customer/orders/{id}/revisions:
+    post:
+      tags: [customer]
+      summary: 提交修订
+      description: |
+        `delta_fen > 0` 且已付款 → `revision_state=PENDING_TOPUP`，需补款成功才提交新版本。
+        `delta_fen < 0` 且已付款 → 提交修订 + 差额退款任务，保持 `PROCESSING`。
+        `delta_fen = 0` → 直接提交，不触发资金操作。
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevisionRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RevisionResult'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/customer/orders/{id}/cancel:
+    post:
+      tags: [customer]
+      summary: 取消订单（未配送才允许）
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_version: { type: integer, format: int64 }
+                reason: { type: string, maxLength: 255 }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CancelResult'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/customer/orders/{id}/pay:
+    post:
+      tags: [customer]
+      summary: 获取支付参数 / 补差价
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PayParams'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/customer/orders/{id}/refunds:
+    get:
+      tags: [customer]
+      summary: 退款进度
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/RefundRecord'
+
+  /api/v1/customer/orders/{id}/receive:
+    post:
+      tags: [customer]
+      summary: 确认收货（仅已送达，幂等）
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrderView'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  # ---------------- 商家端 ----------------
+
+  /api/v1/merchant/auth/login:
+    post:
+      tags: [merchant]
+      summary: 商家登录（限速 + 设备标识）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password, device_id]
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+                device_id: { type: string, maxLength: 64 }
+                device_name: { type: string, maxLength: 128 }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          access_token: { type: string }
+                          refresh_token: { type: string }
+                          expires_in: { type: integer }
+                          store:
+                            $ref: '#/components/schemas/StoreInfo'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /api/v1/merchant/auth/logout:
+    post:
+      tags: [merchant]
+      summary: 登出及令牌撤销
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/merchant/dashboard:
+    get:
+      tags: [merchant]
+      summary: 工作台统计
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DashboardData'
+
+  /api/v1/merchant/orders:
+    get:
+      tags: [merchant]
+      summary: 订单列表与筛选
+      parameters:
+        - name: status
+          in: query
+          description: Omit to include all orders. DELIVERED includes both DELIVERED and FINISHED fulfillment states.
+          schema:
+            type: string
+            enum: [PENDING, DELIVERING, DELIVERED, CANCELLED]
+        - name: keyword
+          in: query
+          description: 订单号 / 收货人 / 手机号后四位（脱敏 + 权限控制）
+          schema: { type: string }
+        - name: sort
+          in: query
+          description: DEFAULT preserves fulfillment priority. EXPECTED_AT sorts ASAP orders with null expected_at first, then scheduled orders by expected_at ascending.
+          default: DEFAULT
+          schema:
+            type: string
+            enum: [DEFAULT, EXPECTED_AT]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PagedMerchantOrders'
+
+  /api/v1/merchant/orders/{id}:
+    get:
+      tags: [merchant]
+      summary: 订单详情
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrderView'
+
+  /api/v1/merchant/orders/{id}/dispatch:
+    post:
+      tags: [merchant]
+      summary: 开始配送
+      description: |
+        前置校验：`fulfillment=PENDING`、无 `PENDING_TOPUP` 修订、非取消。
+        存在未结补款 → `409 TOPUP_REQUIRED`。
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderVersion'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          order_id: { type: string }
+                          order_version: { type: integer, format: int64 }
+                          fulfillment: { $ref: '#/components/schemas/Fulfillment' }
+                          locked_customer_editing: { type: boolean }
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/merchant/orders/{id}/deliver:
+    post:
+      tags: [merchant]
+      summary: 确认送达（合并 COD 收款）
+      description: |
+        - 在线已付款订单：`received_money` 必须为 `false` 或不传。
+        - COD 已收款：`received_money=true` + `collection_method` + `collected_fen`（须等于应收）。
+        - COD 仅送达未收款：`received_money=false`，**不要提供收款金额**。
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliverRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeliverResult'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/merchant/orders/{id}/cod-receipt:
+    post:
+      tags: [merchant]
+      summary: 仅异常补记 COD 收款
+      description: |
+        纠错/核销入口，**不是日常主操作**。
+        仅允许 `fulfillment=DELIVERED` 且 `receivable_fen > 0`；已收 → `409 COD_ALREADY_COLLECTED`。
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodReceiptRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeliverResult'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/merchant/orders/{id}/revisions:
+    get:
+      tags: [merchant]
+      summary: 修改历史（只读）
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/RevisionRecord'
+
+  /api/v1/merchant/products:
+    get:
+      tags: [merchant]
+      summary: 商品列表
+      parameters:
+        - name: category_id
+          in: query
+          schema: { type: string }
+        - name: keyword
+          in: query
+          schema: { type: string }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PagedProducts'
+    post:
+      tags: [merchant]
+      summary: 新增商品
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductDetail'
+
+  /api/v1/merchant/products/{id}:
+    patch:
+      tags: [merchant]
+      summary: 商品价格 / 库存 / 上下架（审计）
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPatch'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductDetail'
+
+  /api/v1/merchant/uploads:
+    post:
+      tags: [merchant]
+      summary: 上传图片（限类型/大小/权限）
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                scene:
+                  type: string
+                  enum: [PRODUCT, STORE]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          url: { type: string, format: uri }
+                          width: { type: integer }
+                          height: { type: integer }
+                          bytes: { type: integer }
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+
+  /api/v1/merchant/reconciliation:
+    get:
+      tags: [merchant]
+      summary: 收款报表
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ReconciliationData'
+
+  /api/v1/merchant/store:
+    get:
+      tags: [merchant]
+      summary: 读取营业与基础设置
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StoreInfo'
+    patch:
+      tags: [merchant]
+      summary: 更新营业与基础设置（审计）
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorePatch'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/StoreInfo'
+
+  /api/v1/merchant/notifications:
+    get:
+      tags: [merchant]
+      summary: 待办提醒（仅本店）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Notification'
+
+  # ---------------- Webhook ----------------
+
+  /api/v1/webhook/wechatpay/notify:
+    post:
+      tags: [webhook]
+      summary: 微信支付结果通知
+      description: |
+        APIv3 签名验签 + 金额/商户号/订单号比对 + 防重放。
+        验签失败直接丢弃并告警，不做任何业务变更。
+      security: []
+      responses:
+        '200':
+          description: 已处理
+
+  /api/v1/webhook/wechatpay/refund-notify:
+    post:
+      tags: [webhook]
+      summary: 微信退款结果通知
+      security: []
+      responses:
+        '200':
+          description: 已处理
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    OrderId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    ProductId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSize:
+      name: page_size
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID v4；同一 key 重复请求返回首次结果
+      schema: { type: string, format: uuid }
+    OrderVersion:
+      name: X-Order-Version
+      in: header
+      required: true
+      description: 乐观锁版本号，服务端强校验
+      schema: { type: integer, format: int64 }
+
+  responses:
+    Unauthorized:
+      description: 未认证
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: 无权访问
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    RateLimited:
+      description: 请求过于频繁
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    ValidationFailed:
+      description: 参数校验失败
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Conflict:
+      description: |
+        业务冲突。`code` 取值：
+        `ORDER_NOT_EDITABLE` / `ORDER_VERSION_CONFLICT` / `OUT_OF_STOCK` /
+        `TOPUP_REQUIRED` / `PAYMENT_CONFIRMING` / `REFUND_PROCESSING` /
+        `COD_ALREADY_COLLECTED` / `SHOP_CLOSED` / `IDEMPOTENCY_CONFLICT`
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        code: { type: string, example: OK }
+        message: { type: string, example: success }
+        data: { nullable: true }
+        request_id: { type: string }
+
+    ApiError:
+      type: object
+      required: [code, message, request_id]
+      properties:
+        code: { type: string, example: ORDER_VERSION_CONFLICT }
+        message: { type: string, example: 订单内容刚刚发生变化，请刷新后再试 }
+        data:
+          type: object
+          additionalProperties: true
+        request_id: { type: string }
+
+    Fulfillment:
+      type: string
+      enum: [PENDING, DELIVERING, DELIVERED, FINISHED, CANCELLED]
+
+    PaymentState:
+      type: string
+      enum: [UNPAID, PAYING, PAID, PARTIAL_REFUNDED, REFUNDING, REFUNDED]
+
+    ReceiptState:
+      type: string
+      enum: [UNCONFIRMED, CONFIRMED]
+
+    RevisionState:
+      type: string
+      enum: [NONE, PENDING_TOPUP, APPLYING, COMMITTED, FAILED]
+
+    PaymentMethod:
+      type: string
+      enum: [WECHAT, COD]
+
+    DeliveryMode:
+      type: string
+      enum: [ASAP, SCHEDULED]
+
+    CollectionMethod:
+      type: string
+      enum: [CASH, OFFLINE_QR, OTHER]
+
+    Category:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        icon_url: { type: string, format: uri }
+        sort: { type: integer }
+
+    Sku:
+      type: object
+      required: [id, spec, unit_fen, stock]
+      properties:
+        id: { type: string }
+        spec: { type: string, example: 500g/份 }
+        unit_fen: { type: integer, example: 350 }
+        stock: { type: integer, example: 50 }
+        sold_out: { type: boolean }
+
+    Product:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        image_url: { type: string, format: uri }
+        category_id: { type: string }
+        min_price_fen: { type: integer }
+        is_on_sale: { type: boolean }
+        sold_out: { type: boolean }
+        skus:
+          type: array
+          items: { $ref: '#/components/schemas/Sku' }
+
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/Product'
+        - type: object
+          properties:
+            description: { type: string }
+            origin: { type: string }
+            storage_tips: { type: string }
+
+    PagedProducts:
+      type: object
+      properties:
+        list:
+          type: array
+          items: { $ref: '#/components/schemas/Product' }
+        page: { type: integer }
+        page_size: { type: integer }
+        total: { type: integer }
+        has_more: { type: boolean }
+
+    Address:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string }
+        address: { type: string }
+        is_default: { type: boolean }
+
+    AddressInput:
+      type: object
+      required: [name, phone, address]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string, pattern: '^1[3-9]\d{9}$' }
+        address: { type: string }
+        is_default: { type: boolean }
+
+    Contact:
+      type: object
+      required: [name, phone, address]
+      properties:
+        name: { type: string }
+        phone: { type: string, pattern: '^1[3-9]\d{9}$' }
+        address: { type: string }
+
+    OrderItemInput:
+      type: object
+      required: [sku_id, qty]
+      properties:
+        sku_id: { type: string }
+        qty: { type: integer, minimum: 1 }
+
+    OrderPreviewRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemInput' }
+
+    OrderAmountBreakdown:
+      type: object
+      properties:
+        goods_fen: { type: integer }
+        delivery_fee_fen: { type: integer }
+        total_fen: { type: integer }
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              sku_id: { type: string }
+              name: { type: string }
+              spec: { type: string }
+              qty: { type: integer }
+              unit_fen: { type: integer }
+              subtotal_fen: { type: integer }
+        warnings:
+          type: array
+          items: { type: object, additionalProperties: true }
+
+    CreateOrderRequest:
+      type: object
+      required: [items, contact, delivery_mode, payment_method]
+      properties:
+        client_request_id: { type: string, format: uuid }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemInput' }
+        contact: { $ref: '#/components/schemas/Contact' }
+        delivery_mode: { $ref: '#/components/schemas/DeliveryMode' }
+        expected_delivery_at:
+          type: string
+          format: date-time
+          description: ISO8601 + 时区偏移；`ASAP` 时不得传
+        payment_method: { $ref: '#/components/schemas/PaymentMethod' }
+        remark: { type: string, maxLength: 255 }
+
+    PayParams:
+      type: object
+      nullable: true
+      properties:
+        timeStamp: { type: string }
+        nonceStr: { type: string }
+        package: { type: string }
+        signType: { type: string, example: RSA }
+        paySign: { type: string }
+
+    CreateOrderResult:
+      type: object
+      properties:
+        order_id: { type: string }
+        order_no: { type: string }
+        order_version: { type: integer, format: int64 }
+        fulfillment: { $ref: '#/components/schemas/Fulfillment' }
+        payment_state: { $ref: '#/components/schemas/PaymentState' }
+        payment_method: { $ref: '#/components/schemas/PaymentMethod' }
+        goods_fen: { type: integer }
+        delivery_fee_fen: { type: integer }
+        total_fen: { type: integer }
+        pay_params: { $ref: '#/components/schemas/PayParams' }
+
+    RevisionRequest:
+      type: object
+      required: [order_version, items]
+      properties:
+        order_version: { type: integer, format: int64 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItemInput' }
+        contact: { $ref: '#/components/schemas/Contact' }
+        delivery_mode: { $ref: '#/components/schemas/DeliveryMode' }
+        expected_delivery_at: { type: string, format: date-time }
+        remark: { type: string, maxLength: 255 }
+
+    RevisionPreview:
+      type: object
+      properties:
+        order_version: { type: integer, format: int64 }
+        old_total_fen: { type: integer }
+        new_total_fen: { type: integer }
+        delta_fen:
+          type: integer
+          description: '正数=补款，负数=退款，0=无资金动作'
+        delta_type:
+          type: string
+          enum: [NONE, TOPUP, REFUND]
+        goods_changed: { type: boolean }
+        address_changed: { type: boolean }
+        time_changed: { type: boolean }
+        priced_lines:
+          type: array
+          description: 显式标注每个 SKU 的计价来源
+          items:
+            type: object
+            properties:
+              sku_id: { type: string }
+              qty: { type: integer }
+              unit_fen: { type: integer }
+              line_total_fen: { type: integer }
+              priced_by:
+                type: string
+                enum: [ORIGINAL_ORDER, CURRENT_PRICE, MIXED]
+        warnings:
+          type: array
+          items: { type: object, additionalProperties: true }
+        customer_message: { type: string }
+
+    RevisionResult:
+      type: object
+      properties:
+        order_version: { type: integer, format: int64 }
+        revision_id: { type: integer, format: int64 }
+        revision_status: { $ref: '#/components/schemas/RevisionState' }
+        delta_fen: { type: integer }
+        pay_params: { $ref: '#/components/schemas/PayParams' }
+        effective_immediately: { type: boolean }
+        customer_message: { type: string }
+
+    RevisionRecord:
+      type: object
+      properties:
+        revision_id: { type: integer, format: int64 }
+        from_version: { type: integer, format: int64 }
+        to_version: { type: integer, format: int64 }
+        status: { type: string }
+        delta_fen: { type: integer }
+        actor_type: { type: string, enum: [CUSTOMER, MERCHANT, SYSTEM] }
+        changed_fields:
+          type: array
+          items: { type: string, enum: [ITEMS, ADDRESS, TIME, REMARK] }
+        created_at: { type: string, format: date-time }
+
+    OrderView:
+      type: object
+      properties:
+        id: { type: string }
+        order_no: { type: string }
+        version: { type: integer, format: int64 }
+        fulfillment: { $ref: '#/components/schemas/Fulfillment' }
+        payment_state: { $ref: '#/components/schemas/PaymentState' }
+        receipt_state: { $ref: '#/components/schemas/ReceiptState' }
+        revision_state: { $ref: '#/components/schemas/RevisionState' }
+        payment_method: { $ref: '#/components/schemas/PaymentMethod' }
+        delivery_mode: { $ref: '#/components/schemas/DeliveryMode' }
+        expected_delivery_at: { type: string, format: date-time, nullable: true }
+        contact: { $ref: '#/components/schemas/Contact' }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              sku_id: { type: string }
+              name: { type: string }
+              spec: { type: string }
+              image_url: { type: string }
+              unit_fen: { type: integer }
+              qty: { type: integer }
+              subtotal_fen: { type: integer }
+        goods_fen: { type: integer }
+        delivery_fee_fen: { type: integer }
+        total_fen: { type: integer }
+        paid_fen: { type: integer }
+        refunded_fen: { type: integer }
+        receivable_fen: { type: integer }
+        revision_count: { type: integer }
+        remark: { type: string }
+        delivered_at: { type: string, format: date-time, nullable: true }
+        received_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        can_customer_edit:
+          type: boolean
+          description: 服务器计算并最终裁决
+        can_customer_cancel: { type: boolean }
+
+    PagedOrders:
+      type: object
+      properties:
+        list:
+          type: array
+          items: { $ref: '#/components/schemas/OrderView' }
+        page: { type: integer }
+        page_size: { type: integer }
+        total: { type: integer }
+        has_more: { type: boolean }
+
+    MerchantOrderSummary:
+      type: object
+      properties:
+        order_id: { type: string }
+        order_no: { type: string }
+        summary: { type: string, example: '青菜×2 / 土豆×1' }
+        fulfillment: { $ref: '#/components/schemas/Fulfillment' }
+        payment_state: { $ref: '#/components/schemas/PaymentState' }
+        payment_method: { $ref: '#/components/schemas/PaymentMethod' }
+        total_fen: { type: integer }
+        receivable_fen: { type: integer }
+        delivery_mode: { $ref: '#/components/schemas/DeliveryMode' }
+        expected_at: { type: string, format: date-time, nullable: true }
+        contact_name: { type: string }
+        contact_phone_masked: { type: string, example: '138****8000' }
+        address: { type: string }
+        revision_count: { type: integer }
+        updated_by_customer_at: { type: string, format: date-time, nullable: true }
+        dispatchable:
+          type: boolean
+          description: 是否有未结补款（为 false 时不可开始配送）
+
+    PagedMerchantOrders:
+      type: object
+      properties:
+        list:
+          type: array
+          items: { $ref: '#/components/schemas/MerchantOrderSummary' }
+        page: { type: integer }
+        page_size: { type: integer }
+        total: { type: integer }
+        has_more: { type: boolean }
+
+    DeliverRequest:
+      type: object
+      required: [order_version, received_money]
+      properties:
+        order_version: { type: integer, format: int64 }
+        received_money:
+          type: boolean
+          description: COD 是否已收款；在线已付款订单必须为 false
+        collection_method: { $ref: '#/components/schemas/CollectionMethod' }
+        collected_fen:
+          type: integer
+          description: 仅 `received_money=true` 时提供，须等于应收
+        client_request_id: { type: string, format: uuid }
+
+    DeliverResult:
+      type: object
+      properties:
+        order_id: { type: string }
+        order_version: { type: integer, format: int64 }
+        fulfillment: { $ref: '#/components/schemas/Fulfillment' }
+        payment_state: { $ref: '#/components/schemas/PaymentState' }
+        receivable_fen: { type: integer }
+        ledger_id: { type: integer, format: int64, nullable: true }
+        delivered_at: { type: string, format: date-time }
+
+    CodReceiptRequest:
+      type: object
+      required: [order_version, collection_method, collected_fen]
+      properties:
+        order_version: { type: integer, format: int64 }
+        collection_method: { $ref: '#/components/schemas/CollectionMethod' }
+        collected_fen: { type: integer }
+        note: { type: string, maxLength: 255 }
+        client_request_id: { type: string, format: uuid }
+
+    CancelResult:
+      type: object
+      properties:
+        order_id: { type: string }
+        fulfillment: { $ref: '#/components/schemas/Fulfillment' }
+        payment_state: { $ref: '#/components/schemas/PaymentState' }
+        refund_fen: { type: integer }
+        refund_no: { type: string, nullable: true }
+        customer_message: { type: string }
+
+    RefundRecord:
+      type: object
+      properties:
+        refund_no: { type: string }
+        amount_fen: { type: integer }
+        status:
+          type: string
+          enum: [PENDING, PROCESSING, SUCCESS, FAILED]
+        created_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time, nullable: true }
+        timeline:
+          type: array
+          items:
+            type: object
+            properties:
+              label: { type: string }
+              at: { type: string, format: date-time }
+              done: { type: boolean }
+
+    StoreInfo:
+      type: object
+      properties:
+        name: { type: string }
+        phone: { type: string }
+        announcement: { type: string }
+        open: { type: boolean }
+        delivery_fee_fen: { type: integer }
+        business_timezone: { type: string, example: Asia/Shanghai }
+
+    StorePatch:
+      type: object
+      properties:
+        name: { type: string }
+        phone: { type: string }
+        announcement: { type: string }
+        open: { type: boolean }
+        delivery_fee_fen: { type: integer, minimum: 0 }
+
+    DashboardData:
+      type: object
+      properties:
+        business_date: { type: string, format: date }
+        store: { $ref: '#/components/schemas/StoreInfo' }
+        metrics:
+          type: object
+          description: |
+            统计口径：received_fen_today = 当天在线确认入账 + 当天 COD 实收 − 当天已成功退款。
+            跨日支付/退款按资金发生日归集。
+          properties:
+            received_fen_today: { type: integer }
+            wechat_received_fen_today: { type: integer }
+            cod_received_fen_today: { type: integer }
+            pending_dispatch_count: { type: integer }
+            delivering_count: { type: integer }
+            receivable_count: { type: integer, description: COD 已送达未收款单数 }
+            receivable_fen: { type: integer }
+            refund_fen_today: { type: integer }
+            order_count_today: { type: integer }
+        recent_orders:
+          type: array
+          description: 最近需处理订单，兼容旧版工作台。
+          items: { $ref: '#/components/schemas/MerchantOrderSummary' }
+        today_orders:
+          type: array
+          description: 最近下单日为今天的订单，最多返回 5 单。
+          items: { $ref: '#/components/schemas/MerchantOrderSummary' }
+        pending_orders:
+          type: array
+          description: 最近待配送订单，最多返回 5 单。
+          items: { $ref: '#/components/schemas/MerchantOrderSummary' }
+        delivering_orders:
+          type: array
+          description: 最近配送中订单，最多返回 5 单。
+          items: { $ref: '#/components/schemas/MerchantOrderSummary' }
+        uncollected_orders:
+          type: array
+          description: 最近已送达且货到付款未收款订单，最多返回 5 单。
+          items: { $ref: '#/components/schemas/MerchantOrderSummary' }
+
+    ReconciliationData:
+      type: object
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        days:
+          type: array
+          items:
+            type: object
+            properties:
+              business_date: { type: string, format: date }
+              online_fen: { type: integer }
+              cod_fen: { type: integer }
+              refund_fen: { type: integer }
+              received_fen: { type: integer }
+              receivable_fen: { type: integer }
+              order_count: { type: integer }
+
+    ProductInput:
+      type: object
+      required: [name, category_id, skus]
+      properties:
+        name: { type: string }
+        category_id: { type: string }
+        description: { type: string }
+        origin: { type: string }
+        storage_tips: { type: string }
+        image_urls:
+          type: array
+          items: { type: string, format: uri }
+        skus:
+          type: array
+          items:
+            type: object
+            required: [spec, unit_fen, stock]
+            properties:
+              spec: { type: string, example: 500g/份 }
+              unit_fen: { type: integer, minimum: 0 }
+              stock: { type: integer, minimum: 0 }
+              is_on_sale: { type: boolean }
+
+    ProductPatch:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        is_on_sale:
+          type: boolean
+          description: 有历史订单的商品应下架而非物理删除
+        skus:
+          type: array
+          items:
+            type: object
+            required: [id]
+            properties:
+              id: { type: string }
+              unit_fen: { type: integer, minimum: 0 }
+              stock: { type: integer, minimum: 0 }
+              is_on_sale: { type: boolean }
+
+    Notification:
+      type: object
+      properties:
+        id: { type: string }
+        type:
+          type: string
+          enum: [ORDER_CREATED, ORDER_REVISED, ORDER_CANCELLED, REFUND_NEEDS_ATTENTION]
+        order_id: { type: string, nullable: true }
+        title: { type: string }
+        body: { type: string }
+        read: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+security:
+  - BearerAuth: []

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ChunlianCustomer" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- 状态栏用品牌深绿：顾客打开 App 的第一眼应该是「这个店」的颜色 -->
+        <item name="android:statusBarColor">#173F34</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">#F8F9F5</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+    </style>
+</resources>
