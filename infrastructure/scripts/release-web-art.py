@@ -1,4 +1,5 @@
 """Atomically replace only web files, keep rollback and old hashed chunks."""
+import argparse
 import ctypes
 import hashlib
 import http.client
@@ -9,7 +10,10 @@ import socket
 import ssl
 import tarfile
 
-release = 'chunlian-web-art-20261014-v2'
+parser = argparse.ArgumentParser()
+parser.add_argument('--release', required=True, help='发布标识，归档为 /opt/chunlian/<release>.tar.gz')
+args = parser.parse_args()
+release = args.release
 archive = Path('/opt/chunlian') / (release + '.tar.gz')
 live = Path('/var/www/chunlian/shopxo/public/app')
 staged = live.parent / ('.' + release)

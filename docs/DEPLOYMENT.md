@@ -10,12 +10,15 @@
 
 2026-10-17 已发布 `chunlian-20261017-farm-products-v1`：店主端新增 13 类、150 种农产品预设及配图，分类和商品资料均可修改；新商品默认下架，店主确认名称、价格和库存后再上架。顾客网页与 App 展示已配置的分类图，商品图在店主导入预设并保存商品后由顾客端读取。预设随 App 提供，未自动写入生产商品/分类数据。顾客与店主 Android 均升级至 1.0.6（versionCode 7）。网页构建、Playwright 70/70、顾客 Android 21/21、店主 Android 26/26、APK 核验 29/29、公网只读 28/28、下载页和 APK 公网完整校验 15/15 通过；商家 Lint 有 71 条 warning、0 error。服务包 193 个载荷文件，SHA-256 `5b470b589d0b3035ba8d4b80987d8e3da2fab824812630356fef2097bbf90a23`。备份恢复核验通过，备份点 `/opt/chunlian/backups/chunlian-fresh/20261017T022019Z/`；代码和旧下载文件回退目录 `/opt/chunlian/releases/chunlian-20261017-farm-products-v1/rollback/`。
 
+2026-10-17 已发布 `chunlian-20261017-order-detail-v1`：顾客网页订单详情按深绿状态卡重设计（状态与付款分列、四步履约进度、金额按「应付/已实付/待收/退款」分行且绝不相加），店主 Android 每日鲜选设置页改为长按拖拽排序 + 候选搜索，升至 1.0.9（versionCode 10）；顾客 App 是 WebView 壳、随网页自动生效，包体与版本不变（1.0.7 / versionCode 8）。**本次无后端改动**：只做网页产物的原子切换（`release-web-art.py`，120 个文件逐个经公网 HTTPS 校验 SHA-256，回退目录 `/opt/chunlian/releases/chunlian-web-art-20261017-order-detail-v1/`），未执行服务包切换、未跑数据库迁移、未进维护状态。验证：`vue-tsc` 0 错误、`vite build` 通过、Playwright **78/78**（单 worker，双 worker 下截图用例存在并发抖动）、商家端单测与 `assembleRelease` 通过、`verify-delivery.py` **29/29**、公网 HTTPS 清单/下载页/6 张素材全部 200、商家端 APK 完整下载 SHA-256 与清单一致。
+
+
 | 项目 | 当前状态 |
 |---|---|
 | 主机 | panshi-cloud，103.236.97.137，共享服务器 |
 | 项目路径 | /var/www/chunlian |
 | 网页 | https://103.236.97.137:8096/app/ |
-| Android 下载 | https://103.236.97.137:8096/downloads/ ；顾客1.0.6/code7，店主1.0.6/code7 |
+| Android 下载 | https://103.236.97.137:8096/downloads/ ；顾客1.0.7/code8，店主1.0.9/code10 |
 | API | https://103.236.97.137:8096/api/v1/ |
 | 网络 | NAT 8096；私有CA；Android内置限定IP信任，网页需安装公开CA |
 | 服务 | nginx、php8.3-fpm active，维护标记已解除 |

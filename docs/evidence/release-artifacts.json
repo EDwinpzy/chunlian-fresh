@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-17T10:01:23.900547+00:00",
+  "checked_at": "2026-10-17T15:46:34.216635+00:00",
   "scope": "signed artifact verification; device installation and UI acceptance are recorded separately",
   "packages": [
     {
@@ -14,11 +14,11 @@
     {
       "file": "merchant-release.apk",
       "application_id": "com.chunlian.merchant",
-      "bytes": 50488433,
-      "sha256": "35641f302ea46c6890f33107d10cc2f2049bbf24a1148f223f19e790301bc65b",
+      "bytes": 50504817,
+      "sha256": "3e12ef66016528fca15e33de6fe2c180b1849e3d6f64f42a7ad9d92d8d95a83e",
       "certificate_sha256": "1301d842762a91154cb92b5ea87041584b76466ff34e15a034484f1265903462",
-      "version_code": 8,
-      "version_name": "1.0.7"
+      "version_code": 10,
+      "version_name": "1.0.9"
     }
   ],
   "checks": [
