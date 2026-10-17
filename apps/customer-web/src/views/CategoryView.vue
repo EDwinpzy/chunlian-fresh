@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ProductCard from '@/components/ProductCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import AssetIcon from '@/components/AssetIcon.vue'
 import SearchBox from '@/components/SearchBox.vue'
 import { api, ApiError } from '@/api/client'
 import { useCartStore } from '@/stores/cart'
@@ -25,11 +26,16 @@ const activeId = ref('')
 const goods = ref<GoodsSummary[]>([])
 const loading = ref(false)
 const failed = ref(false)
+const unavailableCategoryIcons = ref(new Set<string>())
 
 const activeCategory = computed(() => categories.value.find((category) => (
   category.id === activeId.value || category.children.some((child) => child.id === activeId.value)
 )) ?? null)
 const activeChildren = computed(() => activeCategory.value?.children ?? [])
+
+function markCategoryIconUnavailable(id: string) {
+  unavailableCategoryIcons.value = new Set(unavailableCategoryIcons.value).add(id)
+}
 
 async function loadCategories() {
   const list = await api.categories()
@@ -124,7 +130,18 @@ onMounted(async () => {
           type="button"
           @click="selectCategory(cat.id)"
         >
-          {{ cat.name }}
+          <span class="cat-rail__icon" aria-hidden="true">
+            <AssetIcon name="category" :size="20" />
+            <img
+              v-if="cat.icon_url && !unavailableCategoryIcons.has(cat.id)"
+              class="cat-rail__image"
+              :src="cat.icon_url"
+              alt=""
+              loading="lazy"
+              @error="markCategoryIconUnavailable(cat.id)"
+            />
+          </span>
+          <span class="cat-rail__name">{{ cat.name }}</span>
         </button>
       </aside>
 
@@ -142,7 +159,8 @@ onMounted(async () => {
             :aria-pressed="activeId === activeCategory.id"
             @click="selectCategory(activeCategory.id)"
           >
-            全部{{ activeCategory.name }}
+            <AssetIcon name="category" :size="16" />
+            <span>全部{{ activeCategory.name }}</span>
           </button>
           <button
             v-for="child in activeChildren"
@@ -153,7 +171,18 @@ onMounted(async () => {
             :aria-pressed="activeId === child.id"
             @click="selectCategory(child.id)"
           >
-            {{ child.name }}
+            <span class="cat-subcategory__icon" aria-hidden="true">
+              <AssetIcon name="category" :size="14" />
+              <img
+                v-if="child.icon_url && !unavailableCategoryIcons.has(child.id)"
+                class="cat-subcategory__image"
+                :src="child.icon_url"
+                alt=""
+                loading="lazy"
+                @error="markCategoryIconUnavailable(child.id)"
+              />
+            </span>
+            <span>{{ child.name }}</span>
           </button>
         </nav>
 
@@ -209,13 +238,45 @@ onMounted(async () => {
 
 .cat-rail__item {
   width: 100%;
-  padding: 14px 6px;
+  min-height: 72px;
+  padding: 10px 6px;
   font-size: var(--font-caption);
   color: var(--color-text-secondary);
   text-align: center;
   line-height: 1.35;
   position: relative;
   transition: color var(--motion-fast) var(--motion-ease);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.cat-rail__icon {
+  position: relative;
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-700);
+}
+
+.cat-rail__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-canvas);
+  object-fit: contain;
+}
+
+.cat-rail__name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .cat-rail__item.is-active {
@@ -257,6 +318,10 @@ onMounted(async () => {
 .cat-subcategory {
   max-width: 100%;
   min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   padding: 6px 10px;
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-pill);
@@ -266,6 +331,27 @@ onMounted(async () => {
   line-height: 1.4;
   overflow-wrap: anywhere;
   text-align: center;
+}
+
+.cat-subcategory__icon {
+  position: relative;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-700);
+}
+
+.cat-subcategory__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-surface);
+  object-fit: contain;
 }
 
 .cat-subcategory.is-active {

@@ -28,6 +28,7 @@ const toast = useToast()
 const goods = ref<GoodsSummary[]>([])
 const loading = ref(true)
 const failed = ref(false)
+const unavailableCategoryIcons = ref(new Set<string>())
 
 const notice = computed(() => shop.setting?.notice || '')
 const isOpen = computed(() => shop.setting?.is_open !== false)
@@ -90,6 +91,10 @@ function goCategory(id: string) {
   router.push({ path: '/category', query: { id } })
 }
 
+function markCategoryIconUnavailable(id: string) {
+  unavailableCategoryIcons.value = new Set(unavailableCategoryIcons.value).add(id)
+}
+
 onMounted(load)
 </script>
 
@@ -134,6 +139,17 @@ onMounted(load)
           type="button"
           @click="goCategory(cat.id)"
         >
+          <span class="home-cat__icon" aria-hidden="true">
+            <AssetIcon name="category" :size="18" />
+            <img
+              v-if="cat.icon_url && !unavailableCategoryIcons.has(cat.id)"
+              class="home-cat__image"
+              :src="cat.icon_url"
+              alt=""
+              loading="lazy"
+              @error="markCategoryIconUnavailable(cat.id)"
+            />
+          </span>
           <span class="home-cat__name">{{ cat.name }}</span>
         </button>
       </nav>
@@ -279,13 +295,35 @@ onMounted(load)
 .home-cat {
   flex: 0 0 auto;
   min-height: 32px;
-  padding: 0 12px;
+  gap: 6px;
+  padding: 0 10px;
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.home-cat__icon {
+  position: relative;
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-700);
+}
+
+.home-cat__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-surface);
+  object-fit: contain;
 }
 
 .home-cat__name {

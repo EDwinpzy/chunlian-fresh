@@ -3,13 +3,12 @@
   "products": [
     {
       "id": "G-001",
-      "name": "本地小青菜",
+      "name": "小青菜",
       "specText": "约500g/份",
       "unit": "份",
       "suggestedCategory": "叶菜类",
       "aliases": [
         "青菜",
-        "小白菜",
         "油菜"
       ],
       "imageAsset": "preset-images/P-01.jpg"
@@ -29,12 +28,11 @@
     },
     {
       "id": "G-003",
-      "name": "有机菠菜",
+      "name": "菠菜",
       "specText": "约400g/份",
       "unit": "份",
       "suggestedCategory": "叶菜类",
       "aliases": [
-        "菠菜",
         "赤根菜",
         "波斯菜"
       ],
@@ -169,13 +167,12 @@
     },
     {
       "id": "G-014",
-      "name": "沙瓤番茄",
+      "name": "番茄",
       "specText": "约500g/份",
       "unit": "份",
       "suggestedCategory": "瓜果类",
       "aliases": [
         "西红柿",
-        "番茄",
         "洋柿子"
       ],
       "imageAsset": "preset-images/P-02.jpg"
@@ -286,13 +283,13 @@
     },
     {
       "id": "G-023",
-      "name": "贝贝南瓜",
+      "name": "迷你南瓜",
       "specText": "1个(约500g)",
       "unit": "个",
       "suggestedCategory": "瓜果类",
       "aliases": [
-        "板栗南瓜",
-        "迷你南瓜"
+        "贝贝南瓜",
+        "板栗南瓜"
       ],
       "imageAsset": "preset-images/P-40.jpg"
     },
@@ -388,12 +385,11 @@
     },
     {
       "id": "G-031",
-      "name": "带泥莲藕",
+      "name": "莲藕",
       "specText": "约500g/份",
       "unit": "份",
       "suggestedCategory": "根茎类",
       "aliases": [
-        "莲藕",
         "藕",
         "湖藕"
       ],
@@ -668,14 +664,12 @@
     },
     {
       "id": "G-053",
-      "name": "散养土鸡蛋",
+      "name": "鸡蛋",
       "specText": "10枚/盒",
       "unit": "盒",
       "suggestedCategory": "蛋豆类",
       "aliases": [
-        "土鸡蛋",
-        "柴鸡蛋",
-        "笨鸡蛋"
+        "鲜鸡蛋"
       ],
       "imageAsset": "preset-images/P-03.jpg"
     },
@@ -694,67 +688,59 @@
     },
     {
       "id": "G-055",
-      "name": "卤水老豆腐",
-      "specText": "1块(约400g)",
-      "unit": "块",
-      "suggestedCategory": "蛋豆类",
-      "aliases": [
-        "老豆腐",
-        "北豆腐",
-        "板豆腐"
-      ],
-      "imageAsset": "preset-images/P-64.jpg"
-    },
-    {
-      "id": "G-056",
-      "name": "嫩豆腐",
-      "specText": "1盒(约350g)",
-      "unit": "盒",
-      "suggestedCategory": "蛋豆类",
-      "aliases": [
-        "南豆腐",
-        "水豆腐",
-        "石膏豆腐"
-      ],
-      "imageAsset": "preset-images/P-08.jpg"
-    },
-    {
-      "id": "G-057",
-      "name": "豆干",
-      "specText": "约250g/份",
-      "unit": "份",
-      "suggestedCategory": "蛋豆类",
-      "aliases": [
-        "香干",
-        "白干",
-        "豆腐干"
-      ],
-      "imageAsset": "preset-images/P-65.jpg"
-    },
-    {
-      "id": "G-058",
-      "name": "千张",
-      "specText": "约250g/份",
-      "unit": "份",
-      "suggestedCategory": "蛋豆类",
-      "aliases": [
-        "豆腐皮",
-        "百叶",
-        "干豆腐"
-      ],
-      "imageAsset": "preset-images/P-66.jpg"
-    },
-    {
-      "id": "G-059",
-      "name": "现磨豆浆",
-      "specText": "1袋(约500ml)",
+      "name": "黄豆",
+      "specText": "约500g/袋",
       "unit": "袋",
       "suggestedCategory": "蛋豆类",
       "aliases": [
-        "豆奶",
-        "豆乳"
+        "大豆"
       ],
-      "imageAsset": "preset-images/P-67.jpg"
+      "imageAsset": "preset-images/P-97.jpg"
+    },
+    {
+      "id": "G-056",
+      "name": "红豆",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "赤豆",
+        "小豆"
+      ],
+      "imageAsset": "preset-images/P-98.jpg"
+    },
+    {
+      "id": "G-057",
+      "name": "黑豆",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "黑大豆"
+      ],
+      "imageAsset": "preset-images/P-99.jpg"
+    },
+    {
+      "id": "G-058",
+      "name": "花生",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "花生米"
+      ],
+      "imageAsset": "preset-images/P-100.jpg"
+    },
+    {
+      "id": "G-059",
+      "name": "白芝麻",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "芝麻"
+      ],
+      "imageAsset": "preset-images/P-101.jpg"
     },
     {
       "id": "G-060",
@@ -836,14 +822,13 @@
     },
     {
       "id": "G-066",
-      "name": "冷鲜土鸡半只",
+      "name": "鸡肉半只",
       "specText": "半只(约800g)",
       "unit": "份",
       "suggestedCategory": "肉禽类",
       "aliases": [
-        "土鸡",
-        "散养鸡",
-        "笨鸡"
+        "半只鸡",
+        "鸡肉"
       ],
       "imageAsset": "preset-images/P-04.jpg"
     },
@@ -992,25 +977,22 @@
     },
     {
       "id": "G-078",
-      "name": "本地草莓",
+      "name": "草莓",
       "specText": "约300g/盒",
       "unit": "盒",
       "suggestedCategory": "水果类",
       "aliases": [
-        "草莓",
         "士多啤梨"
       ],
       "imageAsset": "preset-images/P-13.jpg"
     },
     {
       "id": "G-079",
-      "name": "红富士苹果",
+      "name": "苹果",
       "specText": "约1kg/份",
       "unit": "份",
       "suggestedCategory": "水果类",
       "aliases": [
-        "苹果",
-        "富士",
         "红富士"
       ],
       "imageAsset": "preset-images/P-83.jpg"
@@ -1030,12 +1012,12 @@
     },
     {
       "id": "G-081",
-      "name": "皇冠梨",
+      "name": "梨",
       "specText": "约1kg/份",
       "unit": "份",
       "suggestedCategory": "水果类",
       "aliases": [
-        "梨",
+        "皇冠梨",
         "鸭梨",
         "雪梨"
       ],
@@ -1056,14 +1038,13 @@
     },
     {
       "id": "G-083",
-      "name": "巨峰葡萄",
+      "name": "葡萄",
       "specText": "约500g/份",
       "unit": "份",
       "suggestedCategory": "水果类",
       "aliases": [
-        "葡萄",
-        "提子",
-        "蒲桃"
+        "巨峰",
+        "提子"
       ],
       "imageAsset": "preset-images/P-87.jpg"
     },
@@ -1082,14 +1063,13 @@
     },
     {
       "id": "G-085",
-      "name": "红心火龙果",
+      "name": "火龙果",
       "specText": "1个(约500g)",
       "unit": "个",
       "suggestedCategory": "水果类",
       "aliases": [
-        "火龙果",
-        "仙人掌果",
-        "红龙果"
+        "红心火龙果",
+        "仙人掌果"
       ],
       "imageAsset": "preset-images/P-89.jpg"
     },
@@ -1235,6 +1215,600 @@
         "青蒜薹"
       ],
       "imageAsset": "preset-images/P-96.jpg"
+    },
+    {
+      "id": "G-097",
+      "name": "芦笋",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "龙须菜"
+      ],
+      "imageAsset": "preset-images/P-102.jpg"
+    },
+    {
+      "id": "G-098",
+      "name": "紫甘蓝",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "紫包菜"
+      ],
+      "imageAsset": "preset-images/P-103.jpg"
+    },
+    {
+      "id": "G-099",
+      "name": "大白菜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "包心白菜"
+      ],
+      "imageAsset": "preset-images/P-104.jpg"
+    },
+    {
+      "id": "G-100",
+      "name": "玉米粒",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "玉米仁"
+      ],
+      "imageAsset": "preset-images/P-105.jpg"
+    },
+    {
+      "id": "G-101",
+      "name": "红甜椒",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "瓜果类",
+      "aliases": [
+        "红椒",
+        "红彩椒"
+      ],
+      "imageAsset": "preset-images/P-106.jpg"
+    },
+    {
+      "id": "G-102",
+      "name": "黑木耳（干）",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "木耳干"
+      ],
+      "imageAsset": "preset-images/P-107.jpg"
+    },
+    {
+      "id": "G-103",
+      "name": "绿豆",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "青小豆"
+      ],
+      "imageAsset": "preset-images/P-108.jpg"
+    },
+    {
+      "id": "G-104",
+      "name": "海带（干）",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "干海带"
+      ],
+      "imageAsset": "preset-images/P-109.jpg"
+    },
+    {
+      "id": "G-105",
+      "name": "香菇（干）",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "干香菇"
+      ],
+      "imageAsset": "preset-images/P-110.jpg"
+    },
+    {
+      "id": "G-106",
+      "name": "花椒",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "花椒粒"
+      ],
+      "imageAsset": "preset-images/P-111.jpg"
+    },
+    {
+      "id": "G-107",
+      "name": "莲子（干）",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "干莲子"
+      ],
+      "imageAsset": "preset-images/P-112.jpg"
+    },
+    {
+      "id": "G-108",
+      "name": "水芹",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "水芹菜"
+      ],
+      "imageAsset": "preset-images/P-113.jpg"
+    },
+    {
+      "id": "G-109",
+      "name": "黑米",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "紫米"
+      ],
+      "imageAsset": "preset-images/P-114.jpg"
+    },
+    {
+      "id": "G-110",
+      "name": "高粱米",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "高粱"
+      ],
+      "imageAsset": "preset-images/P-115.jpg"
+    },
+    {
+      "id": "G-111",
+      "name": "干辣椒",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "辣椒干",
+        "干红辣椒"
+      ],
+      "imageAsset": "preset-images/P-116.jpg"
+    },
+    {
+      "id": "G-112",
+      "name": "紫菜（干）",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "干紫菜"
+      ],
+      "imageAsset": "preset-images/P-117.jpg"
+    },
+    {
+      "id": "G-113",
+      "name": "荞麦",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "荞麦米"
+      ],
+      "imageAsset": "preset-images/P-118.jpg"
+    },
+    {
+      "id": "G-114",
+      "name": "小米",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "黄小米"
+      ],
+      "imageAsset": "preset-images/P-119.jpg"
+    },
+    {
+      "id": "G-115",
+      "name": "花芸豆",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "花豆"
+      ],
+      "imageAsset": "preset-images/P-120.jpg"
+    },
+    {
+      "id": "G-116",
+      "name": "八角",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "调味配菜",
+      "aliases": [
+        "大料"
+      ],
+      "imageAsset": "preset-images/P-121.jpg"
+    },
+    {
+      "id": "G-117",
+      "name": "大米",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "稻米"
+      ],
+      "imageAsset": "preset-images/P-122.jpg"
+    },
+    {
+      "id": "G-118",
+      "name": "银耳（干）",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "白木耳"
+      ],
+      "imageAsset": "preset-images/P-123.jpg"
+    },
+    {
+      "id": "G-119",
+      "name": "红枣",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "大枣"
+      ],
+      "imageAsset": "preset-images/P-124.jpg"
+    },
+    {
+      "id": "G-120",
+      "name": "薏米",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "薏苡仁"
+      ],
+      "imageAsset": "preset-images/P-125.jpg"
+    },
+    {
+      "id": "G-121",
+      "name": "燕麦",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "燕麦米"
+      ],
+      "imageAsset": "preset-images/P-126.jpg"
+    },
+    {
+      "id": "G-122",
+      "name": "竹笋",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "根茎类",
+      "aliases": [
+        "笋"
+      ],
+      "imageAsset": "preset-images/P-127.jpg"
+    },
+    {
+      "id": "G-123",
+      "name": "橙子",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "甜橙"
+      ],
+      "imageAsset": "preset-images/P-128.jpg"
+    },
+    {
+      "id": "G-124",
+      "name": "柚子",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "文旦"
+      ],
+      "imageAsset": "preset-images/P-129.jpg"
+    },
+    {
+      "id": "G-125",
+      "name": "芒果",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "杧果"
+      ],
+      "imageAsset": "preset-images/P-130.jpg"
+    },
+    {
+      "id": "G-126",
+      "name": "菠萝",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "凤梨"
+      ],
+      "imageAsset": "preset-images/P-131.jpg"
+    },
+    {
+      "id": "G-127",
+      "name": "桃子",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "桃"
+      ],
+      "imageAsset": "preset-images/P-132.jpg"
+    },
+    {
+      "id": "G-128",
+      "name": "李子",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "布林"
+      ],
+      "imageAsset": "preset-images/P-133.jpg"
+    },
+    {
+      "id": "G-129",
+      "name": "樱桃",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "车厘子"
+      ],
+      "imageAsset": "preset-images/P-134.jpg"
+    },
+    {
+      "id": "G-130",
+      "name": "蓝莓",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "越橘"
+      ],
+      "imageAsset": "preset-images/P-135.jpg"
+    },
+    {
+      "id": "G-131",
+      "name": "石榴",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "安石榴"
+      ],
+      "imageAsset": "preset-images/P-136.jpg"
+    },
+    {
+      "id": "G-132",
+      "name": "荔枝",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "离枝"
+      ],
+      "imageAsset": "preset-images/P-137.jpg"
+    },
+    {
+      "id": "G-133",
+      "name": "龙眼",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "桂圆"
+      ],
+      "imageAsset": "preset-images/P-138.jpg"
+    },
+    {
+      "id": "G-134",
+      "name": "木瓜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "番木瓜"
+      ],
+      "imageAsset": "preset-images/P-139.jpg"
+    },
+    {
+      "id": "G-135",
+      "name": "牛油果",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "鳄梨"
+      ],
+      "imageAsset": "preset-images/P-140.jpg"
+    },
+    {
+      "id": "G-136",
+      "name": "椰子",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "椰青"
+      ],
+      "imageAsset": "preset-images/P-141.jpg"
+    },
+    {
+      "id": "G-137",
+      "name": "芥菜",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "大芥菜"
+      ],
+      "imageAsset": "preset-images/P-142.jpg"
+    },
+    {
+      "id": "G-138",
+      "name": "菜心",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "叶菜类",
+      "aliases": [
+        "菜薹"
+      ],
+      "imageAsset": "preset-images/P-143.jpg"
+    },
+    {
+      "id": "G-139",
+      "name": "毛豆",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "青毛豆"
+      ],
+      "imageAsset": "preset-images/P-144.jpg"
+    },
+    {
+      "id": "G-140",
+      "name": "鹰嘴豆",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "鸡豆"
+      ],
+      "imageAsset": "preset-images/P-145.jpg"
+    },
+    {
+      "id": "G-141",
+      "name": "扁豆",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "花菜豆荚类",
+      "aliases": [
+        "鹊豆"
+      ],
+      "imageAsset": "preset-images/P-146.jpg"
+    },
+    {
+      "id": "G-142",
+      "name": "核桃",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "胡桃"
+      ],
+      "imageAsset": "preset-images/P-147.jpg"
+    },
+    {
+      "id": "G-143",
+      "name": "板栗",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "豆类坚果类",
+      "aliases": [
+        "栗子"
+      ],
+      "imageAsset": "preset-images/P-148.jpg"
+    },
+    {
+      "id": "G-144",
+      "name": "糙米",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [],
+      "imageAsset": "preset-images/P-149.jpg"
+    },
+    {
+      "id": "G-145",
+      "name": "藜麦",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "藜麦米"
+      ],
+      "imageAsset": "preset-images/P-150.jpg"
+    },
+    {
+      "id": "G-146",
+      "name": "大麦",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "粮食杂粮类",
+      "aliases": [
+        "大麦粒"
+      ],
+      "imageAsset": "preset-images/P-151.jpg"
+    },
+    {
+      "id": "G-147",
+      "name": "枸杞",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "枸杞子"
+      ],
+      "imageAsset": "preset-images/P-152.jpg"
+    },
+    {
+      "id": "G-148",
+      "name": "葡萄干",
+      "specText": "约500g/袋",
+      "unit": "袋",
+      "suggestedCategory": "干货类",
+      "aliases": [
+        "干葡萄"
+      ],
+      "imageAsset": "preset-images/P-153.jpg"
+    },
+    {
+      "id": "G-149",
+      "name": "柿子",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "柿"
+      ],
+      "imageAsset": "preset-images/P-154.jpg"
+    },
+    {
+      "id": "G-150",
+      "name": "无花果",
+      "specText": "约500g/份",
+      "unit": "份",
+      "suggestedCategory": "水果类",
+      "aliases": [
+        "映日果"
+      ],
+      "imageAsset": "preset-images/P-155.jpg"
     }
   ]
 }

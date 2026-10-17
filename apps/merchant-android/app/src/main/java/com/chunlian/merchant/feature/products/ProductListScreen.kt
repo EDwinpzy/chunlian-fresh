@@ -492,7 +492,7 @@ fun ProductListScreen(onOpenProduct: (String) -> Unit, onCreateProduct: () -> Un
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 MerchantAssetIcon(R.drawable.merchant_add, contentDescription = null, size = 17.dp)
                                 Spacer(Modifier.width(4.dp))
-                                Text("上架新菜", color = C.Brand700, fontSize = T.caption, fontWeight = FontWeight.SemiBold)
+                                Text("新增农产品", color = C.Brand700, fontSize = T.caption, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -560,7 +560,7 @@ fun ProductListScreen(onOpenProduct: (String) -> Unit, onCreateProduct: () -> Un
                             item {
                                 EmptyBox(
                                     title = if (state.filter == ProductListViewModel.Filter.OffSale) "暂无已下架商品" else "这个分类还没有商品",
-                                    description = "可以上架新菜，或切换商品状态查看。",
+                                    description = "可以新增农产品，或切换商品状态查看。",
                                 )
                                 androidx.compose.material3.TextButton(
                                     onClick = onCreateProduct,
@@ -569,7 +569,7 @@ fun ProductListScreen(onOpenProduct: (String) -> Unit, onCreateProduct: () -> Un
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         MerchantAssetIcon(R.drawable.merchant_add, contentDescription = null, size = 17.dp)
                                         Spacer(Modifier.width(4.dp))
-                                        Text("上架新菜", color = C.Brand700, fontSize = T.caption, fontWeight = FontWeight.SemiBold)
+                                        Text("新增农产品", color = C.Brand700, fontSize = T.caption, fontWeight = FontWeight.SemiBold)
                                     }
                                 }
                             }
@@ -672,7 +672,7 @@ private fun ProductCategoryHome(
         Column(Modifier.padding(horizontal = dim.pagePadding)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("生鲜分类", fontSize = T.section, fontWeight = FontWeight.SemiBold, color = C.TextPrimary)
+                    Text("农产品分类", fontSize = T.section, fontWeight = FontWeight.SemiBold, color = C.TextPrimary)
                     Spacer(Modifier.height(2.dp))
                     Text("选择分类，查看对应商品", fontSize = T.mini, color = C.TextMuted)
                 }
@@ -704,7 +704,7 @@ private fun ProductCategoryHome(
             }
             productCategoryRoots(categories).isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
                 EmptyBox(
-                    title = "还没有生鲜分类",
+                    title = "还没有农产品分类",
                     description = "先创建分类，再将商品归入对应分类。",
                     actionText = "分类管理",
                     onAction = onManage,

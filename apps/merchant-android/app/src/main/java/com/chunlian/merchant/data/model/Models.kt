@@ -310,6 +310,8 @@ data class Category(
     val id: String = "",
     @SerialName("parent_id") val parentId: String? = null,
     val name: String = "",
+    val icon: String = "",
+    @SerialName("icon_active") val iconActive: String = "",
     val sort: Int = 0,
     @SerialName("is_enabled") val isEnabled: Boolean = true,
     @SerialName("product_count") val productCount: Int = 0,
@@ -322,6 +324,8 @@ data class CategoryCreateRequest(
     @SerialName("parent_id") val parentId: String? = null,
     val sort: Int? = null,
     @SerialName("is_enabled") val isEnabled: Boolean? = null,
+    val icon: String = "",
+    @SerialName("icon_active") val iconActive: String = "",
 )
 
 @Serializable
@@ -329,6 +333,8 @@ data class CategoryPatch(
     val name: String? = null,
     val sort: Int? = null,
     @SerialName("is_enabled") val isEnabled: Boolean? = null,
+    val icon: String? = null,
+    @SerialName("icon_active") val iconActive: String? = null,
 )
 
 @Serializable
@@ -356,7 +362,7 @@ data class GoodsCreateRequest(
     @SerialName("simple_desc") val simpleDesc: String = "",
     @SerialName("category_id") val categoryId: String? = null,
     val image: String? = null,
-    @SerialName("is_shelves") val isShelves: Boolean = true,
+    @SerialName("is_shelves") val isShelves: Boolean = false,
 )
 
 @Serializable

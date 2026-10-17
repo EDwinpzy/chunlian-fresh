@@ -11,6 +11,7 @@ final class FreshCategoryManagementService
 {
     private const MAX_NAME_LENGTH = 60;
     private const MAX_SORT = 65535;
+    private const MAX_ICON_PATH_LENGTH = 255;
 
     public function __construct(
         private readonly \PDO $pdo,
@@ -27,7 +28,8 @@ final class FreshCategoryManagementService
         FreshCategoryPolicy::ensureLegacyRoots($this->pdo, $this->tablePrefix);
         $p = $this->tablePrefix;
         $rows = $this->pdo->query(
-            "SELECT category.`id`, category.`pid`, category.`name`, category.`sort`, category.`is_enable`, "
+            "SELECT category.`id`, category.`pid`, category.`name`, category.`icon`, category.`icon_active`, "
+            . "category.`sort`, category.`is_enable`, "
             . "(SELECT COUNT(DISTINCT category_goods.`goods_id`) FROM `{$p}goods_category_join` category_goods "
             . "INNER JOIN `{$p}goods_category` assigned_category ON assigned_category.`id` = category_goods.`category_id` "
             . 'WHERE assigned_category.`id` = category.`id` OR assigned_category.`pid` = category.`id`) AS `product_count` '
@@ -64,7 +66,7 @@ final class FreshCategoryManagementService
     /** Create a root when parent_id is absent/null, otherwise create one direct child. */
     public function create(array $payload, string $actorId): array
     {
-        $unknown = array_diff(array_keys($payload), ['name', 'parent_id', 'sort', 'is_enabled']);
+        $unknown = array_diff(array_keys($payload), ['name', 'parent_id', 'sort', 'is_enabled', 'icon', 'icon_active']);
         if ($unknown !== []) {
             return $this->fail(RejectionCode::VALIDATION_FAILED, '分类参数不受支持');
         }
@@ -85,6 +87,14 @@ final class FreshCategoryManagementService
         if (is_array($enabled)) {
             return $enabled;
         }
+        $icon = $this->validatedIconPath($payload['icon'] ?? '');
+        if (is_array($icon)) {
+            return $icon;
+        }
+        $iconActive = $this->validatedIconPath($payload['icon_active'] ?? '');
+        if (is_array($iconActive)) {
+            return $iconActive;
+        }
 
         FreshCategoryPolicy::ensureLegacyRoots($this->pdo, $this->tablePrefix);
         $p = $this->tablePrefix;
@@ -104,11 +114,13 @@ final class FreshCategoryManagementService
                 "INSERT INTO `{$p}goods_category` "
                 . '(`pid`, `name`, `vice_name`, `icon`, `icon_active`, `describe`, `bg_color`, '
                 . '`is_home_recommended`, `sort`, `is_enable`, `add_time`, `upd_time`) '
-                . 'VALUES (:pid, :name, \'\', \'\', \'\', \'\', \'#FFFFFF\', 0, :sort, :enabled, :added_at, :updated_at)'
+                . 'VALUES (:pid, :name, \'\', :icon, :icon_active, \'\', \'#FFFFFF\', 0, :sort, :enabled, :added_at, :updated_at)'
             );
             $stmt->execute([
                 'pid' => $parentId ?? 0,
                 'name' => $name,
+                'icon' => $icon,
+                'icon_active' => $iconActive,
                 'sort' => $sort,
                 'enabled' => $enabled ? 1 : 0,
                 'added_at' => $now,
@@ -128,6 +140,8 @@ final class FreshCategoryManagementService
             $category = [
                 'id' => $id,
                 'name' => $name,
+                'icon' => $icon,
+                'icon_active' => $iconActive,
                 'parent_id' => $parentId === null ? null : (string) $parentId,
                 'sort' => $sort,
                 'is_enabled' => $enabled,
@@ -147,7 +161,7 @@ final class FreshCategoryManagementService
     /** Patch a category name, display order, and/or enabled state. */
     public function update(string $id, array $payload, string $actorId): array
     {
-        $unknown = array_diff(array_keys($payload), ['name', 'sort', 'is_enabled']);
+        $unknown = array_diff(array_keys($payload), ['name', 'sort', 'is_enabled', 'icon', 'icon_active']);
         if ($unknown !== []) {
             return $this->fail(RejectionCode::VALIDATION_FAILED, '分类参数不受支持');
         }
@@ -180,6 +194,16 @@ final class FreshCategoryManagementService
                 return $enabled;
             }
             $patch['is_enabled'] = $enabled;
+        }
+        foreach (['icon', 'icon_active'] as $field) {
+            if (!array_key_exists($field, $payload)) {
+                continue;
+            }
+            $path = $this->validatedIconPath($payload[$field]);
+            if (is_array($path)) {
+                return $path;
+            }
+            $patch[$field] = $path;
         }
 
         FreshCategoryPolicy::ensureLegacyRoots($this->pdo, $this->tablePrefix);
@@ -293,12 +317,13 @@ final class FreshCategoryManagementService
         return $stmt->fetchColumn() !== false;
     }
 
-    /** @return array{id:string,name:string,parent_id:?string,sort:int,is_enabled:bool,product_count:int}|null */
+    /** @return array{id:string,name:string,icon:string,icon_active:string,parent_id:?string,sort:int,is_enabled:bool,product_count:int}|null */
     private function findConfiguredCategory(int $id, bool $lock): ?array
     {
         $p = $this->tablePrefix;
         $stmt = $this->pdo->prepare(
-            "SELECT category.`id`, category.`pid`, category.`name`, category.`sort`, category.`is_enable` "
+            "SELECT category.`id`, category.`pid`, category.`name`, category.`icon`, category.`icon_active`, "
+            . "category.`sort`, category.`is_enable` "
             . "FROM `{$p}goods_category` category WHERE category.`id` = :id AND ("
             . '(category.`pid` = 0 AND EXISTS ('
             . 'SELECT 1 FROM `veg_fresh_category_root` root WHERE root.`category_id` = category.`id`)) OR '
@@ -329,12 +354,14 @@ final class FreshCategoryManagementService
         return $stmt->fetchColumn() !== false;
     }
 
-    /** @return array{id:string,name:string,parent_id:?string,sort:int,is_enabled:bool,product_count:int} */
+    /** @return array{id:string,name:string,icon:string,icon_active:string,parent_id:?string,sort:int,is_enabled:bool,product_count:int} */
     private function serializeCategory(array $row, ?string $parentId): array
     {
         return [
             'id' => (string) (int) $row['id'],
             'name' => (string) $row['name'],
+            'icon' => (string) ($row['icon'] ?? ''),
+            'icon_active' => (string) ($row['icon_active'] ?? ''),
             'parent_id' => $parentId,
             'sort' => (int) $row['sort'],
             'is_enabled' => (int) $row['is_enable'] === 1,
@@ -357,6 +384,24 @@ final class FreshCategoryManagementService
         }
 
         return $name;
+    }
+
+    /** @return string|array */
+    private function validatedIconPath(mixed $value): string|array
+    {
+        if (!is_string($value)) {
+            return $this->fail(RejectionCode::VALIDATION_FAILED, '分类图片路径必须是文本');
+        }
+        $path = trim($value);
+        if ($path === '') {
+            return '';
+        }
+        if (strlen($path) > self::MAX_ICON_PATH_LENGTH
+            || preg_match('#^/static/upload/images/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\.(?:jpe?g|png|gif|webp)$#iD', $path) !== 1) {
+            return $this->fail(RejectionCode::VALIDATION_FAILED, '分类图片路径不正确');
+        }
+
+        return $path;
     }
 
     /** @return int|null|array */

@@ -1,6 +1,7 @@
 package com.chunlian.merchant.feature.products
 
 import com.chunlian.merchant.data.model.Category
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -8,6 +9,22 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PresetGoodsTest {
+
+    @Test
+    fun bundledCatalogueHas150ProductsWithExistingImagesAndGenericNames() {
+        val assets = File("src/main/assets")
+        val products = parsePresetGoods(File(assets, "preset-goods.json").readText())
+
+        assertEquals(150, products.size)
+        assertEquals(150, products.map { it.id }.distinct().size)
+        assertEquals(150, products.map { it.name }.distinct().size)
+        assertTrue(products.none { it.name.contains(Regex("本地|有机|散养|土鸡|豆腐|豆浆")) })
+        products.forEach { product ->
+            val imageAsset = product.imageAsset
+            assertTrue("${product.name} needs an image asset", imageAsset != null)
+            assertTrue("Missing image for ${product.name}: $imageAsset", File(assets, imageAsset!!).isFile)
+        }
+    }
 
     @Test
     fun parsesCatalogueAndSearchesNamesAndAliases() {

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "leafy-greens",
+    "name": "叶菜类",
+    "imageAsset": "preset-images/P-01.jpg",
+    "sort": 130
+  },
+  {
+    "id": "roots",
+    "name": "根茎类",
+    "imageAsset": "preset-images/P-30.jpg",
+    "sort": 120
+  },
+  {
+    "id": "fruit-vegetables",
+    "name": "瓜果类",
+    "imageAsset": "preset-images/P-14.jpg",
+    "sort": 110
+  },
+  {
+    "id": "flowering-vegetables",
+    "name": "花菜豆荚类",
+    "imageAsset": "preset-images/P-40.jpg",
+    "sort": 100
+  },
+  {
+    "id": "mushrooms",
+    "name": "菌菇类",
+    "imageAsset": "preset-images/P-47.jpg",
+    "sort": 90
+  },
+  {
+    "id": "fruits",
+    "name": "水果类",
+    "imageAsset": "preset-images/P-78.jpg",
+    "sort": 80
+  },
+  {
+    "id": "grains",
+    "name": "粮食杂粮类",
+    "imageAsset": "preset-images/P-122.jpg",
+    "sort": 70
+  },
+  {
+    "id": "eggs-and-beans",
+    "name": "蛋豆类",
+    "imageAsset": "preset-images/P-54.jpg",
+    "sort": 60
+  },
+  {
+    "id": "legumes-and-nuts",
+    "name": "豆类坚果类",
+    "imageAsset": "preset-images/P-97.jpg",
+    "sort": 50
+  },
+  {
+    "id": "dried-produce",
+    "name": "干货类",
+    "imageAsset": "preset-images/P-107.jpg",
+    "sort": 40
+  },
+  {
+    "id": "meat-and-poultry",
+    "name": "肉禽类",
+    "imageAsset": "preset-images/P-60.jpg",
+    "sort": 30
+  },
+  {
+    "id": "aquatic-products",
+    "name": "水产类",
+    "imageAsset": "preset-images/P-71.jpg",
+    "sort": 20
+  },
+  {
+    "id": "aromatics",
+    "name": "调味配菜",
+    "imageAsset": "preset-images/P-93.jpg",
+    "sort": 10
+  }
+]

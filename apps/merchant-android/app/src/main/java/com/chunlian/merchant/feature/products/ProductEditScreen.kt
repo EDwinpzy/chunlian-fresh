@@ -138,7 +138,7 @@ class ProductEditViewModel(
         val specText: String = "",
         val simpleDesc: String = "",
         val categoryId: String = "",
-        val isShelves: Boolean = true,
+        val isShelves: Boolean = false,
         val saved: Boolean = false,
         val imagePreview: String? = null,
         val preparingImage: Boolean = false,
@@ -166,7 +166,7 @@ class ProductEditViewModel(
                         unit = "份",
                         categoryId = categoryChoices.firstOrNull { it.parentId.isNullOrBlank() || it.parentId == "0" }?.id
                             ?: categoryChoices.firstOrNull()?.id.orEmpty(),
-                        isShelves = true,
+                        isShelves = false,
                     )
 
                     return@launch
@@ -517,7 +517,7 @@ fun ProductEditScreen(goodsId: String?, onBack: () -> Unit) {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    if (vm.isCreate) "上架新菜" else "编辑商品",
+                    if (vm.isCreate) "新增农产品" else "编辑商品",
                     fontSize = T.section,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f),
@@ -555,15 +555,23 @@ fun ProductEditScreen(goodsId: String?, onBack: () -> Unit) {
 
                     if (vm.isCreate) {
                         CardBox {
-                            TextButton(
-                                onClick = {
-                                    presetQuery = ""
-                                    showPresetPicker = true
-                                },
-                                enabled = !state.saving,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text("搜索并选择常见商品", color = C.Brand700)
+                            Column(Modifier.fillMaxWidth().padding(8.dp)) {
+                                TextButton(
+                                    onClick = {
+                                        presetQuery = ""
+                                        showPresetPicker = true
+                                    },
+                                    enabled = !state.saving,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text("搜索并选择农产品", color = C.Brand700)
+                                }
+                                Text(
+                                    "预设名称、规格、分类和图片都可修改。新商品默认下架；确认资料、售价和库存后，再开启“立即上架”。",
+                                    fontSize = T.mini,
+                                    color = C.TextMuted,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                )
                             }
                         }
                         Spacer(Modifier.height(16.dp))
@@ -631,7 +639,7 @@ fun ProductEditScreen(goodsId: String?, onBack: () -> Unit) {
                             FormField(
                                 label = "商品名称",
                                 value = state.title,
-                                placeholder = "例如：本地小青菜",
+                                placeholder = "例如：小青菜",
                                 onValueChange = { v -> vm.update { copy(title = v) } },
                             )
                             FormField(
@@ -643,7 +651,7 @@ fun ProductEditScreen(goodsId: String?, onBack: () -> Unit) {
                             FormField(
                                 label = "简介",
                                 value = state.simpleDesc,
-                                placeholder = "例如：本地当日采摘",
+                                placeholder = "例如：按实际情况填写商品简介",
                                 onValueChange = { v -> vm.update { copy(simpleDesc = v) } },
                             )
                         }
@@ -812,19 +820,19 @@ fun ProductEditScreen(goodsId: String?, onBack: () -> Unit) {
     if (showPresetPicker && vm.isCreate) {
         AlertDialog(
             onDismissRequest = { showPresetPicker = false },
-            title = { Text("选择常见商品") },
+            title = { Text("选择农产品") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = presetQuery,
                         onValueChange = { presetQuery = it },
-                        placeholder = { Text("搜索商品名称或别名") },
+                        placeholder = { Text("搜索农产品名称或别名") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     val matches = searchPresetGoods(presetGoods, presetQuery)
                     if (presetGoods.isEmpty()) {
-                        Text("常见商品库暂不可用，可直接填写商品信息。", color = C.TextMuted)
+                        Text("农产品预设暂不可用，可直接填写商品信息。", color = C.TextMuted)
                     } else if (matches.isEmpty()) {
                         Text("没有找到匹配商品", color = C.TextMuted)
                     } else {

@@ -250,6 +250,7 @@ fun CategoryScreen(
                     CategoryRailItem(
                         category.name,
                         iconResource = customerCategoryArtwork(category.name),
+                        iconUrl = category.iconUrl,
                         selected = activeCategory?.id == category.id,
                     ) { vm.setCategory(category.id) }
                 }
@@ -441,6 +442,7 @@ private fun HomeCategoryShortcut(name: String, iconUrl: String, onClick: () -> U
 private fun CategoryRailItem(
     name: String,
     @androidx.annotation.DrawableRes iconResource: Int,
+    iconUrl: String = "",
     selected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -456,7 +458,11 @@ private fun CategoryRailItem(
             Box(Modifier.width(3.dp).height(22.dp).background(CustomerColors.Brand600, RoundedCornerShape(dim.radiusPill)))
             Spacer(Modifier.width(5.dp))
         }
-        CustomerAssetIcon(iconResource, contentDescription = null, size = 16.dp)
+        if (iconUrl.isBlank()) {
+            CustomerAssetIcon(iconResource, contentDescription = null, size = 16.dp)
+        } else {
+            CustomerCategoryArtwork(name, iconUrl, Modifier.size(30.dp))
+        }
         Spacer(Modifier.width(3.dp))
         Text(
             name,

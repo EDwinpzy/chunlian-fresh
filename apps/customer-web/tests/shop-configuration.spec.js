@@ -25,11 +25,11 @@ async function configuredShop(page) {
     delivery_fee_fen: 500, min_lead_minutes: 45, updated_at: '2026-10-15 10:00:00',
   }
   const categories = [
-    { id: 'new1', name: '海鲜水产', icon_url: '', children: [
-      { id: 'seafood-fish', name: '鲜鱼', icon_url: '' },
-      { id: 'seafood-shrimp', name: '虾蟹', icon_url: '' },
+    { id: 'new1', name: '海鲜水产', icon_url: 'https://shop.example/category.svg', children: [
+      { id: 'seafood-fish', name: '鲜鱼', icon_url: 'https://shop.example/category.svg' },
+      { id: 'seafood-shrimp', name: '虾蟹', icon_url: 'https://shop.example/category.svg' },
     ] },
-    { id: 'new2', name: '时令水果', icon_url: '', children: [
+    { id: 'new2', name: '时令水果', icon_url: 'https://shop.example/category.svg', children: [
       { id: 'fruit-citrus', name: '柑橘', icon_url: '' },
       { id: 'fruit-apples', name: '苹果', icon_url: '' },
     ] },
@@ -40,6 +40,11 @@ async function configuredShop(page) {
     status: 200,
     contentType: 'image/svg+xml',
     body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="10" fill="#245947"/><path d="M10 23h20L20 9z" fill="#f4cf67"/><circle cx="20" cy="28" r="5" fill="#e6f1d5"/></svg>',
+  }))
+  await page.route('https://shop.example/category.svg', route => route.fulfill({
+    status: 200,
+    contentType: 'image/svg+xml',
+    body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#b6d9a8"/><path d="M12 22c7-11 13-11 17-3-4 8-10 10-17 3z" fill="#245947"/></svg>',
   }))
   return { setting, categories, apiState }
 }
@@ -54,6 +59,8 @@ test('configured store copy, categories and contact details appear across custom
   await expect(page.locator('.home-head__highlights')).toHaveText('鲜果海味，每日送达 · 今日海鲜新到 · 店主精选 · 按需配送')
   await expect(page.locator('.section-title').first()).toContainText('本周精选')
   await expect(page.locator('.home-cat__name')).toHaveText(['海鲜水产', '时令水果'])
+  await expect(page.locator('.home-cat__image')).toHaveCount(2)
+  await expect.poll(() => page.locator('.home-cat__image').first().evaluate(image => image.naturalWidth)).toBeGreaterThan(0)
   await capture(page, testInfo, 'home')
   await page.getByRole('button', { name: '搜索店内商品' }).click()
   await expect(page.getByRole('button', { name: '鲜虾', exact: true })).toBeVisible()
@@ -95,6 +102,9 @@ test('configured child category filters products and can be opened from its URL'
   await expect(page.getByRole('heading', { name: '小青菜' })).toBeVisible()
   await expect(page.getByRole('button', { name: '虾蟹', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('.cat-rail__item').first()).toHaveClass(/is-active/)
+  await expect(page.locator('.cat-rail__image')).toHaveCount(2)
+  await expect.poll(() => page.locator('.cat-rail__image').first().evaluate(image => image.naturalWidth)).toBeGreaterThan(0)
+  await expect(page.locator('.cat-subcategory__image')).toHaveCount(2)
   await capture(page, testInfo, 'subcategory')
 
   await page.goto('category?id=seafood-shrimp')
