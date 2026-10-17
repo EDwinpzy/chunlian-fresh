@@ -86,7 +86,7 @@ python3 /opt/chunlian/rollback-existing.py --release chunlian-20261015-shop-conf
 3. 将 `customer-release.apk`、`merchant-release.apk`、`index.html`、`assets/` 下的宣传图和页面图标上传到 `/var/www/chunlian/shopxo/public/downloads/`，确认正式入口文件名为 `index.html`，核对文件完整后再上传 `android-release.json`。下载页版本号和更新文案由当前清单生成；下载页和 App 更新器都使用相同的固定 APK 文件名。清单必须包含 `application_id`、版本号、SHA-256 和文件大小；公开 URL 为 `https://103.236.97.137:8096/downloads/android-release.json`，必须最后替换清单。新清单通过线上核验后，清除服务器上不再引用的版本号 APK；本地最多保留当前包和最近一次已发布的回退包。
 4. 发布后分别检查清单、两个 APK、`/downloads/index.html` 页面入口、宣传图和页面图标可通过 HTTPS 获取；核对 APK 的 SHA-256 与清单一致，并确认下载页的手动安装入口能下载新版本。仅改下载页时，先上传新增或更新的 `assets/` 文件，再替换 `index.html`；无需重传 APK 或改动版本清单。
 
-新订单系统推送是本次上线的硬性前置条件，缺任何一项都会导致通知静默失败：服务器需在 `/etc/chunlian/chunlian.env` 配置 `GETUI_MERCHANT_APP_ID`、`GETUI_MERCHANT_APP_KEY`、`GETUI_MERCHANT_MASTER_SECRET`（键名与含义见 `backend/extension/docs/getui-push.md`），Android 构建需在 `local.properties` 提供同一商家 App ID 与公开 HTTPS 隐私政策地址。凭据只经安全渠道配置，不写入仓库、不进入构建产物、不在对话中传递；配置完成前不要对外宣称推送已可用。
+新订单系统推送是本次上线的硬性前置条件，缺任何一项都会导致通知静默失败：服务器需在 `/etc/chunlian/chunlian.env` 配置 `GETUI_MERCHANT_APP_ID`、`GETUI_MERCHANT_APP_KEY`、`GETUI_MERCHANT_MASTER_SECRET`（键名与含义见 `backend/extension/docs/getui-push.md`），Android 构建需在 `local.properties` 提供同一商家 App ID 与公开 HTTPS 隐私政策地址。凭据只经安全渠道配置，不写入仓库、不进入构建产物、不在对话中传递；配置完成前不要对外宣称推送已可用。隐私政策页已部署在 `https://103.236.97.137:8096/privacy/merchant.html`（源文件 `infrastructure/privacy/`，构建时作为 `MERCHANT_PRIVACY_POLICY_URL` 注入）；2026-10-17 用户决定暂不接入个推，凭据到位前的降级行为见上文。
 
 关闭 `CHUNLIAN_MERCHANT_OPEN_ACCESS` 可阻止新公开会话，但不会自动撤销已签发的30天会话；如需立即收回权限，必须同时撤销相关会话。后续清理outbox与seen标记须采用协调的保留策略；当前未启用自动清理或每日异地备份计划。
 
