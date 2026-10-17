@@ -262,8 +262,8 @@ private fun pressScale(interaction: MutableInteractionSource, active: Boolean): 
     return scale
 }
 
-/** 履约状态的展示映射 */
-fun fulfillmentTone(fulfillment: String): ChipTone = when (fulfillment) {
+/** 统一订单状态的展示映射 */
+fun orderStatusTone(status: String): ChipTone = when (status) {
     "PENDING" -> ChipTone.Info
     "DELIVERING" -> ChipTone.Warning
     "DELIVERED" -> ChipTone.Success
@@ -271,13 +271,15 @@ fun fulfillmentTone(fulfillment: String): ChipTone = when (fulfillment) {
     else -> ChipTone.Muted
 }
 
-fun fulfillmentText(fulfillment: String): String = when (fulfillment) {
-    "PENDING" -> "待配送"
-    "DELIVERING" -> "配送中"
-    "DELIVERED" -> "已送达"
-    "FINISHED" -> "已完成"
-    "CANCELLED" -> "已取消"
-    else -> fulfillment
+fun orderStatusLabel(status: String, statusText: String = ""): String = statusText.ifBlank {
+    when (status) {
+        "PENDING" -> "待配送"
+        "DELIVERING" -> "配送中"
+        "DELIVERED" -> "已送达"
+        "FINISHED" -> "已完成"
+        "CANCELLED" -> "已取消"
+        else -> status
+    }
 }
 
 fun paymentTone(paymentState: String): ChipTone = when (paymentState) {

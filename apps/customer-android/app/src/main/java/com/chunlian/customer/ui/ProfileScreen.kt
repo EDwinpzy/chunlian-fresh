@@ -3,7 +3,6 @@ package com.chunlian.customer.ui
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -43,7 +42,6 @@ fun ProfileScreen(
     val context = LocalContext.current
     var editNickname by rememberSaveable { mutableStateOf(false) }
     var showLogout by rememberSaveable { mutableStateOf(false) }
-    var showShop by rememberSaveable { mutableStateOf(false) }
     var dialError by remember { mutableStateOf(false) }
     var nickname by rememberSaveable(state.user?.userId) { mutableStateOf(state.user?.nickname.orEmpty()) }
     if (editNickname) {
@@ -71,25 +69,6 @@ fun ProfileScreen(
             confirmButton = { TextButton(onClick = { dialError = false }) { Text("知道了") } },
         )
     }
-    if (showShop) {
-        BackHandler { showShop = false }
-        ScreenFrame("店铺与配送", { showShop = false }) { padding ->
-            Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                CardBox {
-                    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                        ProfileDetail("店铺名称", state.shop.shopName.ifBlank { "生鲜小店" })
-                        if (state.shop.shopDescription.isNotBlank()) ProfileDetail("店铺简介", state.shop.shopDescription)
-                        if (state.shop.shopAddress.isNotBlank()) ProfileDetail("店铺地址", state.shop.shopAddress)
-                        if (state.shop.businessHours.isNotBlank()) ProfileDetail("营业时间", state.shop.businessHours)
-                        if (state.shop.deliveryDescription.isNotBlank()) ProfileDetail("配送说明", state.shop.deliveryDescription)
-                        if (state.shop.notice.isNotBlank()) ProfileDetail("店铺公告", state.shop.notice)
-                    }
-                }
-            }
-        }
-        return
-    }
-
     val updateSummary = when {
         updateState.checking -> "正在检查更新…"
         updateState.downloading -> "正在下载更新${updateState.progressPercent?.let { "（$it%）" }.orEmpty()}"
@@ -136,8 +115,6 @@ fun ProfileScreen(
                     catch (_: ActivityNotFoundException) { dialError = true }
                 })
                 DividerLine(Modifier.padding(start = 56.dp, end = 16.dp))
-                ProfileMenuRow(R.drawable.cust_delivery, "店铺与配送", onClick = { showShop = true })
-                DividerLine(Modifier.padding(start = 56.dp, end = 16.dp))
                 ProfileMenuRow(R.drawable.cust_refresh, "检查应用更新", updateSummary.orEmpty(), enabled = !updateState.checking && !updateState.downloading, onClick = onCheckForUpdate)
             }
         }
@@ -159,13 +136,5 @@ private fun ProfileMenuRow(icon: Int, title: String, subtitle: String = "", valu
         }
         if (value.isNotBlank()) Text(value, fontSize = 12.sp, color = C.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 132.dp).padding(end = 8.dp))
         if (enabled) CustomerAssetIcon(R.drawable.cust_back, contentDescription = null, modifier = Modifier.graphicsLayer { rotationZ = 180f }, size = 14.dp)
-    }
-}
-
-@Composable
-private fun ProfileDetail(title: String, value: String) {
-    Column {
-        Text(title, color = C.TextSecondary, fontSize = 13.sp)
-        Text(value, color = C.TextPrimary, fontSize = 15.sp, modifier = Modifier.padding(top = 6.dp))
     }
 }

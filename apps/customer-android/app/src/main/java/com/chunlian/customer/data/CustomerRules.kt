@@ -15,6 +15,10 @@ private val expectedInput = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm")
 
 fun isValidMainlandMobile(value: String): Boolean = mainlandMobile.matches(value.trim())
 
+/** Selecting a home shortcut filters the home list without switching to the category tab. */
+fun CustomerUiState.withHomeCategorySelection(categoryId: String?): CustomerUiState =
+    copy(tab = CustomerTab.HOME, categoryId = categoryId)
+
 data class PurchaseQuantityBounds(val minimum: Int, val maximum: Int) {
     val canPurchase: Boolean get() = maximum >= minimum && maximum > 0
 }

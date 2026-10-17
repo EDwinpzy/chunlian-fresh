@@ -74,6 +74,21 @@ class SessionStore private constructor(private val prefs: SharedPreferences) {
         return UUID.randomUUID().toString().also { prefs.edit().putString(KEY_DEVICE_ID, it).apply() }
     }
 
+    /** 个推 CID 仅会在实际取得推送隐私授权并初始化 SDK 后写入。 */
+    var pushClientId: String
+        get() = prefs.getString(KEY_PUSH_CLIENT_ID, "").orEmpty()
+        set(value) = prefs.edit().putString(KEY_PUSH_CLIENT_ID, value).apply()
+
+    /** 默认拒绝；必须由将来的明确隐私同意流程在授权后设置为 true。 */
+    var getuiPrivacyConsentAccepted: Boolean
+        get() = prefs.getBoolean(KEY_GETUI_PRIVACY_CONSENT, false)
+        set(value) = prefs.edit().putBoolean(KEY_GETUI_PRIVACY_CONSENT, value).apply()
+
+    /** Retries server-side device revocation if the merchant opted out while offline. */
+    var pushUnregisterPending: Boolean
+        get() = prefs.getBoolean(KEY_PUSH_UNREGISTER_PENDING, false)
+        set(value) = prefs.edit().putBoolean(KEY_PUSH_UNREGISTER_PENDING, value).apply()
+
     /** 记住上次登录的账号，减少店主每天输账号的次数（不存密码） */
     var lastUsername: String
         get() = prefs.getString(KEY_LAST_USER, "").orEmpty()
@@ -102,6 +117,9 @@ class SessionStore private constructor(private val prefs: SharedPreferences) {
         const val KEY_EXPIRES_AT = "expires_at"
         const val KEY_LAST_USER = "last_username"
         const val KEY_DEVICE_ID = "device_id"
+        const val KEY_PUSH_CLIENT_ID = "getui_client_id"
+        const val KEY_GETUI_PRIVACY_CONSENT = "getui_privacy_consent_accepted"
+        const val KEY_PUSH_UNREGISTER_PENDING = "getui_push_unregister_pending"
     }
 }
 

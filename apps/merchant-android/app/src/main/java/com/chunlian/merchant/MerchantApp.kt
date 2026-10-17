@@ -1,10 +1,17 @@
 package com.chunlian.merchant
 
 import android.app.Application
+import android.app.ActivityManager
+import android.os.Build
+import android.os.Process
 import com.chunlian.androidupdate.AndroidAppUpdater
 import com.chunlian.merchant.core.network.ApiClient
 import com.chunlian.merchant.core.network.SessionStore
+import com.chunlian.merchant.core.push.GetuiPushSdkInitializer
 import com.chunlian.merchant.data.repository.MerchantRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * 应用入口 + 依赖容器。
@@ -27,12 +34,18 @@ class MerchantApp : Application() {
     lateinit var appUpdater: AndroidAppUpdater
         private set
 
+    lateinit var getuiPushSdkInitializer: GetuiPushSdkInitializer
+        private set
+
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override fun onCreate() {
         super.onCreate()
         instance = this
 
         session = SessionStore(this)
         repository = MerchantRepository(session)
+        getuiPushSdkInitializer = GetuiPushSdkInitializer(session)
         appUpdater = AndroidAppUpdater(
             context = this,
             applicationId = BuildConfig.APPLICATION_ID,
@@ -42,6 +55,19 @@ class MerchantApp : Application() {
 
         // 把 token 提供者接到网络层：这样网络层不需要持有 Context
         ApiClient.tokenProvider = { session.token }
+
+        // The SDK's custom PushService runs in :pushservice; initialize only in the
+        // main app process to avoid starting the SDK recursively from its own process.
+        if (isMainProcess()) getuiPushSdkInitializer.initializeIfAllowed(this)
+    }
+
+    private fun isMainProcess(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return Application.getProcessName() == packageName
+        }
+        val pid = Process.myPid()
+        val processes = getSystemService(ACTIVITY_SERVICE) as? ActivityManager
+        return processes?.runningAppProcesses?.firstOrNull { it.pid == pid }?.processName == packageName
     }
 
     companion object {

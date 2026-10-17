@@ -15,6 +15,14 @@ val localCustomerApiBaseUrl: String = run {
     if (file.exists()) file.inputStream().use(props::load)
     props.getProperty("API_BASE_URL")?.trim().orEmpty()
 }
+val getuiAppId: String = run {
+    providers.gradleProperty("GETUI_APP_ID").orNull?.trim()?.takeIf { it.isNotEmpty() } ?: run {
+        val props = Properties()
+        val file = rootProject.file("local.properties")
+        if (file.exists()) file.inputStream().use(props::load)
+        props.getProperty("GETUI_APP_ID")?.trim().orEmpty()
+    }
+}
 val productionApiBaseUrl = "https://103.236.97.137:8096"
 // Local properties are useful for debug workstations. Release builds ignore them so an
 // old HTTP development URL cannot silently become the shipped API endpoint.
@@ -46,9 +54,11 @@ android {
         applicationId = "com.chunlian.customer"
         minSdk = 24
         targetSdk = 34
-        versionCode = 7
-        versionName = "1.0.6"
+        versionCode = 8
+        versionName = "1.0.7"
+        manifestPlaceholders["GETUI_APPID"] = getuiAppId
         buildConfigField("String", "API_BASE_URL", buildConfigString(customerDebugApiBaseUrl))
+        buildConfigField("String", "GETUI_APP_ID", buildConfigString(getuiAppId))
         buildConfigField("boolean", "ALLOW_INSECURE_LOOPBACK_AUTH", allowInsecureLoopbackAuth.toString())
     }
 
@@ -120,6 +130,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("com.getui:gtsdk:3.3.16.0")
+    implementation("com.getui:gtc:3.3.3.0")
 
     testImplementation("junit:junit:4.13.2")
 }

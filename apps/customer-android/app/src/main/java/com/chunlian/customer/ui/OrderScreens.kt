@@ -1,5 +1,8 @@
 package com.chunlian.customer.ui
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,18 +20,27 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,10 +53,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import com.chunlian.customer.data.Address
 import com.chunlian.customer.data.CustomerUiState
 import com.chunlian.customer.data.CustomerViewModel
@@ -265,33 +280,66 @@ private fun AddressCard(address: Address, onDefault: () -> Unit, onEdit: () -> U
 }
 
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 fun OrderDetailScreen(state: CustomerUiState, vm: CustomerViewModel, onBack: () -> Unit, onEditInfo: () -> Unit, onEditItems: () -> Unit) {
     var confirmCancel by remember { mutableStateOf(false) }
     var confirmReceive by remember { mutableStateOf(false) }
     val order = state.order
+    val view = LocalView.current
+    DisposableEffect(view) {
+        val window = view.context.findActivity()?.window
+        val controller = window?.let { WindowCompat.getInsetsController(it, view) }
+        val previousLightStatusBars = controller?.isAppearanceLightStatusBars
+        controller?.isAppearanceLightStatusBars = false
+        onDispose {
+            if (controller != null && previousLightStatusBars != null) {
+                controller.isAppearanceLightStatusBars = previousLightStatusBars
+            }
+        }
+    }
     if (confirmCancel && order != null) ConfirmDialog("取消订单", "确定取消这笔订单吗？已支付金额的退款以服务端处理结果为准。", "确认取消", { confirmCancel = false; vm.cancelOrder(order) }, { confirmCancel = false })
-    if (confirmReceive && order != null) ConfirmDialog("确认收货", "请确认商品已经送达。", "确认收货", { confirmReceive = false; vm.receiveOrder(order) }, { confirmReceive = false })
-    ScreenFrame("订单详情", onBack) { padding ->
-        if (order == null) Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = CustomerColors.Brand700) }
-        else Column(Modifier.fillMaxSize().padding(padding).background(CustomerColors.Canvas)) {
-            LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                item {
-                    // 订单状态用深绿整块：这是详情页最该先被看到的信息，
-                    // 顾客打开订单详情的目的九成是「到哪了 / 付了没」
-                    FeaturedCard(minHeight = 0.dp) {
-                        Column(Modifier.padding(18.dp)) {
-                            Text(order.fulfillmentText, color = CustomerColors.OnBrand, fontSize = T.headline, fontWeight = FontWeight.Bold)
-                            Text("${order.paymentMethodText} · ${order.paymentStateText}", color = CustomerColors.OnBrandMuted, modifier = Modifier.padding(top = 6.dp))
-                            Text("订单号 ${order.orderNo}", color = CustomerColors.OnBrandMuted, fontSize = T.caption, modifier = Modifier.padding(top = 8.dp))
-                            TextButton(onClick = { vm.refreshOrder(order.id) }, enabled = !state.busy, modifier = Modifier.padding(start = 0.dp, top = 4.dp)) {
-                                Text(if (state.busy) "正在刷新…" else "刷新订单状态", color = CustomerColors.OnBrand)
-                            }
+    if (confirmReceive && order != null) ConfirmDialog("确认收货", "请确认商品已经送达。确认后，剩余应付金额会自动记为已付款，适用于所有付款方式。", "确认收货", { confirmReceive = false; vm.receiveOrder(order) }, { confirmReceive = false })
+    Scaffold(
+        containerColor = CustomerColors.Brand700,
+        topBar = {
+            Column(Modifier.fillMaxWidth().background(CustomerColors.Brand700)) {
+                CenterAlignedTopAppBar(
+                    title = { Text("订单详情", fontSize = T.section, fontWeight = FontWeight.SemiBold) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = CustomerColors.Brand700,
+                        titleContentColor = CustomerColors.OnBrand,
+                        navigationIconContentColor = CustomerColors.OnBrand,
+                    ),
+                )
+                order?.let {
+                    OrderStatusHeader(
+                        order = it,
+                        busy = state.busy,
+                        onRefresh = { vm.refreshOrder(it.id) },
+                    )
                 }
+            }
+        },
+    ) { padding ->
+        if (order == null) {
+            Box(
+                Modifier.fillMaxSize().padding(padding).background(CustomerColors.Canvas),
+                contentAlignment = Alignment.Center,
+            ) { CircularProgressIndicator(color = CustomerColors.Brand700) }
+        } else Column(Modifier.fillMaxSize().padding(padding).background(CustomerColors.Canvas)) {
+            LazyColumn(
+                Modifier.weight(1f),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 item {
                     val refundInProgress = order.paymentState == "REFUNDING" || order.refundingFen > 0
-                    val cancelled = order.fulfillment == "CANCELLED"
+                    val cancelled = order.orderStatus == "CANCELLED"
                     if (shouldShowManualPaymentQr(
                             paymentMethod = order.paymentMethod,
                             paymentState = order.paymentState,
@@ -346,14 +394,6 @@ fun OrderDetailScreen(state: CustomerUiState, vm: CustomerViewModel, onBack: () 
                     Text(if (order.deliveryMode == "ASAP") "尽快配送" else "预约：${formatExpectedAt(order.expectedAt)}", color = CustomerColors.TextSecondary, fontSize = T.caption, modifier = Modifier.padding(top = 8.dp))
                     if (order.remark.isNotBlank()) Text("留言：${order.remark}", color = CustomerColors.TextSecondary, modifier = Modifier.padding(top = 5.dp))
                 } }
-                item { SectionCard("订单状态") {
-                    MoneyRow("履约状态", order.fulfillmentText)
-                    MoneyRow("付款状态", order.paymentStateText)
-                    if (order.receiptState.isNotBlank()) MoneyRow("收货状态", receiptLabel(order.receiptState))
-                    if (order.revisionState != "NONE") MoneyRow("商品修改", revisionLabel(order.revisionState))
-                    if (order.refundingFen > 0) MoneyRow("退款处理中", money(order.refundingFen))
-                    if (order.refundedFen > 0) MoneyRow("已退款", money(order.refundedFen))
-                } }
                 item { SectionCard("商品清单", iconResource = R.drawable.cust_product_detail) {
                     order.lines.forEach { line ->
                         Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -363,6 +403,12 @@ fun OrderDetailScreen(state: CustomerUiState, vm: CustomerViewModel, onBack: () 
                     }
                     MoneyRow("商品金额", money(order.goodsTotalFen)); MoneyRow("配送费", money(order.deliveryFeeFen)); MoneyRow("订单总额", money(order.totalFen), emphasize = true)
                     if (order.receivableFen > 0) MoneyRow("尚待收款", money(order.receivableFen), emphasize = true)
+                } }
+                item { SectionCard("订单信息") {
+                    MoneyRow("付款状态", order.paymentStateText)
+                    if (order.revisionState != "NONE") MoneyRow("商品修改", revisionLabel(order.revisionState))
+                    if (order.refundingFen > 0) MoneyRow("退款处理中", money(order.refundingFen))
+                    if (order.refundedFen > 0) MoneyRow("已退款", money(order.refundedFen))
                 } }
             }
             if (order.canEdit || order.canCancel || order.canReceive) Row(Modifier.fillMaxWidth().background(CustomerColors.Surface).padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -375,6 +421,132 @@ fun OrderDetailScreen(state: CustomerUiState, vm: CustomerViewModel, onBack: () 
             }
         }
     }
+}
+
+@Composable
+private fun OrderStatusHeader(order: Order, busy: Boolean, onRefresh: () -> Unit) {
+    val progress = when (order.orderStatus) {
+        "PENDING" -> 0
+        "DELIVERING" -> 1
+        "DELIVERED", "FINISHED" -> 2
+        else -> -1
+    }
+
+    Column(
+        Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 2.dp, bottom = 18.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            order.orderStatusText,
+            color = CustomerColors.OnBrand,
+            fontSize = T.headline,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            orderStatusHint(order),
+            color = CustomerColors.OnBrandMuted,
+            fontSize = T.caption,
+            lineHeight = 18.sp,
+        )
+        if (progress >= 0) {
+            Column(Modifier.fillMaxWidth().padding(top = 5.dp)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    OrderProgressDot(active = progress >= 0)
+                    Spacer(
+                        Modifier.weight(1f).height(1.dp)
+                            .background(if (progress >= 1) CustomerColors.OnBrand else CustomerColors.OnBrandTranslucent),
+                    )
+                    OrderProgressDot(active = progress >= 1)
+                    Spacer(
+                        Modifier.weight(1f).height(1.dp)
+                            .background(if (progress >= 2) CustomerColors.OnBrand else CustomerColors.OnBrandTranslucent),
+                    )
+                    OrderProgressDot(active = progress >= 2)
+                }
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    listOf("已下单", "配送中", "已送达").forEachIndexed { index, label ->
+                        Text(
+                            label,
+                            color = if (progress >= index) CustomerColors.OnBrand else CustomerColors.OnBrandMuted,
+                            fontSize = T.mini,
+                        )
+                    }
+                }
+            }
+        }
+        Box(
+            Modifier.padding(top = 2.dp)
+                .clip(RoundedCornerShape(50))
+                .background(CustomerColors.OnBrandTranslucent)
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+        ) {
+            Text(
+                "${order.paymentMethodText} · ${order.paymentStateText}",
+                color = CustomerColors.OnBrand,
+                fontSize = T.mini,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "订单号 ${order.orderNo}",
+                modifier = Modifier.weight(1f),
+                color = CustomerColors.OnBrandMuted,
+                fontSize = T.mini,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            TextButton(
+                onClick = onRefresh,
+                enabled = !busy,
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = CustomerColors.OnBrand,
+                    disabledContentColor = CustomerColors.OnBrandMuted,
+                ),
+            ) {
+                Text(if (busy) "刷新中…" else "刷新状态", fontSize = T.mini)
+            }
+        }
+    }
+}
+
+@Composable
+private fun OrderProgressDot(active: Boolean) {
+    Box(
+        Modifier.size(9.dp)
+            .clip(CircleShape)
+            .background(if (active) CustomerColors.OnBrand else CustomerColors.OnBrandTranslucent),
+    )
+}
+
+private fun orderStatusHint(order: Order): String = when {
+    order.orderStatus == "CANCELLED" && order.paymentState == "REFUNDING" ->
+        "订单已取消，款项退款处理中，请留意退款进度。"
+    order.orderStatus == "CANCELLED" && order.paymentState == "UNPAID" ->
+        "订单已取消，无需付款。"
+    order.orderStatus == "CANCELLED" ->
+        "订单已取消，如需了解退款进度请联系店主。"
+    order.orderStatus == "DELIVERED" ->
+        "店主已标记送达，收到商品后请确认收货。"
+    order.orderStatus == "FINISHED" ->
+        "已确认收货，订单已完成。"
+    order.orderStatus == "DELIVERING" ->
+        "店主正在为你配送。"
+    else -> "订单已提交，店主会尽快为你安排。"
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 @Composable
@@ -580,12 +752,6 @@ private fun MoneyRow(label: String, value: String, emphasize: Boolean = false) {
 @Composable
 private fun ConfirmDialog(title: String, message: String, confirm: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, text = { Text(message) }, confirmButton = { TextButton(onClick = onConfirm) { Text(confirm, color = CustomerColors.Danger) } }, dismissButton = { TextButton(onClick = onDismiss) { Text("再想想") } })
-}
-
-private fun receiptLabel(state: String): String = when (state.uppercase()) {
-    "CONFIRMED" -> "已确认收货"
-    "UNCONFIRMED" -> "待确认收货"
-    else -> state
 }
 
 private fun revisionLabel(state: String): String = when (state.uppercase()) {

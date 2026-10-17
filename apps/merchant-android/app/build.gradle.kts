@@ -25,6 +25,24 @@ val localApiBaseUrl: String = run {
     }
     props.getProperty("API_BASE_URL")?.trim().orEmpty()
 }
+val getuiAppId: String = run {
+    val props = Properties()
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { props.load(it) }
+    }
+    providers.gradleProperty("GETUI_APP_ID").orNull?.trim()?.takeIf { it.isNotEmpty() }
+        ?: props.getProperty("GETUI_APP_ID")?.trim().orEmpty()
+}
+val merchantPrivacyPolicyUrl: String = run {
+    val props = Properties()
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { props.load(it) }
+    }
+    providers.gradleProperty("MERCHANT_PRIVACY_POLICY_URL").orNull?.trim()?.takeIf { it.isNotEmpty() }
+        ?: props.getProperty("MERCHANT_PRIVACY_POLICY_URL")?.trim().orEmpty()
+}
 val productionApiBaseUrl = "https://103.236.97.137:8096"
 // 工作站地址只供 Debug 使用。Release 忽略 local.properties，避免旧 HTTP 地址影响发布包。
 val debugApiBaseUrl = apiBaseUrlFromGradle
@@ -59,10 +77,13 @@ android {
         applicationId = "com.chunlian.merchant"
         minSdk = 24
         targetSdk = 34
-        versionCode = 7
-        versionName = "1.0.6"
+        versionCode = 8
+        versionName = "1.0.7"
 
         buildConfigField("String", "API_BASE_URL", buildConfigString(debugApiBaseUrl))
+        buildConfigField("String", "GETUI_APP_ID", buildConfigString(getuiAppId))
+        buildConfigField("String", "MERCHANT_PRIVACY_POLICY_URL", buildConfigString(merchantPrivacyPolicyUrl))
+        manifestPlaceholders["GETUI_APPID"] = getuiAppId
     }
 
     buildTypes {
@@ -168,4 +189,8 @@ dependencies {
     // 会话持久化（token 存在 DataStore；敏感字段用 EncryptedSharedPreferences 时需 security-crypto）
     implementation("androidx.datastore:datastore-preferences:1.0.0")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // 官方个推国内 Android SDK（AppID 是公开标识；任何服务端密钥均不进入 APK）。
+    implementation("com.getui:gtsdk:3.3.16.0")
+    implementation("com.getui:gtc:3.3.3.0")
 }

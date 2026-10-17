@@ -21,6 +21,11 @@ import com.chunlian.merchant.navigation.MerchantApp as AppNav
  */
 class MainActivity : ComponentActivity() {
 
+    override fun onResume() {
+        super.onResume()
+        (application as? MerchantApp)?.getuiPushSdkInitializer?.initializeIfAllowed(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

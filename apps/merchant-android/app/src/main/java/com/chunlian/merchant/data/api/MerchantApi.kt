@@ -23,6 +23,7 @@ import com.chunlian.merchant.data.model.ManualRefundRequest
 import com.chunlian.merchant.data.model.Notifications
 import com.chunlian.merchant.data.model.Order
 import com.chunlian.merchant.data.model.OrderPage
+import com.chunlian.merchant.data.model.PushDeviceRequest
 import com.chunlian.merchant.data.model.Receivable
 import com.chunlian.merchant.data.model.RevisionHistory
 import com.chunlian.merchant.data.model.QrReceiptRequest
@@ -64,6 +65,13 @@ interface MerchantApi {
 
     @POST("merchant/auth/logout")
     suspend fun logout(): ApiEnvelope<Unit>
+
+    // ---------------- 推送设备 ----------------
+    @POST("merchant/push-devices")
+    suspend fun registerPushDevice(@Body body: PushDeviceRequest): ApiEnvelope<Unit>
+
+    @DELETE("merchant/push-devices/{installation_id}")
+    suspend fun unregisterPushDevice(@Path("installation_id") installationId: String): ApiEnvelope<Unit>
 
     // ---------------- 工作台 ----------------
     @GET("merchant/dashboard")

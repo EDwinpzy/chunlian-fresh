@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -56,6 +60,7 @@ import com.chunlian.merchant.core.designsystem.C
 import com.chunlian.merchant.core.designsystem.T
 import com.chunlian.merchant.core.designsystem.dim
 import com.chunlian.merchant.core.media.stagePickedImage
+import com.chunlian.merchant.data.model.Goods
 import com.chunlian.merchant.feature.products.ProductCategoryManagementScreen
 import com.chunlian.merchant.ui.components.CardBox
 import com.chunlian.merchant.ui.components.ChipTone
@@ -77,7 +82,8 @@ private enum class SettingsPage(val title: String) {
     Home("我的"),
     Profile("店铺资料"),
     Delivery("配送设置"),
-    CustomerHome("顾客首页"),
+    FeaturedProducts("每日鲜选商品"),
+    NotificationPush("通知推送"),
     Operating("营业状态"),
     Payment("收款二维码"),
     Categories("商品分类"),
@@ -91,6 +97,7 @@ internal fun SettingsScreenContent(onBack: (() -> Unit)?) {
     val updateState by app.appUpdater.state.collectAsState()
     val vm = viewModel { SettingsViewModel(app.repository) }
     val state by vm.state.collectAsState()
+    val featuredProductsState by vm.featuredProductsState.collectAsState()
     val scope = rememberCoroutineScope()
 
     var page by rememberSaveable { mutableStateOf(SettingsPage.Home) }
@@ -123,12 +130,29 @@ internal fun SettingsScreenContent(onBack: (() -> Unit)?) {
         }
     }
 
+    val notificationPopupImagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            vm.notificationPopupImageSelectionStarted(uri.toString())
+            scope.launch {
+                try {
+                    vm.notificationPopupImageSelected(stagePickedImage(context, uri, "merchant-notification-popup"))
+                } catch (e: Exception) {
+                    vm.notificationPopupImageSelectionFailed(e.message ?: "读取通知推送图片失败，请重新选择")
+                }
+            }
+        }
+    }
+
     LaunchedEffect(Unit) { vm.load() }
+    LaunchedEffect(page) {
+        if (page == SettingsPage.FeaturedProducts) vm.loadFeaturedProducts()
+    }
     LaunchedEffect(state.loading, state.message, state.saving, state.error) {
         if (state.message != null && !vm.hasPendingChanges()) {
-            (savingToLeave ?: leaveTarget)?.let { target -> page = target }
+            page = savingToLeave ?: leaveTarget ?: SettingsPage.Home
             leaveTarget = null
             savingToLeave = null
+            vm.consumeMessage()
         }
         if (!state.saving && state.error != null && savingToLeave != null) {
             savingToLeave = null
@@ -187,6 +211,17 @@ internal fun SettingsScreenContent(onBack: (() -> Unit)?) {
 
                 SettingsPage.Categories -> ProductCategoryManagementScreen(Modifier.weight(1f))
 
+                SettingsPage.FeaturedProducts -> FeaturedProductsSettingsPage(
+                    modifier = Modifier.weight(1f),
+                    state = state,
+                    productsState = featuredProductsState,
+                    onToggle = vm::toggleFeaturedProduct,
+                    onMove = vm::moveFeaturedProduct,
+                    onClear = { vm.update { copy(homeFeaturedProductIds = emptyList()) } },
+                    onRetry = vm::retryLoadFeaturedProducts,
+                    onSave = vm::save,
+                )
+
                 else -> SettingsDetail(
                     page = page,
                     state = state,
@@ -197,13 +232,15 @@ internal fun SettingsScreenContent(onBack: (() -> Unit)?) {
                     onPickShopLogo = { shopLogoPicker.launch("image/*") },
                     onRemoveShopLogo = vm::removeShopLogo,
                     onPickPaymentQr = { paymentQrPicker.launch("image/*") },
+                    onPickNotificationPopupImage = { notificationPopupImagePicker.launch("image/*") },
+                    onRemoveNotificationPopupImage = vm::removeNotificationPopupImage,
                 )
             }
         }
     }
 
     if (leaveTarget != null) {
-        val isPreparingImage = state.preparingPaymentQr || state.preparingShopLogo
+        val isPreparingImage = state.preparingPaymentQr || state.preparingShopLogo || state.preparingNotificationPopupImage
         val isBusy = state.saving || isPreparingImage
         AlertDialog(
             onDismissRequest = { if (!isBusy) leaveTarget = null },
@@ -242,16 +279,6 @@ internal fun SettingsScreenContent(onBack: (() -> Unit)?) {
         )
     }
 
-    if (state.message != null) {
-        AlertDialog(
-            onDismissRequest = { vm.consumeMessage() },
-            title = { Text("已保存") },
-            text = { Text(state.message!!) },
-            confirmButton = {
-                TextButton(onClick = { vm.consumeMessage() }) { Text("知道了", color = C.Brand700) }
-            },
-        )
-    }
 }
 
 @Composable
@@ -342,25 +369,23 @@ private fun SettingsOverview(
             title = "店铺管理",
             entries = listOf(
                 SettingsEntry("店铺资料", R.drawable.merchant_user, onOpen = { onOpen(SettingsPage.Profile) }),
+                SettingsEntry("每日鲜选商品", R.drawable.merchant_inventory, value = "最多 10 个", onOpen = { onOpen(SettingsPage.FeaturedProducts) }),
                 SettingsEntry(
                     "配送设置",
                     R.drawable.merchant_delivery,
-                    value = "¥${state.deliveryFeeYuan}",
                     onOpen = { onOpen(SettingsPage.Delivery) },
                 ),
                 SettingsEntry(
                     "营业状态",
                     R.drawable.merchant_settings,
-                    value = if (state.isOpen) "营业中" else "已暂停",
                     onOpen = { onOpen(SettingsPage.Operating) },
                 ),
                 SettingsEntry(
                     "收款二维码",
                     R.drawable.merchant_payment,
-                    value = if (state.paymentQrUrl.isBlank()) "未设置" else "已设置",
                     onOpen = { onOpen(SettingsPage.Payment) },
                 ),
-                SettingsEntry("通知推送", R.drawable.merchant_dashboard, onOpen = { onOpen(SettingsPage.CustomerHome) }),
+                SettingsEntry("通知推送", R.drawable.merchant_dashboard, onOpen = { onOpen(SettingsPage.NotificationPush) }),
             ),
         )
 
@@ -435,6 +460,228 @@ private fun StoreStatus(isOpen: Boolean) {
 }
 
 @Composable
+private fun FeaturedProductsSettingsPage(
+    modifier: Modifier,
+    state: SettingsViewModel.UiState,
+    productsState: SettingsViewModel.FeaturedProductsState,
+    onToggle: (String) -> Unit,
+    onMove: (String, Int) -> Unit,
+    onClear: () -> Unit,
+    onRetry: () -> Unit,
+    onSave: () -> Unit,
+) {
+    val app = MerchantApp.instance
+    val selectedIds = state.homeFeaturedProductIds
+    val selectedSet = selectedIds.toSet()
+    val availableGoods = productsState.goods.filterNot { it.id in selectedSet }
+    val goodsById = productsState.goods.associateBy(Goods::id)
+
+    Column(modifier = modifier.fillMaxWidth().background(C.Canvas)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = dim.pagePadding, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text("设置首页轮播商品", fontSize = T.body, fontWeight = FontWeight.SemiBold, color = C.TextPrimary)
+                Text("仅可选择在售商品，排列顺序就是顾客端轮播顺序", fontSize = T.mini, color = C.TextMuted)
+            }
+            Text("${selectedIds.size}/10", fontSize = T.caption, fontWeight = FontWeight.SemiBold, color = C.Brand700)
+            if (selectedIds.isNotEmpty()) {
+                TextButton(onClick = onClear, enabled = !state.saving) {
+                    Text("恢复默认", color = C.TextSecondary, fontSize = T.caption)
+                }
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = dim.pagePadding),
+            contentPadding = PaddingValues(bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item {
+                SectionTitle("已选商品")
+            }
+            if (selectedIds.isEmpty()) {
+                item {
+                    CardBox {
+                        Text("尚未设置自选商品时，顾客首页会展示默认鲜选商品。", Modifier.padding(14.dp), fontSize = T.caption, color = C.TextMuted)
+                    }
+                }
+            } else {
+                itemsIndexed(selectedIds, key = { _, id -> id }) { index, id ->
+                    SelectedFeaturedProductRow(
+                        goods = goodsById[id],
+                        position = index,
+                        count = selectedIds.size,
+                        imageUrl = goodsById[id]?.image?.takeIf(String::isNotBlank)?.let(app.repository::absoluteUrl),
+                        productInfoLoading = productsState.loading,
+                        productInfoError = productsState.error != null,
+                        onMoveUp = { onMove(id, -1) },
+                        onMoveDown = { onMove(id, 1) },
+                        onRemove = { onToggle(id) },
+                    )
+                }
+            }
+
+            item {
+                SectionTitle("选择在售商品")
+            }
+            if (productsState.loading && productsState.goods.isEmpty()) {
+                item {
+                    Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
+                        androidx.compose.material3.CircularProgressIndicator(color = C.Brand700, strokeWidth = 2.dp)
+                    }
+                }
+            }
+            if (productsState.error != null) {
+                item {
+                    CardBox {
+                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            NoticeBar(productsState.error, ChipTone.Danger)
+                            TextButton(onClick = onRetry, enabled = !productsState.loading) {
+                                Text("重新加载在售商品", color = C.Brand700)
+                            }
+                        }
+                    }
+                }
+            } else if (productsState.loaded && availableGoods.isEmpty()) {
+                item {
+                    CardBox {
+                        Text(
+                            if (productsState.goods.isEmpty()) "暂无在售商品" else "所有在售商品都已加入每日鲜选",
+                            Modifier.padding(14.dp),
+                            fontSize = T.caption,
+                            color = C.TextMuted,
+                        )
+                    }
+                }
+            }
+            items(availableGoods, key = Goods::id) { goods ->
+                SelectableFeaturedProductRow(
+                    goods = goods,
+                    imageUrl = goods.image.takeIf(String::isNotBlank)?.let(app.repository::absoluteUrl),
+                    onClick = { onToggle(goods.id) },
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth().background(C.Canvas).padding(horizontal = dim.pagePadding, vertical = 10.dp),
+        ) {
+            PrimaryButton(
+                text = if (state.saving) "保存中…" else "保存设置",
+                onClick = onSave,
+                enabled = !state.saving && !state.preparingShopLogo && !state.preparingPaymentQr && !state.preparingNotificationPopupImage,
+                loading = state.saving,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SelectedFeaturedProductRow(
+    goods: Goods?,
+    position: Int,
+    count: Int,
+    imageUrl: String?,
+    productInfoLoading: Boolean,
+    productInfoError: Boolean,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    CardBox {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FeaturedProductThumbnail(title = goods?.title ?: "鲜", imageUrl = imageUrl)
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(goods?.title ?: "暂不可选的商品", fontSize = T.caption, fontWeight = FontWeight.SemiBold, color = C.TextPrimary, maxLines = 1)
+                Text(
+                    when {
+                        goods != null -> "轮播第 ${position + 1} 位 · ¥${fen2yuan(goods.minPriceFen)}"
+                        productInfoLoading -> "商品信息加载中 · 轮播第 ${position + 1} 位"
+                        productInfoError -> "商品信息暂不可用 · 轮播第 ${position + 1} 位"
+                        else -> "该商品已下架或不存在 · 轮播第 ${position + 1} 位"
+                    },
+                    fontSize = T.mini,
+                    color = C.TextMuted,
+                    maxLines = 2,
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                TextButton(
+                    onClick = onMoveUp,
+                    enabled = position > 0,
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                ) { Text("上移", fontSize = T.mini, color = if (position > 0) C.Brand700 else C.TextMuted) }
+                TextButton(
+                    onClick = onMoveDown,
+                    enabled = position < count - 1,
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                ) { Text("下移", fontSize = T.mini, color = if (position < count - 1) C.Brand700 else C.TextMuted) }
+                TextButton(
+                    onClick = onRemove,
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                ) { Text("移除", fontSize = T.mini, color = C.TextSecondary) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectableFeaturedProductRow(
+    goods: Goods,
+    imageUrl: String?,
+    onClick: () -> Unit,
+) {
+    CardBox {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FeaturedProductThumbnail(title = goods.title, imageUrl = imageUrl)
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(goods.title, fontSize = T.caption, fontWeight = FontWeight.SemiBold, color = C.TextPrimary, maxLines = 1)
+                Text(
+                    goods.specDesc.ifBlank { goods.simpleDesc.ifBlank { goods.inventoryUnit.ifBlank { "在售商品" } } },
+                    fontSize = T.mini,
+                    color = C.TextMuted,
+                    maxLines = 1,
+                )
+                Text("¥${fen2yuan(goods.minPriceFen)}", fontSize = T.caption, fontWeight = FontWeight.SemiBold, color = C.Price)
+            }
+            TextButton(onClick = onClick, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)) {
+                Text("选择", color = C.Brand700, fontSize = T.caption)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeaturedProductThumbnail(title: String, imageUrl: String?) {
+    Box(
+        modifier = Modifier.size(54.dp).clip(RoundedCornerShape(10.dp)).background(C.Brand100),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (!imageUrl.isNullOrBlank()) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+            )
+        } else {
+            Text(title.take(1), fontSize = T.section, fontWeight = FontWeight.SemiBold, color = C.Brand700)
+        }
+    }
+}
+
+@Composable
 private fun SettingsDetail(
     page: SettingsPage,
     state: SettingsViewModel.UiState,
@@ -445,12 +692,14 @@ private fun SettingsDetail(
     onPickShopLogo: () -> Unit,
     onRemoveShopLogo: () -> Unit,
     onPickPaymentQr: () -> Unit,
+    onPickNotificationPopupImage: () -> Unit,
+    onRemoveNotificationPopupImage: () -> Unit,
 ) {
     val app = MerchantApp.instance
     val canSave = page in setOf(
         SettingsPage.Profile,
         SettingsPage.Delivery,
-        SettingsPage.CustomerHome,
+        SettingsPage.NotificationPush,
         SettingsPage.Operating,
         SettingsPage.Payment,
     )
@@ -524,16 +773,49 @@ private fun SettingsDetail(
                 }
             }
 
-            SettingsPage.CustomerHome -> {
-                SectionTitle("顾客首页展示")
+            SettingsPage.NotificationPush -> {
+                SectionTitle("商家新订单通知")
+                NewOrderPushSettingsCard()
+                Spacer(Modifier.height(14.dp))
+                SectionTitle("顾客首页启动弹窗")
                 CardBox {
                     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        MultiLineField("店铺简介", state.shopDescription, "介绍店铺和商品特色") { v -> onUpdate { copy(shopDescription = v) } }
-                        Field("首页横幅标题", state.homeBannerTitle, "例如：今日鲜到") { v -> onUpdate { copy(homeBannerTitle = v) } }
-                        Field("首页横幅副标题", state.homeBannerSubtitle, "例如：每天挑选当季好菜") { v -> onUpdate { copy(homeBannerSubtitle = v) } }
-                        Field("店铺标语", state.shopSlogan, "首页展示的一句话") { v -> onUpdate { copy(shopSlogan = v) } }
-                        Field("首页商品区标题", state.homeSectionTitle, "例如：今日精选") { v -> onUpdate { copy(homeSectionTitle = v) } }
-                        Field("搜索推荐词", state.searchHotWordsText, "多个词用逗号分隔") { v -> onUpdate { copy(searchHotWordsText = v) } }
+                        Field("标题", state.notificationPopupTitle, "例如：本周新品通知") { value ->
+                            onUpdate { copy(notificationPopupTitle = value) }
+                        }
+                        val image = state.notificationPopupImagePreview
+                            ?: state.notificationPopupImageUrl.takeIf(String::isNotBlank)?.let(app.repository::absoluteUrl)
+                        if (image != null) {
+                            AsyncImage(
+                                model = image,
+                                contentDescription = "通知推送图片预览",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(dim.radiusSm)),
+                            )
+                        } else {
+                            Box(
+                                Modifier.fillMaxWidth().height(160.dp)
+                                    .background(C.Canvas, RoundedCornerShape(dim.radiusSm)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("尚未选择图片", fontSize = T.caption, color = C.TextMuted)
+                            }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            SecondaryButton(
+                                text = if (state.preparingNotificationPopupImage) "读取中…" else if (image == null) "选择图片" else "更换图片",
+                                onClick = onPickNotificationPopupImage,
+                                enabled = !state.preparingNotificationPopupImage && !state.saving,
+                                modifier = Modifier.weight(1f),
+                                leadingIconRes = R.drawable.merchant_upload,
+                            )
+                            if (image != null) {
+                                TextButton(onClick = onRemoveNotificationPopupImage, enabled = !state.saving) {
+                                    Text("移除")
+                                }
+                            }
+                        }
+                        Text("顾客端每次启动时显示一次，支持 JPG、PNG、GIF、WebP，最大 5 MB。", fontSize = T.mini, color = C.TextMuted)
                     }
                 }
             }
@@ -641,7 +923,7 @@ private fun SettingsDetail(
                 )
             }
 
-            SettingsPage.Home, SettingsPage.Categories -> Unit
+            SettingsPage.Home, SettingsPage.Categories, SettingsPage.FeaturedProducts -> Unit
         }
 
         }
@@ -656,7 +938,7 @@ private fun SettingsDetail(
             PrimaryButton(
                 text = if (state.saving) "保存中…" else "保存设置",
                 onClick = onSave,
-                enabled = !state.preparingShopLogo && !state.preparingPaymentQr,
+                enabled = !state.preparingShopLogo && !state.preparingPaymentQr && !state.preparingNotificationPopupImage,
                 loading = state.saving,
                 modifier = Modifier.fillMaxWidth(),
             )

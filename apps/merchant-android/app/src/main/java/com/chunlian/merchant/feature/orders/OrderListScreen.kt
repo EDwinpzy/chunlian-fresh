@@ -69,8 +69,8 @@ import com.chunlian.merchant.ui.components.StatusChip
 import com.chunlian.merchant.ui.components.AutoRefreshEffect
 import com.chunlian.merchant.ui.components.PullToRefreshLayout
 import com.chunlian.merchant.ui.components.deliveryText
-import com.chunlian.merchant.ui.components.fulfillmentText
-import com.chunlian.merchant.ui.components.fulfillmentTone
+import com.chunlian.merchant.ui.components.orderStatusLabel
+import com.chunlian.merchant.ui.components.orderStatusTone
 import com.chunlian.merchant.ui.components.money
 import com.chunlian.merchant.ui.components.paymentMethodText
 import com.chunlian.merchant.ui.components.paymentText
@@ -81,7 +81,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** 订单列表；状态筛选与后端履约状态口径一致。 */
+/** 订单列表；状态筛选与后端统一订单状态口径一致。 */
 class OrderListViewModel(private val repo: MerchantRepository) : ViewModel() {
 
     /** 展示口径的筛选；与后端 status 参数一一对应 */
@@ -514,7 +514,7 @@ private fun OrderStatusTab(
 /**
  * 订单卡。
  *
- * 方案 §6.2 要求：订单号 / 履约状态 / 付款状态同一行；
+ * 方案 §6.2 要求：订单号 / 订单状态 / 付款状态同一行；
  * COD 未收款用暖色文字标签，**不能和「配送中」混淆**。
  */
 @Composable
@@ -528,7 +528,7 @@ fun OrderCard(order: Order, onClick: () -> Unit) {
             ) {
                 Text("#${order.orderNo}", fontSize = T.caption, color = C.TextSecondary)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    StatusChip(fulfillmentText(order.fulfillment), fulfillmentTone(order.fulfillment))
+                    StatusChip(orderStatusLabel(order.orderStatus, order.orderStatusText), orderStatusTone(order.orderStatus))
                     StatusChip(paymentText(order.paymentState), paymentTone(order.paymentState))
                 }
             }

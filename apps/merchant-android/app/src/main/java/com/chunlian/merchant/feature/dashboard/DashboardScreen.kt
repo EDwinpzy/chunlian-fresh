@@ -17,11 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
@@ -66,8 +61,8 @@ import com.chunlian.merchant.ui.components.AutoRefreshEffect
 import com.chunlian.merchant.ui.components.PullToRefreshLayout
 import com.chunlian.merchant.ui.components.FeaturedCard
 import com.chunlian.merchant.ui.components.deliveryText
-import com.chunlian.merchant.ui.components.fulfillmentText
-import com.chunlian.merchant.ui.components.fulfillmentTone
+import com.chunlian.merchant.ui.components.orderStatusLabel
+import com.chunlian.merchant.ui.components.orderStatusTone
 import com.chunlian.merchant.ui.components.chipColors
 import com.chunlian.merchant.ui.components.money
 import com.chunlian.merchant.ui.components.paymentText
@@ -91,13 +86,13 @@ private enum class DashboardOrderFilter(val title: String, val emptyText: String
 private fun DashboardData.orders(filter: DashboardOrderFilter): List<RecentOrder> = when (filter) {
     DashboardOrderFilter.Today -> todayOrders
     DashboardOrderFilter.Pending -> pendingOrders.ifEmpty {
-        recentOrders.filter { it.fulfillment == "PENDING" }
+        recentOrders.filter { it.orderStatus == "PENDING" }
     }
     DashboardOrderFilter.Delivering -> deliveringOrders.ifEmpty {
-        recentOrders.filter { it.fulfillment == "DELIVERING" }
+        recentOrders.filter { it.orderStatus == "DELIVERING" }
     }
     DashboardOrderFilter.Uncollected -> uncollectedOrders.ifEmpty {
-        recentOrders.filter { it.fulfillment in setOf("DELIVERED", "FINISHED") && it.receivableFen > 0 }
+        recentOrders.filter { it.orderStatus in setOf("DELIVERED", "FINISHED") && it.receivableFen > 0 }
     }
 }
 
@@ -249,12 +244,9 @@ fun DashboardScreen(
                             color = if (store?.isOpen == true) C.Brand600 else C.TextMuted)
                     }
                 }
-                DashboardOverflowMenu(
+                DashboardNotificationButton(
                     unreadNotifications = state.unreadNotifications,
-                    onSeeAllOrders = onSeeAllOrders,
-                    onOpenStats = onOpenStats,
                     onOpenNotifications = onOpenNotifications,
-                    onOpenSettings = onOpenSettings,
                 )
             }
 
@@ -490,56 +482,32 @@ private fun DashboardCount(
 }
 
 @Composable
-private fun DashboardOverflowMenu(
+private fun DashboardNotificationButton(
     unreadNotifications: Int,
-    onSeeAllOrders: () -> Unit,
-    onOpenStats: () -> Unit,
     onOpenNotifications: () -> Unit,
-    onOpenSettings: () -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        Box(
-            modifier = Modifier.size(dim.touchTarget)
-                .clip(RoundedCornerShape(dim.radiusSm))
-                .clickable { expanded = true },
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(Icons.Filled.MoreVert, contentDescription = "更多功能", tint = C.TextSecondary)
-            if (unreadNotifications > 0) {
-                Box(
-                    Modifier.align(Alignment.TopEnd).padding(top = 4.dp, end = 4.dp)
-                        .background(C.Danger, RoundedCornerShape(dim.radiusPill))
-                        .padding(horizontal = 3.dp, vertical = 1.dp),
-                ) {
-                    Text(
-                        if (unreadNotifications > 99) "99+" else unreadNotifications.toString(),
-                        fontSize = T.mini, lineHeight = T.mini * 1.2f, color = C.OnBrand,
-                    )
-                }
+    Box(
+        modifier = Modifier.size(dim.touchTarget)
+            .clip(RoundedCornerShape(dim.radiusSm))
+            .clickable(onClick = onOpenNotifications),
+        contentAlignment = Alignment.Center,
+    ) {
+        MerchantAssetIcon(
+            R.drawable.merchant_notification,
+            contentDescription = "通知消息",
+            size = 24.dp,
+        )
+        if (unreadNotifications > 0) {
+            Box(
+                Modifier.align(Alignment.TopEnd).padding(top = 4.dp, end = 4.dp)
+                    .background(C.Danger, RoundedCornerShape(dim.radiusPill))
+                    .padding(horizontal = 3.dp, vertical = 1.dp),
+            ) {
+                Text(
+                    if (unreadNotifications > 99) "99+" else unreadNotifications.toString(),
+                    fontSize = T.mini, lineHeight = T.mini * 1.2f, color = C.OnBrand,
+                )
             }
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text("订单管理") },
-                leadingIcon = { MerchantAssetIcon(R.drawable.merchant_orders, null, size = 20.dp) },
-                onClick = { expanded = false; onSeeAllOrders() },
-            )
-            DropdownMenuItem(
-                text = { Text("经营统计") },
-                leadingIcon = { MerchantAssetIcon(R.drawable.merchant_stats, null, size = 20.dp) },
-                onClick = { expanded = false; onOpenStats() },
-            )
-            DropdownMenuItem(
-                text = { Text("通知消息") },
-                leadingIcon = { MerchantAssetIcon(R.drawable.merchant_notification, null, size = 20.dp) },
-                onClick = { expanded = false; onOpenNotifications() },
-            )
-            DropdownMenuItem(
-                text = { Text("店铺设置") },
-                leadingIcon = { MerchantAssetIcon(R.drawable.merchant_settings, null, size = 20.dp) },
-                onClick = { expanded = false; onOpenSettings() },
-            )
         }
     }
 }
@@ -557,8 +525,8 @@ private fun RecentOrderRow(order: RecentOrder, onClick: () -> Unit) {
         }
         Text(
             buildAnnotatedString {
-                withStyle(SpanStyle(color = chipColors(fulfillmentTone(order.fulfillment)).first)) {
-                    append(fulfillmentText(order.fulfillment))
+                withStyle(SpanStyle(color = chipColors(orderStatusTone(order.orderStatus)).first)) {
+                    append(orderStatusLabel(order.orderStatus, order.orderStatusText))
                 }
                 append(" · ")
                 withStyle(SpanStyle(color = chipColors(paymentTone(order.paymentState)).first)) {

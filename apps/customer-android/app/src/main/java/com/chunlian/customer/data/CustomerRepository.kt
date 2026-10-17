@@ -33,6 +33,10 @@ class CustomerSession(context: Context) {
 
     fun token(): String = runCatching { preferences.getString(KEY_TOKEN, "").orEmpty() }.getOrDefault("")
     fun saveToken(token: String) { preferences.edit().putString(KEY_TOKEN, token).apply() }
+    fun pushInstallationId(): String = synchronized(this) {
+        preferences.getString(KEY_PUSH_INSTALLATION_ID, null)?.takeIf(String::isNotBlank)
+            ?: UUID.randomUUID().toString().also { preferences.edit().putString(KEY_PUSH_INSTALLATION_ID, it).apply() }
+    }
     fun clear() {
         val editor = preferences.edit().remove(KEY_TOKEN)
         preferences.all.keys.filter { it.startsWith(IDEMPOTENCY_PREFIX) }.forEach(editor::remove)
@@ -71,6 +75,7 @@ class CustomerSession(context: Context) {
     private companion object {
         const val KEY_TOKEN = "token"
         const val KEY_CART = "cart"
+        const val KEY_PUSH_INSTALLATION_ID = "push_installation_id"
         const val IDEMPOTENCY_PREFIX = "idem:"
     }
 }

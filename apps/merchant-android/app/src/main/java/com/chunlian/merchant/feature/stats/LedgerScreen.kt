@@ -324,6 +324,7 @@ private fun ledgerKindLabel(kind: String): String = when (kind) {
     "WX_PAY" -> "微信支付"
     "TOPUP" -> "改单补款"
     "WX_REFUND" -> "退款"
+    "CUSTOMER_RECEIPT" -> "确认收货自动记账"
     "COD_RECEIPT" -> "货到付款收款"
     "OFFLINE_RECEIPT" -> "扫码收款核实"
     "OFFLINE_REFUND" -> "人工退款"

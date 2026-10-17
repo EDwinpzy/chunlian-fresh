@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.chunlian.merchant.core.network.NetworkException
+import com.chunlian.merchant.data.model.Goods
 import com.chunlian.merchant.data.model.StorePatch
 import com.chunlian.merchant.data.model.StoreSetting
 import com.chunlian.merchant.data.repository.MerchantRepository
@@ -42,6 +43,12 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
         val shopSlogan: String = "",
         val searchHotWordsText: String = "",
         val homeSectionTitle: String = "",
+        val homeFeaturedProductIds: List<String> = emptyList(),
+        val notificationPopupTitle: String = "",
+        val notificationPopupImageUrl: String = "",
+        val notificationPopupImagePreview: String? = null,
+        val preparingNotificationPopupImage: Boolean = false,
+        val clearNotificationPopupImage: Boolean = false,
         val notice: String = "",
         val phone: String = "",
         val deliveryFeeYuan: String = "0",
@@ -56,13 +63,24 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
         val preparingPaymentQr: Boolean = false,
     )
 
+    data class FeaturedProductsState(
+        val loading: Boolean = false,
+        val loaded: Boolean = false,
+        val error: String? = null,
+        val goods: List<Goods> = emptyList(),
+    )
+
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
+    private val _featuredProductsState = MutableStateFlow(FeaturedProductsState())
+    val featuredProductsState: StateFlow<FeaturedProductsState> = _featuredProductsState.asStateFlow()
     private var persistedStore: StoreSetting? = null
     private var persistedState: UiState? = null
     private var loadStarted = false
     private var stagedPaymentQr: File? = null
     private var stagedShopLogo: File? = null
+    private var stagedNotificationPopupImage: File? = null
+    private var featuredProductsLoadStarted = false
 
     fun load() {
         val current = _state.value
@@ -86,6 +104,61 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
 
     fun update(block: UiState.() -> UiState) {
         _state.value = _state.value.block().copy(error = null)
+    }
+
+    /** 商品目录只在打开每日鲜选配置页时读取，失败不会影响店铺设置的加载或保存。 */
+    fun loadFeaturedProducts() {
+        if (featuredProductsLoadStarted || _featuredProductsState.value.loaded) return
+        featuredProductsLoadStarted = true
+        _featuredProductsState.value = _featuredProductsState.value.copy(loading = true, error = null)
+        viewModelScope.launch {
+            try {
+                val loaded = mutableListOf<Goods>()
+                var pageNumber = 1
+                var hasMore: Boolean
+                do {
+                    val page = repo.goods(onSaleOnly = true, page = pageNumber, pageSize = 100)
+                    loaded += page.list.filter(Goods::isShelves)
+                    hasMore = page.list.isNotEmpty() && page.page * page.pageSize < page.total
+                    pageNumber = page.page + 1
+                } while (hasMore)
+
+                _featuredProductsState.value = FeaturedProductsState(loaded = true, goods = loaded.distinctBy(Goods::id))
+            } catch (e: Exception) {
+                _featuredProductsState.value = _featuredProductsState.value.copy(
+                    loading = false,
+                    error = e.message ?: "在售商品加载失败",
+                )
+            } finally {
+                featuredProductsLoadStarted = false
+            }
+        }
+    }
+
+    fun retryLoadFeaturedProducts() {
+        if (featuredProductsLoadStarted) return
+        _featuredProductsState.value = _featuredProductsState.value.copy(loaded = false, error = null)
+        loadFeaturedProducts()
+    }
+
+    fun toggleFeaturedProduct(productId: String) {
+        val current = _state.value
+        val selected = current.homeFeaturedProductIds
+        if (productId !in selected && _featuredProductsState.value.goods.none { it.id == productId && it.isShelves }) return
+        val updated = toggleFeaturedProductSelection(selected, productId)
+        if (updated == null) {
+            _state.value = current.copy(error = "每日鲜选最多设置 10 个商品")
+            return
+        }
+        _state.value = current.copy(homeFeaturedProductIds = updated, error = null)
+    }
+
+    fun moveFeaturedProduct(productId: String, direction: Int) {
+        val current = _state.value
+        _state.value = current.copy(
+            homeFeaturedProductIds = moveFeaturedProductSelection(current.homeFeaturedProductIds, productId, direction),
+            error = null,
+        )
     }
 
     fun paymentQrSelectionStarted(preview: String) {
@@ -125,6 +198,43 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
         _state.value = _state.value.copy(shopLogoPreview = null, preparingShopLogo = false, error = message)
     }
 
+    fun notificationPopupImageSelectionStarted(preview: String) {
+        _state.value = _state.value.copy(
+            notificationPopupImagePreview = preview,
+            preparingNotificationPopupImage = true,
+            clearNotificationPopupImage = false,
+            error = null,
+        )
+    }
+
+    fun notificationPopupImageSelected(file: File) {
+        stagedNotificationPopupImage?.takeIf { it != file }?.delete()
+        stagedNotificationPopupImage = file
+        _state.value = _state.value.copy(preparingNotificationPopupImage = false, error = null)
+    }
+
+    fun notificationPopupImageSelectionFailed(message: String) {
+        stagedNotificationPopupImage?.delete()
+        stagedNotificationPopupImage = null
+        _state.value = _state.value.copy(
+            notificationPopupImagePreview = null,
+            preparingNotificationPopupImage = false,
+            error = message,
+        )
+    }
+
+    fun removeNotificationPopupImage() {
+        stagedNotificationPopupImage?.delete()
+        stagedNotificationPopupImage = null
+        _state.value = _state.value.copy(
+            notificationPopupImageUrl = "",
+            notificationPopupImagePreview = null,
+            preparingNotificationPopupImage = false,
+            clearNotificationPopupImage = true,
+            error = null,
+        )
+    }
+
     fun removeShopLogo() {
         stagedShopLogo?.delete()
         stagedShopLogo = null
@@ -140,7 +250,7 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
     fun save() {
         val s = _state.value
         if (s.saving) return
-        if (s.preparingPaymentQr || s.preparingShopLogo) {
+        if (s.preparingPaymentQr || s.preparingShopLogo || s.preparingNotificationPopupImage) {
             _state.value = s.copy(error = "图片仍在准备中，请稍候")
             return
         }
@@ -166,6 +276,10 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
                 if (stagedPaymentQr != null && uploadedQr.isNullOrBlank()) {
                     throw NetworkException("二维码上传未返回有效地址，请重试")
                 }
+                val uploadedNotificationPopupImage = stagedNotificationPopupImage?.let { repo.uploadImage(it) }
+                if (stagedNotificationPopupImage != null && uploadedNotificationPopupImage.isNullOrBlank()) {
+                    throw NetworkException("通知推送图片上传未返回有效地址，请重试")
+                }
                 val savedStore = repo.updateStore(
                     StorePatch(
                         shopName = s.shopName.trim(),
@@ -178,6 +292,10 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
                         shopSlogan = s.shopSlogan.trim(),
                         searchHotWords = parseSearchHotWords(s.searchHotWordsText),
                         homeSectionTitle = s.homeSectionTitle.trim(),
+                        homeFeaturedProductIds = s.homeFeaturedProductIds.distinct().take(MAX_FEATURED_PRODUCTS),
+                        notificationPopupTitle = s.notificationPopupTitle.trim(),
+                        notificationPopupImageUrl = uploadedNotificationPopupImage
+                            ?: if (s.clearNotificationPopupImage) "" else null,
                         shopLogoUrl = uploadedLogo ?: if (s.clearShopLogo) "" else null,
                         notice = s.notice.trim(),
                         phone = s.phone.trim(),
@@ -191,6 +309,8 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
                 stagedPaymentQr = null
                 stagedShopLogo?.delete()
                 stagedShopLogo = null
+                stagedNotificationPopupImage?.delete()
+                stagedNotificationPopupImage = null
                 persistedStore = savedStore
                 stateFor(savedStore).also { saved ->
                     persistedState = saved
@@ -213,6 +333,8 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
         stagedPaymentQr = null
         stagedShopLogo?.delete()
         stagedShopLogo = null
+        stagedNotificationPopupImage?.delete()
+        stagedNotificationPopupImage = null
         persistedStore?.let {
             stateFor(it).also { restored ->
                 persistedState = restored
@@ -239,6 +361,9 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
         shopSlogan = store.shopSlogan,
         searchHotWordsText = store.searchHotWords.joinToString("，"),
         homeSectionTitle = store.homeSectionTitle,
+        homeFeaturedProductIds = store.homeFeaturedProductIds.distinct().take(MAX_FEATURED_PRODUCTS),
+        notificationPopupTitle = store.notificationPopupTitle,
+        notificationPopupImageUrl = store.notificationPopupImageUrl,
         notice = store.notice,
         phone = store.phone,
         deliveryFeeYuan = fen2yuan(store.deliveryFeeFen),
@@ -247,6 +372,27 @@ class SettingsViewModel(private val repo: MerchantRepository) : ViewModel() {
         shopLogoUrl = store.shopLogoUrl,
         paymentQrUrl = store.paymentQrUrl,
     )
+}
+
+
+internal const val MAX_FEATURED_PRODUCTS = 10
+
+internal fun toggleFeaturedProductSelection(selectedIds: List<String>, productId: String): List<String>? {
+    if (productId.isBlank()) return selectedIds
+    if (productId in selectedIds) return selectedIds.filterNot { it == productId }
+    if (selectedIds.size >= MAX_FEATURED_PRODUCTS) return null
+    return (selectedIds + productId).distinct()
+}
+
+internal fun moveFeaturedProductSelection(selectedIds: List<String>, productId: String, direction: Int): List<String> {
+    if (direction !in -1..1 || direction == 0) return selectedIds
+    val index = selectedIds.indexOf(productId)
+    val target = index + direction
+    if (index < 0 || target !in selectedIds.indices) return selectedIds
+    return selectedIds.toMutableList().also { ids ->
+        val moved = ids.removeAt(index)
+        ids.add(target, moved)
+    }
 }
 
 

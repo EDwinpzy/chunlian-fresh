@@ -3,15 +3,22 @@ package com.chunlian.customer
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,18 +27,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.chunlian.androidupdate.AppUpdatePrompt
+import com.chunlian.customer.core.permissions.RequestNotificationPermissionOnFirstLaunch
 import com.chunlian.customer.data.CustomerTab
 import com.chunlian.customer.data.CustomerViewModel
 import com.chunlian.customer.ui.AddressesScreen
 import com.chunlian.customer.ui.CartScreen
 import com.chunlian.customer.ui.CategoryScreen
 import com.chunlian.customer.ui.CustomerAssetIcon
+import com.chunlian.customer.ui.CustomerImage
 import com.chunlian.customer.ui.CheckoutScreen
 import com.chunlian.customer.ui.DividerLine
 import com.chunlian.customer.ui.HomeScreen
@@ -54,12 +64,13 @@ private data class CustomerNavigationItem(
 
 @Composable
 fun CustomerApp(vm: CustomerViewModel = viewModel()) {
+    RequestNotificationPermissionOnFirstLaunch()
+
     val state by vm.state.collectAsState()
     val updateState by vm.appUpdater.state.collectAsState()
     var screen by remember { mutableStateOf(CustomerScreen.MAIN) }
     var selectedTab by remember { mutableStateOf(CustomerTab.HOME) }
     val snackbars = remember { SnackbarHostState() }
-
     LaunchedEffect(state.notice, state.error) {
         val message = state.error ?: state.notice
         if (!message.isNullOrBlank()) {
@@ -87,6 +98,12 @@ fun CustomerApp(vm: CustomerViewModel = viewModel()) {
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
+            contentWindowInsets = if (screen == CustomerScreen.PRODUCT) {
+                // Let the product hero draw behind the status bar; its overlay controls add their own safe inset.
+                WindowInsets.navigationBars
+            } else {
+                ScaffoldDefaults.contentWindowInsets
+            },
             snackbarHost = { SnackbarHost(snackbars) },
             bottomBar = {
             if (screen == CustomerScreen.MAIN) {
@@ -145,6 +162,7 @@ fun CustomerApp(vm: CustomerViewModel = viewModel()) {
                             selectedTab = CustomerTab.CATEGORY
                             vm.setCategory(categoryId)
                         },
+                        onHomeCategory = vm::selectHomeCategory,
                         onSearch = { keyword ->
                             selectedTab = CustomerTab.CATEGORY
                             vm.searchCatalog(keyword)
@@ -167,7 +185,16 @@ fun CustomerApp(vm: CustomerViewModel = viewModel()) {
                         if (state.user == null) screen = CustomerScreen.LOGIN else { vm.loadAddresses(); screen = CustomerScreen.ADDRESSES }
                     }, onOrders = { selectedTab = CustomerTab.ORDERS; vm.selectTab(CustomerTab.ORDERS) })
                 }
-                CustomerScreen.PRODUCT -> ProductScreen(state, vm, onBack = ::back)
+                CustomerScreen.PRODUCT -> ProductScreen(
+                    state,
+                    vm,
+                    onBack = ::back,
+                    onCart = {
+                        selectedTab = CustomerTab.CART
+                        vm.selectTab(CustomerTab.CART)
+                        screen = CustomerScreen.MAIN
+                    },
+                )
                 CustomerScreen.LOGIN -> LoginScreen(state, vm, onBack = ::back, onSuccess = {
                     screen = CustomerScreen.MAIN
                     selectedTab = if (state.tab == CustomerTab.CART) CustomerTab.CART else state.tab
@@ -187,5 +214,22 @@ fun CustomerApp(vm: CustomerViewModel = viewModel()) {
             }
         }
         AppUpdatePrompt(updater = vm.appUpdater)
+        if (state.showNotificationPopup) {
+            AlertDialog(
+                onDismissRequest = vm::dismissNotificationPopup,
+                title = { Text(state.shop.notificationPopupTitle) },
+                text = {
+                    CustomerImage(
+                        url = state.shop.notificationPopupImageUrl,
+                        contentDescription = state.shop.notificationPopupTitle,
+                        modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+                        contentScale = ContentScale.Fit,
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = vm::dismissNotificationPopup) { Text("关闭") }
+                },
+            )
+        }
     }
 }

@@ -21,7 +21,19 @@ import kotlinx.serialization.Serializable
     @SerialName("shop_slogan") val shopSlogan: String = "",
     @SerialName("search_hot_words") val searchHotWords: List<String> = emptyList(),
     @SerialName("home_section_title") val homeSectionTitle: String = "",
+    @SerialName("home_featured_product_ids") val homeFeaturedProductIds: List<String> = emptyList(),
+    @SerialName("notification_popup_title") val notificationPopupTitle: String = "",
+    @SerialName("notification_popup_image_url") val notificationPopupImageUrl: String = "",
 )
+
+internal fun ShopSetting.featuredProductIdsForQuery(): List<String> = homeFeaturedProductIds
+    .asSequence()
+    .map(String::trim)
+    .filter(String::isNotEmpty)
+    .distinct()
+    .take(10)
+    .toList()
+
 @Serializable data class Category(val id: String = "", val name: String = "", @SerialName("icon_url") val iconUrl: String = "", val children: List<CategoryChild> = emptyList())
 @Serializable data class CategoryChild(val id: String = "", val name: String = "", @SerialName("icon_url") val iconUrl: String = "")
 
@@ -72,9 +84,10 @@ import kotlinx.serialization.Serializable
 @Serializable data class OrderContact(val name: String = "", val phone: String = "", val address: String = "")
 @Serializable data class Order(
     val id: String = "", @SerialName("order_no") val orderNo: String = "", val version: Int = 1,
-    val fulfillment: String = "PENDING", @SerialName("fulfillment_text") val fulfillmentText: String = "待处理",
+    @SerialName("order_status") val orderStatus: String = "PENDING",
+    @SerialName("order_status_text") val orderStatusText: String = "待配送",
     @SerialName("payment_state") val paymentState: String = "UNPAID", @SerialName("payment_state_text") val paymentStateText: String = "未付款",
-    @SerialName("receipt_state") val receiptState: String = "", @SerialName("revision_state") val revisionState: String = "NONE",
+    @SerialName("revision_state") val revisionState: String = "NONE",
     @SerialName("pending_topup_fen") val pendingTopupFen: Long = 0,
     @SerialName("payment_method") val paymentMethod: String = "COD", @SerialName("payment_method_text") val paymentMethodText: String = "货到付款",
     @SerialName("delivery_mode") val deliveryMode: String = "ASAP", @SerialName("expected_at") val expectedAt: String? = null,

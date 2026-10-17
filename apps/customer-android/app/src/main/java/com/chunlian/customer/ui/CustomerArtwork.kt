@@ -21,14 +21,14 @@ internal fun customerCategoryArtwork(name: String): Int {
     val category = name.replace(" ", "")
     return when {
         listOf("肉", "禽").any(category::contains) -> R.drawable.cust_cat_meat
-        listOf("蛋豆", "蛋奶", "鸡蛋", "牛奶").any(category::contains) -> R.drawable.cust_cat_egg_dairy
+        listOf("蛋豆", "蛋奶", "鸡蛋", "牛奶", "豆类", "坚果").any(category::contains) -> R.drawable.cust_cat_egg_dairy
         listOf("水产", "海鲜", "鱼", "虾").any(category::contains) -> R.drawable.cust_cat_seafood
         listOf("净菜", "半成品", "预制").any(category::contains) -> R.drawable.cust_cat_prepared
         listOf("瓜果", "水果", "果蔬").any(category::contains) -> R.drawable.cust_cat_fruit
         listOf("根茎", "根菜", "薯类", "山药").any(category::contains) -> R.drawable.cust_cat_roots
         listOf("菌菇", "蘑菇", "食用菌").any(category::contains) -> R.drawable.cust_cat_mushrooms
         listOf("调味", "配菜", "香料").any(category::contains) -> R.drawable.cust_cat_seasoning
-        listOf("粮油", "主食", "谷物").any(category::contains) -> R.drawable.cust_cat_grain_oil
+        listOf("粮油", "主食", "谷物", "粮食", "杂粮").any(category::contains) -> R.drawable.cust_cat_grain_oil
         listOf("特惠", "促销", "优惠").any(category::contains) -> R.drawable.cust_cat_sale
         listOf("叶菜", "蔬菜", "时蔬", "青菜").any(category::contains) -> R.drawable.cust_cat_vegetables
         else -> R.drawable.cust_cat_fresh

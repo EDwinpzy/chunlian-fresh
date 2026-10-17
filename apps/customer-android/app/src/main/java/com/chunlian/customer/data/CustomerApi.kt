@@ -12,6 +12,11 @@ import retrofit2.http.Query
 @kotlinx.serialization.Serializable data class LoginRequest(val phone: String, val password: String)
 @kotlinx.serialization.Serializable data class RegisterRequest(val phone: String, val password: String, val nickname: String = "")
 @kotlinx.serialization.Serializable data class ProfileRequest(val nickname: String? = null, val avatar: String? = null)
+@kotlinx.serialization.Serializable data class PushDeviceRegistrationRequest(
+    @kotlinx.serialization.SerialName("app_id") val appId: String,
+    val cid: String,
+    @kotlinx.serialization.SerialName("installation_id") val installationId: String,
+)
 @kotlinx.serialization.Serializable data class PreviewRequest(
     val items: List<OrderItemRequest>, @kotlinx.serialization.SerialName("delivery_mode") val deliveryMode: String,
     @kotlinx.serialization.SerialName("expected_at") val expectedAt: String? = null,
@@ -26,6 +31,7 @@ interface CustomerApi {
         @Query("sort") sort: String? = null,
         @Query("page") page: Int = 1,
         @Query("page_size") pageSize: Int = 30,
+        @Query("ids") ids: String? = null,
     ): ApiEnvelope<PageData<GoodsSummary>>
     @GET("customer/catalog/goods/{id}") suspend fun goodsDetail(@Path("id") id: String): ApiEnvelope<GoodsDetail>
 
@@ -34,6 +40,13 @@ interface CustomerApi {
     @POST("customer/auth/logout") suspend fun logout(): ApiEnvelope<Unit>
     @GET("customer/auth/me") suspend fun me(): ApiEnvelope<AuthUser>
     @retrofit2.http.PATCH("customer/auth/profile") suspend fun updateProfile(@Body body: ProfileRequest): ApiEnvelope<AuthUser>
+
+    @POST("customer/push-devices") suspend fun registerPushDevice(
+        @Body body: PushDeviceRegistrationRequest,
+    ): ApiEnvelope<kotlinx.serialization.json.JsonElement>
+    @DELETE("customer/push-devices/{installation_id}") suspend fun unregisterPushDevice(
+        @Path("installation_id") installationId: String,
+    ): ApiEnvelope<kotlinx.serialization.json.JsonElement>
 
     @GET("customer/addresses") suspend fun addresses(): ApiEnvelope<List<Address>>
     @POST("customer/addresses") suspend fun saveAddress(@Body body: AddressSaveRequest): ApiEnvelope<List<Address>>

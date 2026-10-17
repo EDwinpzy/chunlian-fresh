@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.chunlian.androidupdate.AndroidAppUpdater
 import com.chunlian.customer.BuildConfig
+import com.chunlian.customer.push.CustomerPushManager
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -19,8 +20,10 @@ enum class CustomerTab(val label: String) { HOME("首页"), CATEGORY("分类"), 
 data class CustomerUiState(
     val tab: CustomerTab = CustomerTab.HOME,
     val shop: ShopSetting = ShopSetting(),
+    val showNotificationPopup: Boolean = false,
     val categories: List<Category> = emptyList(),
     val products: List<GoodsSummary> = emptyList(),
+    val featuredProducts: List<GoodsSummary> = emptyList(),
     val keyword: String = "",
     val categoryId: String? = null,
     val cart: List<CartItem> = emptyList(),
@@ -59,6 +62,7 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     private var checkoutPreviewRequestId = 0L
     private var catalogRequestId = 0L
     private var shopSettingRequestId = 0L
+    private var startupNotificationPopupEvaluated = false
     private var orderSearchJob: Job? = null
     private var orderLoadJob: Job? = null
     private var orderRequestId = 0L
@@ -93,8 +97,24 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
         val requestId = ++shopSettingRequestId
         launch(action = {
             val shop = repository.unwrap { repository.api.shop() }
-            if (requestId == shopSettingRequestId) _state.update { it.copy(shop = shop) }
+            if (requestId == shopSettingRequestId) applyShopSetting(shop)
         })
+    }
+
+    private fun applyShopSetting(shop: ShopSetting) {
+        _state.update { current ->
+            val showPopup = if (startupNotificationPopupEvaluated) {
+                current.showNotificationPopup
+            } else {
+                startupNotificationPopupEvaluated = true
+                shop.notificationPopupTitle.isNotBlank() && shop.notificationPopupImageUrl.isNotBlank()
+            }
+            current.copy(shop = shop, showNotificationPopup = showPopup)
+        }
+    }
+
+    fun dismissNotificationPopup() {
+        _state.update { it.copy(showNotificationPopup = false) }
     }
 
     fun loadCatalog(keyword: String = _state.value.keyword, categoryId: String? = _state.value.categoryId) {
@@ -105,6 +125,9 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
             loading = true,
             action = {
                 val shop = repository.unwrap { repository.api.shop() }
+                if (shopRequestId == shopSettingRequestId) {
+                    applyShopSetting(shop)
+                }
                 val categories = repository.unwrap { repository.api.categories() }
                 val activeCategoryId = categoryId?.takeIf { requestedId ->
                     categories.any { category ->
@@ -114,12 +137,30 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
                 val products = repository.unwrap {
                     repository.api.goods(categoryId = activeCategoryId, keyword = keyword.trim().takeIf(String::isNotEmpty))
                 }.list
+                val featuredIds = shop.featuredProductIdsForQuery()
+                val featuredResponse = repository.unwrap {
+                    repository.api.goods(
+                        page = 1,
+                        pageSize = featuredIds.size.takeIf { it > 0 } ?: 5,
+                        ids = featuredIds.takeIf { it.isNotEmpty() }?.joinToString(","),
+                    )
+                }.list
+                val featuredProducts = if (featuredIds.isEmpty()) {
+                    featuredResponse.take(5)
+                } else {
+                    featuredIds.mapNotNull { id -> featuredResponse.firstOrNull { it.id == id } }
+                }
                 if (requestId == catalogRequestId) {
                     _state.update {
-                        it.copy(categories = categories, products = products, keyword = keyword, categoryId = activeCategoryId)
+                        it.copy(
+                            categories = categories,
+                            products = products,
+                            featuredProducts = featuredProducts,
+                            keyword = keyword,
+                            categoryId = activeCategoryId,
+                        )
                     }
                 }
-                if (shopRequestId == shopSettingRequestId) _state.update { it.copy(shop = shop) }
             },
         )
     }
@@ -128,6 +169,10 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     fun searchCatalog(keyword: String) {
         _state.update { it.copy(keyword = keyword, categoryId = null, tab = CustomerTab.CATEGORY) }
         loadCatalog(keyword = keyword, categoryId = null)
+    }
+    fun selectHomeCategory(categoryId: String?) {
+        _state.update { it.withHomeCategorySelection(categoryId) }
+        loadCatalog(categoryId = categoryId)
     }
     fun setCategory(categoryId: String?) {
         _state.update { it.copy(categoryId = categoryId, tab = CustomerTab.CATEGORY) }
@@ -205,6 +250,7 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
         else repository.unwrap { repository.api.register(RegisterRequest(phone, password, nickname)) }
         repository.session.saveToken(result.token)
         _state.update { it.copy(user = result.user, notice = "登录成功", error = null) }
+        CustomerPushManager.onLogin(getApplication())
         loadAddresses()
     })
 
@@ -223,6 +269,7 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
     })
 
     fun logout() = launch(action = {
+        runCatching { CustomerPushManager.onLogout(getApplication()) }
         if (repository.identityTransportAllowed && repository.session.token().isNotBlank()) runCatching { repository.unwrap { repository.api.logout() } }
         repository.session.clear()
         orderSearchJob?.cancel()
@@ -400,7 +447,7 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
         val key = repository.idempotencyKey(operation, request.toString())
         val result = repository.unwrap { repository.api.receiveOrder(order.id, request, key) }
         repository.clearIdempotencyKey(operation)
-        _state.update { it.copy(order = result, notice = "已确认收货") }
+        _state.update { it.copy(order = result, notice = "已确认收货，剩余应付金额已自动记为已付款") }
         loadOrders()
     })
 

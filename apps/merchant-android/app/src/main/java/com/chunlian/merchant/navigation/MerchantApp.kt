@@ -34,6 +34,7 @@ import com.chunlian.merchant.R
 import com.chunlian.merchant.core.designsystem.C
 import com.chunlian.merchant.core.designsystem.T
 import com.chunlian.merchant.core.network.ApiClient
+import com.chunlian.merchant.core.permissions.RequestNotificationPermissionOnFirstLaunch
 import com.chunlian.merchant.feature.dashboard.DashboardScreen
 import com.chunlian.merchant.feature.orders.OrderDetailScreen
 import com.chunlian.merchant.feature.orders.OrderListScreen
@@ -77,6 +78,7 @@ private val tabs = listOf(
 @Composable
 fun MerchantApp() {
     val app = MerchantApp.instance
+    RequestNotificationPermissionOnFirstLaunch()
     AppUpdatePrompt(updater = app.appUpdater)
 
     // 会话是否有效：初次启动读一次加密存储

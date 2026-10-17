@@ -32,6 +32,17 @@ class CustomerRulesTest {
         assertFalse(isValidMainlandMobile("1380013800a"))
     }
 
+    @Test fun homeCategorySelectionStaysOnHomeAndCanRestoreAllProducts() {
+        val fruitSelected = CustomerUiState(tab = CustomerTab.CATEGORY, categoryId = "old")
+            .withHomeCategorySelection("fruit")
+        assertEquals(CustomerTab.HOME, fruitSelected.tab)
+        assertEquals("fruit", fruitSelected.categoryId)
+
+        val allSelected = fruitSelected.withHomeCategorySelection(null)
+        assertEquals(CustomerTab.HOME, allSelected.tab)
+        assertNull(allSelected.categoryId)
+    }
+
     @Test fun scheduledTimeMustBeStrictlyAfterLeadAndWithinSevenDays() {
         assertNotNull(parseExpectedAt("2026-10-13 12:31", now, minLeadMinutes = 30))
         assertNull(parseExpectedAt("2026-10-13 12:30", now, minLeadMinutes = 30))
@@ -64,6 +75,21 @@ class CustomerRulesTest {
         )
         assertEquals(listOf(OrderItemRequest("11", 4), OrderItemRequest("22", 3)), normalized)
         assertEquals("11:4|22:3", orderItemsFingerprint(normalized))
+    }
+
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @Test fun orderReadsAndWritesUnifiedOrderStatusFields() {
+        val order = Json.decodeFromString<Order>(
+            """{"id":"42","order_status":"DELIVERED","order_status_text":"已送达","payment_state":"UNPAID"}""",
+        )
+
+        assertEquals("DELIVERED", order.orderStatus)
+        assertEquals("已送达", order.orderStatusText)
+        val encoded = Json { encodeDefaults = true; explicitNulls = false }.encodeToString(order)
+        assertTrue(encoded.contains("\"order_status\":\"DELIVERED\""))
+        assertTrue(encoded.contains("\"order_status_text\":\"已送达\""))
+        assertFalse(encoded.contains("fulfillment"))
+        assertFalse(encoded.contains("receipt_state"))
     }
 
     @Test fun revisionSubmitPayloadCarriesVersionAndPreviewDoesNot() {
@@ -112,7 +138,7 @@ class CustomerRulesTest {
 
     @Test fun shopPresentationSettingsDecodeFromLiveApiFields() {
         val shop = Json.decodeFromString<ShopSetting>(
-            """{"shop_name":"邻里鲜铺","shop_logo_url":"/uploads/logo.png","shop_address":"西湖路 18 号","business_hours":"08:00-20:00","shop_description":"社区生鲜门店","delivery_description":"周边 3 公里配送","home_banner_title":"今日鲜选","home_banner_subtitle":"下单后及时配送","shop_slogan":"新鲜到家","search_hot_words":["青菜","苹果"],"home_section_title":"本店推荐"}""",
+            """{"shop_name":"邻里鲜铺","shop_logo_url":"/uploads/logo.png","shop_address":"西湖路 18 号","business_hours":"08:00-20:00","shop_description":"社区生鲜门店","delivery_description":"周边 3 公里配送","home_banner_title":"今日鲜选","home_banner_subtitle":"下单后及时配送","shop_slogan":"新鲜到家","search_hot_words":["青菜","苹果"],"home_section_title":"本店推荐","home_featured_product_ids":["fruit-1","meat-2"],"notification_popup_title":"配送提醒","notification_popup_image_url":"/uploads/notice.png"}""",
         )
         assertEquals("邻里鲜铺", shop.shopName)
         assertEquals("/uploads/logo.png", shop.shopLogoUrl)
@@ -125,6 +151,9 @@ class CustomerRulesTest {
         assertEquals("新鲜到家", shop.shopSlogan)
         assertEquals(listOf("青菜", "苹果"), shop.searchHotWords)
         assertEquals("本店推荐", shop.homeSectionTitle)
+        assertEquals(listOf("fruit-1", "meat-2"), shop.homeFeaturedProductIds)
+        assertEquals("配送提醒", shop.notificationPopupTitle)
+        assertEquals("/uploads/notice.png", shop.notificationPopupImageUrl)
     }
 
     @Test fun shopPresentationSettingsRemainOptionalForOlderApiResponses() {
@@ -132,7 +161,17 @@ class CustomerRulesTest {
         assertEquals("邻里鲜铺", shop.shopName)
         assertEquals("", shop.shopLogoUrl)
         assertEquals("", shop.deliveryDescription)
+        assertTrue(shop.homeFeaturedProductIds.isEmpty())
         assertTrue(shop.searchHotWords.isEmpty())
+        assertEquals("", shop.notificationPopupTitle)
+        assertEquals("", shop.notificationPopupImageUrl)
+    }
+
+    @Test fun featuredProductIdsPreserveOrderAndAreCleanedAndLimitedToTen() {
+        val ids = (1..11).map { "product-$it" } + listOf(" product-1 ", " ")
+        val shop = ShopSetting(homeFeaturedProductIds = ids)
+
+        assertEquals((1..10).map { "product-$it" }, shop.featuredProductIdsForQuery())
     }
 
     @Test fun arbitraryConfiguredCategoryNamesAndChildrenDecodeWithoutFixedCatalog() {

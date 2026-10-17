@@ -75,8 +75,8 @@ import com.chunlian.merchant.ui.components.SecondaryButton
 import com.chunlian.merchant.ui.components.SectionTitle
 import com.chunlian.merchant.ui.components.StatusChip
 import com.chunlian.merchant.ui.components.deliveryText
-import com.chunlian.merchant.ui.components.fulfillmentText
-import com.chunlian.merchant.ui.components.fulfillmentTone
+import com.chunlian.merchant.ui.components.orderStatusLabel
+import com.chunlian.merchant.ui.components.orderStatusTone
 import com.chunlian.merchant.ui.components.money
 import com.chunlian.merchant.ui.components.paymentMethodText
 import com.chunlian.merchant.ui.components.paymentText
@@ -355,7 +355,7 @@ fun OrderDetailScreen(orderId: String, onBack: () -> Unit) {
 
                     // ---------- 双状态 ----------
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        StatusChip(fulfillmentText(order.fulfillment), fulfillmentTone(order.fulfillment))
+                        StatusChip(orderStatusLabel(order.orderStatus, order.orderStatusText), orderStatusTone(order.orderStatus))
                         StatusChip(
                             "${paymentMethodText(order.paymentMethod)} · ${paymentText(order.paymentState)}",
                             paymentTone(order.paymentState),
@@ -599,7 +599,6 @@ fun OrderDetailScreen(orderId: String, onBack: () -> Unit) {
                             KeyValueRow("订单号", order.orderNo)
                             KeyValueRow("支付方式", paymentMethodText(order.paymentMethod))
                             KeyValueRow("付款状态", paymentText(order.paymentState))
-                            KeyValueRow("履约状态", fulfillmentText(order.fulfillment))
                             KeyValueRow("订单版本", "v${order.version}")
                         }
                     }
@@ -647,7 +646,7 @@ fun OrderDetailScreen(orderId: String, onBack: () -> Unit) {
                     }
 
                     if (order.paymentMethod == "OFFLINE_QR") {
-                        val canConfirmQrReceipt = order.fulfillment == "PENDING" &&
+                        val canConfirmQrReceipt = order.orderStatus == "PENDING" &&
                             ((order.revisionState == "PENDING_TOPUP" && pendingQrTopup != null && qrReceiptAmountFen > 0) ||
                                 (order.paymentState == "UNPAID" && order.revisionState != "PENDING_TOPUP" && qrReceiptAmountFen > 0))
 
@@ -729,7 +728,7 @@ fun OrderDetailScreen(orderId: String, onBack: () -> Unit) {
                 Column {
                     when {
                         // 待配送 → 开始配送
-                        order.fulfillment == "PENDING" -> {
+                        order.orderStatus == "PENDING" -> {
                             if (!order.mayStartDelivery) {
                                 NoticeBar(
                                     when {
@@ -760,7 +759,7 @@ fun OrderDetailScreen(orderId: String, onBack: () -> Unit) {
                         }
 
                         // 配送中 → 确认送达（COD 合并收款）
-                        order.fulfillment == "DELIVERING" -> {
+                        order.orderStatus == "DELIVERING" -> {
                             PrimaryButton(
                                 text = if (state.acting) "处理中…" else "确认送达",
                                 onClick = {

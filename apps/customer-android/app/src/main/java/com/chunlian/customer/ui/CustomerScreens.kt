@@ -1,7 +1,9 @@
 package com.chunlian.customer.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,13 +15,17 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -84,13 +90,15 @@ fun HomeScreen(
     state: CustomerUiState,
     vm: CustomerViewModel,
     onCategory: (String?) -> Unit,
+    onHomeCategory: (String?) -> Unit,
     onSearch: (String) -> Unit,
     onProduct: () -> Unit,
 ) {
     var draft by rememberSaveable { mutableStateOf(state.keyword) }
     LaunchedEffect(state.keyword) { draft = state.keyword }
-    val featuredImage = state.products.firstOrNull { it.imageUrl.isNotBlank() }?.imageUrl.orEmpty()
-
+    val selectedHomeCategory = state.categories.firstOrNull { category ->
+        category.id == state.categoryId || category.children.any { child -> child.id == state.categoryId }
+    }
     LazyColumn(
         modifier = Modifier.fillMaxSize().background(CustomerColors.Canvas),
         contentPadding = PaddingValues(bottom = 20.dp),
@@ -107,13 +115,13 @@ fun HomeScreen(
             )
         }
         item {
-            HomeHeroCard(
+            HomeFeaturedCarousel(
+                products = state.featuredProducts,
                 title = state.shop.homeBannerTitle.ifBlank { "把新鲜，带回家" },
                 subtitle = state.shop.homeBannerSubtitle.ifBlank {
                     state.shop.shopSlogan.ifBlank { "附近好菜 · 每日鲜选" }
                 },
-                imageUrl = featuredImage,
-                onClick = { onCategory(null) },
+                onProductClick = { goods -> vm.openProduct(goods.id); onProduct() },
                 modifier = Modifier.padding(horizontal = dim.pagePadding),
             )
         }
@@ -130,15 +138,26 @@ fun HomeScreen(
                     contentPadding = PaddingValues(horizontal = dim.pagePadding),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
+                    item {
+                        HomeCategoryShortcut("全部", "", selected = state.categoryId == null) {
+                            onHomeCategory(null)
+                        }
+                    }
                     items(state.categories) { category ->
-                        HomeCategoryShortcut(category.name, category.iconUrl) { onCategory(category.id) }
+                        HomeCategoryShortcut(
+                            category.name,
+                            category.iconUrl,
+                            selected = selectedHomeCategory?.id == category.id,
+                        ) { onHomeCategory(category.id) }
                     }
                 }
             }
         }
         item {
             SectionTitle(
-                text = state.shop.homeSectionTitle.ifBlank { "今日鲜选" },
+                text = state.shop.homeSectionTitle.ifBlank { "今日鲜选" }.let { title ->
+                    if (selectedHomeCategory == null) title else "$title · ${selectedHomeCategory.name}"
+                },
                 modifier = Modifier.padding(horizontal = dim.pagePadding),
                 trailing = { TextButton(onClick = { onCategory(null) }) { Text("更多商品") } },
             )
@@ -356,20 +375,75 @@ private fun StorefrontHeader(state: CustomerUiState) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun HomeHeroCard(
+private fun HomeFeaturedCarousel(
+    products: List<GoodsSummary>,
     title: String,
     subtitle: String,
-    imageUrl: String,
+    onProductClick: (GoodsSummary) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (products.isEmpty()) {
+        HomeHeroCard(
+            product = null,
+            title = title,
+            subtitle = subtitle,
+            onClick = {},
+            modifier = modifier,
+        )
+        return
+    }
+
+    val pagerState = rememberPagerState(pageCount = { products.size })
+    Column(modifier.fillMaxWidth()) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth().height(176.dp),
+            pageSpacing = 10.dp,
+        ) { page ->
+            val product = products[page]
+            HomeHeroCard(
+                product = product,
+                title = title,
+                subtitle = subtitle,
+                onClick = { onProductClick(product) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        Row(
+            Modifier.fillMaxWidth().padding(top = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            products.indices.forEach { page ->
+                Box(
+                    Modifier.padding(horizontal = 3.dp)
+                        .size(if (pagerState.currentPage == page) 8.dp else 6.dp)
+                        .background(
+                            if (pagerState.currentPage == page) CustomerColors.Brand700 else CustomerColors.Divider,
+                            CircleShape,
+                        ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeHeroCard(
+    product: GoodsSummary?,
+    title: String,
+    subtitle: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val cardModifier = modifier.fillMaxWidth()
+        .height(176.dp)
+        .clip(RoundedCornerShape(22.dp))
+        .background(Brush.linearGradient(listOf(CustomerColors.Brand700, CustomerColors.Brand500)))
     Box(
-        modifier.fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .background(Brush.linearGradient(listOf(CustomerColors.Brand700, CustomerColors.Brand500)))
-            .clickable(onClick = onClick)
-            .padding(18.dp),
+        if (product != null) cardModifier.clickable(role = Role.Button, onClick = onClick) else cardModifier,
     ) {
         Box(
             Modifier.align(Alignment.CenterEnd).padding(end = 2.dp).size(142.dp)
@@ -379,9 +453,9 @@ private fun HomeHeroCard(
             Modifier.align(Alignment.CenterEnd).padding(end = 14.dp).size(118.dp)
                 .background(CustomerColors.OnBrand.copy(alpha = .15f), CircleShape),
         )
-        if (imageUrl.isNotBlank()) {
+        if (!product?.imageUrl.isNullOrBlank()) {
             ProductImage(
-                imageUrl,
+                product!!.imageUrl,
                 Modifier.align(Alignment.CenterEnd).padding(end = 24.dp).size(98.dp)
                     .clip(CircleShape),
             )
@@ -394,11 +468,11 @@ private fun HomeHeroCard(
                 CustomerFreshProduceIllustration(Modifier.size(84.dp))
             }
         }
-        Column(Modifier.align(Alignment.CenterStart).fillMaxWidth(.65f)) {
+        Column(Modifier.align(Alignment.CenterStart).fillMaxWidth(.65f).padding(18.dp)) {
             Text("每日鲜选", color = CustomerColors.Gold200, fontSize = T.mini, fontWeight = FontWeight.SemiBold)
             Text(
-                title,
-                modifier = Modifier.padding(top = 6.dp),
+                title.ifBlank { product?.title.orEmpty() },
+                modifier = Modifier.padding(top = 5.dp),
                 color = CustomerColors.OnBrand,
                 fontSize = T.section,
                 lineHeight = 24.sp,
@@ -406,35 +480,73 @@ private fun HomeHeroCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (product != null && product.title != title) {
+                Text(
+                    product.title,
+                    modifier = Modifier.padding(top = 2.dp),
+                    color = CustomerColors.OnBrand,
+                    fontSize = T.caption,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            val detail = product?.simpleDesc?.takeIf(String::isNotBlank) ?: subtitle
             Text(
-                subtitle,
-                modifier = Modifier.padding(top = 4.dp),
+                if (product == null) detail else detail.ifBlank { "到店精选 · 新鲜直达" },
+                modifier = Modifier.padding(top = 3.dp),
                 color = CustomerColors.OnBrandMuted,
                 fontSize = T.mini,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                "去挑好菜  ›",
-                modifier = Modifier.padding(top = 8.dp).background(CustomerColors.OnBrand, RoundedCornerShape(dim.radiusPill))
-                    .padding(horizontal = 11.dp, vertical = 5.dp),
-                color = CustomerColors.Brand700,
-                fontSize = T.mini,
-                fontWeight = FontWeight.SemiBold,
-            )
+            if (product != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "${money(product.minPriceFen)} 起",
+                        color = CustomerColors.Gold200,
+                        fontSize = T.caption,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick = onClick, contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)) {
+                        Text("去挑选好菜  ›", color = CustomerColors.OnBrand, fontSize = T.mini, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun HomeCategoryShortcut(name: String, iconUrl: String, onClick: () -> Unit) {
+private fun HomeCategoryShortcut(name: String, iconUrl: String, selected: Boolean, onClick: () -> Unit) {
     Column(
-        modifier = Modifier.width(68.dp).clickable(onClick = onClick).padding(vertical = 2.dp),
+        modifier = Modifier.width(68.dp).clickable(role = Role.Button, onClick = onClick).padding(vertical = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        CustomerCategoryArtwork(name, iconUrl, Modifier.size(54.dp))
-        Text(name, color = CustomerColors.TextSecondary, fontSize = T.mini, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Box(
+            Modifier
+                .size(60.dp)
+                .background(if (selected) CustomerColors.Brand50 else Color.Transparent, CircleShape)
+                .then(if (selected) Modifier.border(1.5.dp, CustomerColors.Brand600, CircleShape) else Modifier)
+                .padding(3.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            CustomerCategoryArtwork(name, iconUrl, Modifier.size(54.dp))
+        }
+        Text(
+            name,
+            color = if (selected) CustomerColors.Brand700 else CustomerColors.TextSecondary,
+            fontSize = T.mini,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -559,7 +671,7 @@ private fun ProductCard(goods: GoodsSummary, modifier: Modifier = Modifier, onCl
 }
 
 @Composable
-fun ProductScreen(state: CustomerUiState, vm: CustomerViewModel, onBack: () -> Unit) {
+fun ProductScreen(state: CustomerUiState, vm: CustomerViewModel, onBack: () -> Unit, onCart: () -> Unit) {
     val product = state.product
     var productShown by remember { mutableStateOf(false) }
     LaunchedEffect(product?.id) {
@@ -569,67 +681,213 @@ fun ProductScreen(state: CustomerUiState, vm: CustomerViewModel, onBack: () -> U
     var selectedSkuId by rememberSaveable(product?.id) { mutableStateOf("") }
     var count by rememberSaveable(product?.id) { mutableIntStateOf(1) }
     LaunchedEffect(product?.id) { selectedSkuId = product?.skus?.firstOrNull()?.skuId.orEmpty(); count = (product?.buyMinNumber ?: 1).coerceAtLeast(1) }
-    ScreenFrame(title = "商品详情", onBack = onBack) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
-            if (product == null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = CustomerColors.Brand700) }
-            } else {
-                val sku = product.skus.firstOrNull { it.skuId == selectedSkuId } ?: product.skus.firstOrNull()
-                val quantityBounds = purchaseQuantityBounds(product.buyMinNumber, product.buyMaxNumber, sku?.inventory ?: 0)
-                Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-                    ProductImage(product.images.firstOrNull().takeUnless { it.isNullOrBlank() } ?: product.imageUrl, Modifier.fillMaxWidth().height(290.dp))
-                    Column(Modifier.padding(20.dp)) {
-                        Text(product.title, style = MaterialTheme.typography.titleLarge)
-                        Text(product.simpleDesc.ifBlank { product.content }, color = CustomerColors.TextSecondary, modifier = Modifier.padding(top = 6.dp))
-                        Spacer(Modifier.height(12.dp))
-                        // 详情页价格用 title 号（24）+ 等宽数字：这是全页最重要的信息，
-                        // 也是顾客决定买不买的唯一依据，字号和字重都要给足。
-                        Text(
-                            sku?.let { money(it.priceFen) } ?: money(product.minPriceFen),
-                            style = tabularStyle(T.title, FontWeight.Bold, CustomerColors.Price),
-                        )
-                        if (product.skus.isNotEmpty()) {
-                            Text("选择规格", fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 20.dp, bottom = 8.dp))
-                            androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                items(product.skus) { option ->
-                                    SelectionChip(option.specText.ifBlank { "默认规格" }, selected = option.skuId == (sku?.skuId ?: ""), enabled = !option.isOutOfStock, onClick = {
-                                        selectedSkuId = option.skuId
-                                        val bounds = purchaseQuantityBounds(product.buyMinNumber, product.buyMaxNumber, option.inventory)
-                                        count = if (bounds.canPurchase) count.coerceIn(bounds.minimum, bounds.maximum) else bounds.minimum
-                                    })
+    if (product == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = CustomerColors.Brand700)
+        }
+    } else {
+        val sku = product.skus.firstOrNull { it.skuId == selectedSkuId } ?: product.skus.firstOrNull()
+        val quantityBounds = purchaseQuantityBounds(product.buyMinNumber, product.buyMaxNumber, sku?.inventory ?: 0)
+        val currentInventory = sku?.inventory ?: product.inventory
+        val galleryImages = product.images.filter(String::isNotBlank)
+        val heroImage = galleryImages.firstOrNull() ?: product.imageUrl
+
+        Column(Modifier.fillMaxSize().background(CustomerColors.Canvas)) {
+            Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) {
+                Box(Modifier.fillMaxWidth().height(340.dp)) {
+                    ProductImage(heroImage, Modifier.fillMaxSize())
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(132.dp)
+                            .align(Alignment.TopCenter)
+                            .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = .42f), Color.Transparent))),
+                    )
+                    Row(
+                        Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        ProductHeroIconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "返回",
+                                tint = CustomerColors.Brand700,
+                            )
+                        }
+                        Spacer(Modifier.weight(1f))
+                        Box {
+                            ProductHeroIconButton(onClick = onCart) {
+                                CustomerAssetIcon(R.drawable.cust_cart, contentDescription = "购物车", size = 22.dp)
+                            }
+                            val cartCount = state.cart.sumOf { it.qty }.coerceAtMost(99)
+                            if (cartCount > 0) {
+                                Box(
+                                    Modifier
+                                        .align(Alignment.TopEnd)
+                                        .size(18.dp)
+                                        .background(CustomerColors.Danger, CircleShape),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        if (cartCount == 99) "99+" else cartCount.toString(),
+                                        color = Color.White,
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                    )
                                 }
                             }
                         }
-                        Text(
-                            listOfNotNull(product.origin.takeIf(String::isNotBlank), "库存 ${sku?.inventory ?: product.inventory}").joinToString(" · "),
-                            color = CustomerColors.TextSecondary,
-                            fontSize = T.body,
-                            modifier = Modifier.padding(top = 14.dp),
-                        )
-                        if (product.content.isNotBlank()) Text(product.content, color = CustomerColors.TextPrimary, lineHeight = 23.sp, modifier = Modifier.padding(top = 18.dp))
-                        Spacer(Modifier.height(20.dp))
                     }
                 }
-                Row(Modifier.fillMaxWidth().background(CustomerColors.Surface).padding(horizontal = 18.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    QuantityControl(
-                        count,
-                        onMinus = { count = (count - 1).coerceAtLeast(quantityBounds.minimum) },
-                        onPlus = { count = (count + 1).coerceAtMost(quantityBounds.maximum) },
-                        max = quantityBounds.maximum,
-                    )
-                    Spacer(Modifier.width(16.dp))
-                    Button(
-                        onClick = {
-                            val added = sku?.let { vm.addToCart(product, it, count) } == true
-                            if (added) onBack()
-                        },
-                        enabled = sku != null && quantityBounds.canPurchase && !sku.isOutOfStock && !state.busy,
-                        modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(dim.radiusLg),
-                        colors = ButtonDefaults.buttonColors(containerColor = CustomerColors.Brand700),
-                    ) { Text(if (sku?.isOutOfStock == true) "暂时售罄" else "加入购物车") }
+
+                CardBox(
+                    modifier = Modifier.padding(horizontal = 16.dp).offset(y = (-18).dp),
+                    elevation = E.level1,
+                ) {
+                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Row(Modifier.weight(1f), verticalAlignment = Alignment.Bottom) {
+                                PriceText(
+                                    fen = sku?.priceFen ?: product.minPriceFen,
+                                    size = T.title,
+                                    unit = if (sku == null && product.maxPriceFen > product.minPriceFen) "起" else null,
+                                )
+                                if (sku != null && sku.originalPriceFen > sku.priceFen) {
+                                    StrikethroughPrice(sku.originalPriceFen, Modifier.padding(start = 8.dp, bottom = 3.dp))
+                                }
+                            }
+                            if (sku?.isOutOfStock == true || (sku == null && product.isOutOfStock)) {
+                                StatusChip("暂时售罄", ChipTone.Muted)
+                            }
+                        }
+                        Text(
+                            product.title,
+                            fontSize = T.title,
+                            fontWeight = FontWeight.Bold,
+                            color = CustomerColors.TextPrimary,
+                        )
+                        val introduction = product.simpleDesc.ifBlank { product.specDesc }
+                        if (introduction.isNotBlank()) {
+                            Text(introduction, color = CustomerColors.TextSecondary, fontSize = T.body, lineHeight = 22.sp)
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            Text("已售 ${product.salesCount}", color = CustomerColors.TextMuted, fontSize = T.caption)
+                            Text("库存 $currentInventory ${product.inventoryUnit}", color = CustomerColors.TextMuted, fontSize = T.caption)
+                        }
+                    }
                 }
+
+                if (product.skus.isNotEmpty() || product.specDesc.isNotBlank()) {
+                    CardBox(Modifier.padding(horizontal = 16.dp).padding(top = 2.dp)) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text("选择规格", fontWeight = FontWeight.SemiBold, color = CustomerColors.TextPrimary)
+                            if (product.specDesc.isNotBlank()) {
+                                Text(product.specDesc, color = CustomerColors.TextSecondary, fontSize = T.caption, modifier = Modifier.padding(top = 4.dp))
+                            }
+                            if (product.skus.isNotEmpty()) {
+                                LazyRow(
+                                    modifier = Modifier.padding(top = 12.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    items(product.skus) { option ->
+                                        val optionName = option.specText.ifBlank { "默认规格" }
+                                        val availability = if (option.isOutOfStock) "售罄" else "库存 ${option.inventory}${product.inventoryUnit}"
+                                        SelectionChip(
+                                            "$optionName · ${money(option.priceFen)} · $availability",
+                                            selected = option.skuId == (sku?.skuId ?: ""),
+                                            enabled = !option.isOutOfStock,
+                                            onClick = {
+                                                selectedSkuId = option.skuId
+                                                val bounds = purchaseQuantityBounds(product.buyMinNumber, product.buyMaxNumber, option.inventory)
+                                                count = if (bounds.canPurchase) count.coerceIn(bounds.minimum, bounds.maximum) else bounds.minimum
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                CardBox(Modifier.padding(horizontal = 16.dp).padding(top = 12.dp)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("商品信息", fontWeight = FontWeight.SemiBold, color = CustomerColors.TextPrimary)
+                        ProductDetailInfoRow("产地", product.origin.ifBlank { "暂无信息" })
+                        ProductDetailInfoRow("规格", sku?.specText?.takeIf(String::isNotBlank) ?: product.specDesc.ifBlank { "默认规格" })
+                        ProductDetailInfoRow("库存", "$currentInventory ${product.inventoryUnit}")
+                        ProductDetailInfoRow("销量", "已售 ${product.salesCount}")
+                    }
+                }
+
+                if (product.content.isNotBlank() || galleryImages.size > 1) {
+                    CardBox(Modifier.padding(horizontal = 16.dp).padding(top = 12.dp)) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text("商品详情", fontWeight = FontWeight.SemiBold, color = CustomerColors.TextPrimary)
+                            if (product.content.isNotBlank()) {
+                                Text(
+                                    product.content,
+                                    color = CustomerColors.TextSecondary,
+                                    lineHeight = 23.sp,
+                                    modifier = Modifier.padding(top = 12.dp),
+                                )
+                            }
+                            galleryImages.drop(1).forEach { imageUrl ->
+                                ProductImage(
+                                    imageUrl,
+                                    Modifier.fillMaxWidth().aspectRatio(1f).padding(top = 12.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(24.dp))
+            }
+
+            Row(
+                Modifier.fillMaxWidth().background(CustomerColors.Surface).padding(horizontal = 18.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                QuantityControl(
+                    count,
+                    onMinus = { count = (count - 1).coerceAtLeast(quantityBounds.minimum) },
+                    onPlus = { count = (count + 1).coerceAtMost(quantityBounds.maximum) },
+                    max = quantityBounds.maximum,
+                )
+                Spacer(Modifier.width(16.dp))
+                Button(
+                    onClick = {
+                        val added = sku?.let { vm.addToCart(product, it, count) } == true
+                        if (added) onBack()
+                    },
+                    enabled = sku != null && quantityBounds.canPurchase && !sku.isOutOfStock && !state.busy,
+                    modifier = Modifier.weight(1f).height(48.dp), shape = RoundedCornerShape(dim.radiusLg),
+                    colors = ButtonDefaults.buttonColors(containerColor = CustomerColors.Brand700),
+                ) { Text(if (sku?.isOutOfStock == true) "暂时售罄" else "加入购物车") }
             }
         }
+    }
+}
+
+@Composable
+private fun ProductHeroIconButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+    Box(
+        Modifier
+            .size(46.dp)
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = .94f))
+            .clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun ProductDetailInfoRow(label: String, value: String) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        Text(label, modifier = Modifier.width(64.dp), color = CustomerColors.TextMuted, fontSize = T.caption)
+        Text(value, modifier = Modifier.weight(1f), color = CustomerColors.TextPrimary, fontSize = T.caption)
     }
 }
 
@@ -757,7 +1015,7 @@ private fun OrderSummaryCard(order: Order, onClick: () -> Unit) {
                         modifier = Modifier.padding(top = 2.dp),
                     )
                 }
-                StatusChip(order.fulfillmentText, ChipTone.Info)
+                StatusChip(order.orderStatusText, ChipTone.Info)
             }
             Text(
                 order.lines.joinToString("、") { "${it.name} ×${it.qty}" }.ifBlank { "查看订单商品" },

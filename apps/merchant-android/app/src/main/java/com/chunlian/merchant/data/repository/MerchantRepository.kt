@@ -31,6 +31,7 @@ import com.chunlian.merchant.data.model.ManualRefundRequest
 import com.chunlian.merchant.data.model.Notifications
 import com.chunlian.merchant.data.model.Order
 import com.chunlian.merchant.data.model.OrderPage
+import com.chunlian.merchant.data.model.PushDeviceRequest
 import com.chunlian.merchant.data.model.Receivable
 import com.chunlian.merchant.data.model.RevisionHistory
 import com.chunlian.merchant.data.model.QrReceiptRequest
@@ -66,6 +67,7 @@ import java.io.IOException
 class MerchantRepository(
     private val session: SessionStore,
     retrofit: Retrofit = ApiClient.build(),
+    private val getuiAppId: String = BuildConfig.GETUI_APP_ID,
 ) {
 
     private val api: MerchantApi = retrofit.create(MerchantApi::class.java)
@@ -78,6 +80,7 @@ class MerchantRepository(
         val result = api.login(LoginRequest(username, password, deviceId)).unwrap()
         persistSession(result)
         session.lastUsername = username
+        registerPushDeviceIfAllowed()
 
         result
     }
@@ -89,7 +92,60 @@ class MerchantRepository(
             throw NetworkException("管理服务返回的会话信息无效，请重试。")
         }
         persistSession(result)
+        registerPushDeviceIfAllowed()
         result
+    }
+
+    /** Stores a CID received after explicit privacy consent and binds it once a session exists. */
+    suspend fun onPushClientIdReceived(cid: String) {
+        if (cid.isBlank() || !session.getuiPrivacyConsentAccepted) return
+        session.pushClientId = cid
+        registerPushDeviceIfAllowed()
+    }
+
+    /** Revoke the current installation binding after the merchant turns off order alerts. */
+    suspend fun unregisterPushDeviceForPrivacyRevocation(): Boolean {
+        if (!session.hasValidSession()) {
+            session.pushUnregisterPending = true
+            return false
+        }
+        if (session.pushClientId.isBlank()) {
+            session.pushUnregisterPending = false
+            return true
+        }
+
+        return try {
+            call { api.unregisterPushDevice(session.getOrCreateDeviceId()).unwrap() }
+            session.pushClientId = ""
+            session.pushUnregisterPending = false
+            true
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            session.pushUnregisterPending = true
+            false
+        }
+    }
+
+    private suspend fun registerPushDeviceIfAllowed() {
+        if (!session.getuiPrivacyConsentAccepted || !session.hasValidSession()) return
+        val appId = getuiAppId.trim()
+        val cid = session.pushClientId.trim()
+        if (appId.isBlank() || cid.isBlank()) return
+
+        try {
+            api.registerPushDevice(
+                PushDeviceRequest(
+                    appId = appId,
+                    cid = cid,
+                    installationId = session.getOrCreateDeviceId(),
+                ),
+            ).unwrap()
+        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            // Push registration is best effort and must not prevent merchant sign-in.
+        }
     }
 
     private fun persistSession(result: LoginResult) {
@@ -100,6 +156,12 @@ class MerchantRepository(
     }
 
     suspend fun logout() {
+        val installationId = session.getOrCreateDeviceId()
+        if (session.pushClientId.isNotBlank() && session.hasValidSession()) {
+            // Unbind while the bearer token is still available. A transient push API failure
+            // must not prevent local sign-out.
+            runCatching { api.unregisterPushDevice(installationId).unwrap() }
+        }
         // 服务端登出失败也要清本地：否则店主会卡在「点了退出但还是登录着」
         runCatching { call { api.logout() } }
         session.clear()
