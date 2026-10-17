@@ -77,8 +77,8 @@ android {
         applicationId = "com.chunlian.merchant"
         minSdk = 24
         targetSdk = 34
-        versionCode = 9
-        versionName = "1.0.8"
+        versionCode = 10
+        versionName = "1.0.9"
 
         buildConfigField("String", "API_BASE_URL", buildConfigString(debugApiBaseUrl))
         buildConfigField("String", "GETUI_APP_ID", buildConfigString(getuiAppId))

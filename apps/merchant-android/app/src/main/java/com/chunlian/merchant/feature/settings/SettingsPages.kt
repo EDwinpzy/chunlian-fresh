@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,10 +23,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.DragHandle
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -38,26 +46,40 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chunlian.merchant.BuildConfig
 import com.chunlian.merchant.MerchantApp
 import com.chunlian.merchant.R
 import com.chunlian.merchant.core.designsystem.C
+import com.chunlian.merchant.core.designsystem.E
 import com.chunlian.merchant.core.designsystem.T
+import com.chunlian.merchant.core.designsystem.TABULAR_FIGURES
 import com.chunlian.merchant.core.designsystem.dim
 import com.chunlian.merchant.core.media.stagePickedImage
 import com.chunlian.merchant.data.model.Goods
@@ -74,7 +96,8 @@ import com.chunlian.merchant.ui.components.NoticeBar
 import com.chunlian.merchant.ui.components.PrimaryButton
 import com.chunlian.merchant.ui.components.SecondaryButton
 import com.chunlian.merchant.ui.components.SectionTitle
-import com.chunlian.merchant.ui.components.fen2yuan
+import com.chunlian.merchant.ui.components.money
+import com.chunlian.merchant.ui.components.tabularStyle
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
@@ -191,6 +214,15 @@ internal fun SettingsScreenContent(onBack: (() -> Unit)?) {
             onBack = {
                 if (page != SettingsPage.Home) openPage(SettingsPage.Home) else onBack?.invoke()
             },
+            trailing = if (page == SettingsPage.FeaturedProducts) {
+                {
+                    val count = state.homeFeaturedProductIds.size
+                    Text(
+                        "$count / $MAX_FEATURED_PRODUCTS",
+                        style = tabularStyle(T.caption, FontWeight.SemiBold, C.Brand600),
+                    )
+                }
+            } else null,
             modifier = Modifier.padding(horizontal = dim.pagePadding),
         )
 
@@ -287,6 +319,7 @@ private fun SettingsHeader(
     showBack: Boolean,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     MerchantTopBar(modifier) {
         if (showBack) {
@@ -294,8 +327,13 @@ private fun SettingsHeader(
                 MerchantBackIcon()
             }
         }
-        Column {
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = C.Brand700)
+            Spacer(Modifier.weight(1f))
+            trailing?.invoke()
         }
     }
 }
@@ -473,101 +511,177 @@ private fun FeaturedProductsSettingsPage(
     val app = MerchantApp.instance
     val selectedIds = state.homeFeaturedProductIds
     val selectedSet = selectedIds.toSet()
-    val availableGoods = productsState.goods.filterNot { it.id in selectedSet }
     val goodsById = productsState.goods.associateBy(Goods::id)
+    var showClearDialog by remember { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    val availableGoods = productsState.goods
+        .filterNot { it.id in selectedSet }
+        .filter { query.isBlank() || it.title.contains(query.trim(), ignoreCase = true) }
+
+    // 长按拖拽排序：手柄上挂手势，累计位移越过一行高度就步进一格（复用 onMove ±1）。
+    // 列表经 rememberUpdatedState 提供——pointerInput 闭包不因列表变动重启，
+    // 手势回调里读到的必须始终是最新队列，否则连续跨两行会走错边界。
+    val density = LocalDensity.current
+    val rowStepPx = with(density) { FEATURED_ROW_HEIGHT.toPx() }
+    val latestIds by rememberUpdatedState(selectedIds)
+    val latestMove by rememberUpdatedState(onMove)
+    var draggingId by remember { mutableStateOf<String?>(null) }
+    var dragOffsetY by remember { mutableStateOf(0f) }
+
+    fun startDrag(id: String) {
+        draggingId = id
+        dragOffsetY = 0f
+    }
+
+    fun dragBy(deltaY: Float) {
+        val id = draggingId ?: return
+        var offset = dragOffsetY + deltaY
+        while (offset >= rowStepPx) {
+            val index = latestIds.indexOf(id)
+            if (index < 0 || index >= latestIds.lastIndex) {
+                offset = 0f
+                break
+            }
+            latestMove(id, 1)
+            offset -= rowStepPx
+        }
+        while (offset <= -rowStepPx) {
+            val index = latestIds.indexOf(id)
+            if (index <= 0) {
+                offset = 0f
+                break
+            }
+            latestMove(id, -1)
+            offset += rowStepPx
+        }
+        dragOffsetY = offset
+    }
+
+    fun endDrag() {
+        draggingId = null
+        dragOffsetY = 0f
+    }
 
     Column(modifier = modifier.fillMaxWidth().background(C.Canvas)) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = dim.pagePadding, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text("设置首页轮播商品", fontSize = T.body, fontWeight = FontWeight.SemiBold, color = C.TextPrimary)
-                Text("仅可选择在售商品，排列顺序就是顾客端轮播顺序", fontSize = T.mini, color = C.TextMuted)
-            }
-            Text("${selectedIds.size}/10", fontSize = T.caption, fontWeight = FontWeight.SemiBold, color = C.Brand700)
-            if (selectedIds.isNotEmpty()) {
-                TextButton(onClick = onClear, enabled = !state.saving) {
-                    Text("恢复默认", color = C.TextSecondary, fontSize = T.caption)
-                }
-            }
-        }
-
         LazyColumn(
             modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = dim.pagePadding),
-            contentPadding = PaddingValues(bottom = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(top = 2.dp, bottom = 12.dp),
         ) {
             item {
-                SectionTitle("已选商品")
+                SectionTitle(
+                    "已选鲜选",
+                    trailing = {
+                        Text("顺序即轮播顺序", fontSize = T.mini, color = C.TextMuted)
+                        Spacer(Modifier.width(4.dp))
+                        TextButton(onClick = { showClearDialog = true }, enabled = !state.saving) {
+                            Text("恢复默认", color = C.TextSecondary, fontSize = T.caption)
+                        }
+                    },
+                )
             }
             if (selectedIds.isEmpty()) {
                 item {
                     CardBox {
-                        Text("尚未设置自选商品时，顾客首页会展示默认鲜选商品。", Modifier.padding(14.dp), fontSize = T.caption, color = C.TextMuted)
-                    }
-                }
-            } else {
-                itemsIndexed(selectedIds, key = { _, id -> id }) { index, id ->
-                    SelectedFeaturedProductRow(
-                        goods = goodsById[id],
-                        position = index,
-                        count = selectedIds.size,
-                        imageUrl = goodsById[id]?.image?.takeIf(String::isNotBlank)?.let(app.repository::absoluteUrl),
-                        productInfoLoading = productsState.loading,
-                        productInfoError = productsState.error != null,
-                        onMoveUp = { onMove(id, -1) },
-                        onMoveDown = { onMove(id, 1) },
-                        onRemove = { onToggle(id) },
-                    )
-                }
-            }
-
-            item {
-                SectionTitle("选择在售商品")
-            }
-            if (productsState.loading && productsState.goods.isEmpty()) {
-                item {
-                    Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
-                        androidx.compose.material3.CircularProgressIndicator(color = C.Brand700, strokeWidth = 2.dp)
-                    }
-                }
-            }
-            if (productsState.error != null) {
-                item {
-                    CardBox {
-                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            NoticeBar(productsState.error, ChipTone.Danger)
-                            TextButton(onClick = onRetry, enabled = !productsState.loading) {
-                                Text("重新加载在售商品", color = C.Brand700)
-                            }
-                        }
-                    }
-                }
-            } else if (productsState.loaded && availableGoods.isEmpty()) {
-                item {
-                    CardBox {
                         Text(
-                            if (productsState.goods.isEmpty()) "暂无在售商品" else "所有在售商品都已加入每日鲜选",
+                            "尚未自选时，顾客首页展示默认鲜选商品。",
                             Modifier.padding(14.dp),
                             fontSize = T.caption,
                             color = C.TextMuted,
                         )
                     }
                 }
+            } else {
+                item {
+                    CardBox {
+                        Column {
+                            selectedIds.forEachIndexed { index, id ->
+                                SelectedFeaturedProductRow(
+                                    goods = goodsById[id],
+                                    imageUrl = goodsById[id]?.image?.takeIf(String::isNotBlank)?.let(app.repository::absoluteUrl),
+                                    productInfoLoading = productsState.loading,
+                                    productInfoError = productsState.error != null,
+                                    isDragging = draggingId == id,
+                                    dragOffsetY = if (draggingId == id) dragOffsetY else 0f,
+                                    showDividerAbove = index > 0,
+                                    onDragStart = { startDrag(id) },
+                                    onDrag = ::dragBy,
+                                    onDragEnd = ::endDrag,
+                                    onRemove = { onToggle(id) },
+                                )
+                            }
+                        }
+                    }
+                }
             }
-            items(availableGoods, key = Goods::id) { goods ->
-                SelectableFeaturedProductRow(
-                    goods = goods,
-                    imageUrl = goods.image.takeIf(String::isNotBlank)?.let(app.repository::absoluteUrl),
-                    onClick = { onToggle(goods.id) },
-                )
+
+            item {
+                SectionTitle("从在售商品添加")
+            }
+            item {
+                CardBox {
+                    Column {
+                        CandidateSearchHeader(query = query, onQueryChange = { query = it })
+                        Box(Modifier.fillMaxWidth().height(1.dp).background(C.Divider))
+                        when {
+                            productsState.loading && productsState.goods.isEmpty() -> {
+                                Box(Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
+                                    androidx.compose.material3.CircularProgressIndicator(color = C.Brand700, strokeWidth = 2.dp)
+                                }
+                            }
+                            productsState.error != null -> {
+                                Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    NoticeBar(productsState.error, ChipTone.Danger)
+                                    TextButton(onClick = onRetry, enabled = !productsState.loading) {
+                                        Text("重新加载在售商品", color = C.Brand700, fontSize = T.caption)
+                                    }
+                                }
+                            }
+                            availableGoods.isEmpty() -> {
+                                Text(
+                                    when {
+                                        productsState.goods.isEmpty() -> "暂无在售商品"
+                                        query.isBlank() -> "所有在售商品都已加入每日鲜选"
+                                        else -> "没有匹配的商品，换个关键词试试"
+                                    },
+                                    Modifier.padding(14.dp),
+                                    fontSize = T.caption,
+                                    color = C.TextMuted,
+                                )
+                            }
+                            else -> {
+                                availableGoods.take(CANDIDATE_RENDER_LIMIT).forEachIndexed { index, goods ->
+                                    SelectableFeaturedProductRow(
+                                        goods = goods,
+                                        imageUrl = goods.image.takeIf(String::isNotBlank)?.let(app.repository::absoluteUrl),
+                                        enabled = selectedIds.size < MAX_FEATURED_PRODUCTS,
+                                        showDividerAbove = index > 0,
+                                        onClick = { onToggle(goods.id) },
+                                    )
+                                }
+                                if (availableGoods.size > CANDIDATE_RENDER_LIMIT) {
+                                    Text(
+                                        "共 ${availableGoods.size} 件在售商品，输入关键词缩小范围",
+                                        Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                        fontSize = T.mini,
+                                        color = C.TextMuted,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
         Column(
             modifier = Modifier.fillMaxWidth().background(C.Canvas).padding(horizontal = dim.pagePadding, vertical = 10.dp),
         ) {
+            Text(
+                "已选 ${selectedIds.size}/$MAX_FEATURED_PRODUCTS · 保存后顾客端立即生效",
+                fontSize = T.mini,
+                color = C.TextMuted,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
             PrimaryButton(
                 text = if (state.saving) "保存中…" else "保存设置",
                 onClick = onSave,
@@ -577,58 +691,195 @@ private fun FeaturedProductsSettingsPage(
             )
         }
     }
+
+    if (showClearDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            title = { Text("恢复默认鲜选？") },
+            text = { Text("将清空当前自选商品，顾客首页恢复展示默认鲜选。需点击「保存设置」后才会生效。") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showClearDialog = false
+                    onClear()
+                }) {
+                    Text("清空", color = C.Danger)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDialog = false }) {
+                    Text("取消", color = C.TextSecondary)
+                }
+            },
+        )
+    }
+}
+
+/** 已选行高（含分隔线余量），同时是拖拽步进阈值 */
+private val FEATURED_ROW_HEIGHT = 65.dp
+
+/** 分隔线左缩进：16(行内距) + 46(缩略图) + 11(间距)，对齐文字起点 —— 细节上的「高级感」 */
+private val FEATURED_DIVIDER_INSET = 73.dp
+
+/** 候选区一次性渲染上限：在售商品可能上百，超过就引导用搜索缩小范围 */
+private const val CANDIDATE_RENDER_LIMIT = 60
+
+@Composable
+private fun CandidateSearchHeader(query: String, onQueryChange: (String) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().height(46.dp).padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(Icons.Outlined.Search, contentDescription = null, tint = C.Neutral300, modifier = Modifier.size(18.dp))
+        Box(Modifier.weight(1f)) {
+            if (query.isEmpty()) {
+                Text("搜索在售商品", fontSize = T.body, color = C.Neutral400)
+            }
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                singleLine = true,
+                textStyle = TextStyle(fontSize = T.body, color = C.TextPrimary),
+                cursorBrush = SolidColor(C.Brand600),
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            )
+        }
+        if (query.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .clickable { onQueryChange("") },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Outlined.Close, contentDescription = "清空搜索", tint = C.TextMuted, modifier = Modifier.size(14.dp))
+            }
+        }
+    }
 }
 
 @Composable
 private fun SelectedFeaturedProductRow(
     goods: Goods?,
-    position: Int,
-    count: Int,
     imageUrl: String?,
     productInfoLoading: Boolean,
     productInfoError: Boolean,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
+    isDragging: Boolean,
+    dragOffsetY: Float,
+    showDividerAbove: Boolean,
+    onDragStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: () -> Unit,
     onRemove: () -> Unit,
 ) {
-    CardBox {
+    Column(
+        modifier = Modifier
+            .zIndex(if (isDragging) 1f else 0f)
+            .graphicsLayer {
+                translationY = if (isDragging) dragOffsetY else 0f
+                val scale = if (isDragging) 1.03f else 1f
+                scaleX = scale
+                scaleY = scale
+            },
+    ) {
+        if (showDividerAbove) {
+            Box(
+                Modifier
+                    .padding(start = FEATURED_DIVIDER_INSET)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(C.Divider),
+            )
+        }
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 64.dp)
+                .background(C.Surface)
+                .padding(start = 16.dp, end = 4.dp, top = 9.dp, bottom = 9.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             FeaturedProductThumbnail(title = goods?.title ?: "鲜", imageUrl = imageUrl)
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(11.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(goods?.title ?: "暂不可选的商品", fontSize = T.caption, fontWeight = FontWeight.SemiBold, color = C.TextPrimary, maxLines = 1)
+                Text(
+                    goods?.title ?: "商品暂不可用",
+                    fontSize = T.product,
+                    fontWeight = FontWeight.SemiBold,
+                    color = C.TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 Text(
                     when {
-                        goods != null -> "轮播第 ${position + 1} 位 · ¥${fen2yuan(goods.minPriceFen)}"
-                        productInfoLoading -> "商品信息加载中 · 轮播第 ${position + 1} 位"
-                        productInfoError -> "商品信息暂不可用 · 轮播第 ${position + 1} 位"
-                        else -> "该商品已下架或不存在 · 轮播第 ${position + 1} 位"
+                        goods != null -> money(goods.minPriceFen)
+                        productInfoLoading -> "商品信息加载中"
+                        productInfoError -> "商品信息暂不可用"
+                        else -> "该商品已下架或不存在"
                     },
-                    fontSize = T.mini,
-                    color = C.TextMuted,
-                    maxLines = 2,
+                    style = if (goods != null) {
+                        tabularStyle(T.caption, FontWeight.SemiBold, C.Price)
+                    } else {
+                        TextStyle(fontSize = T.mini, color = C.TextMuted)
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
-            Column(horizontalAlignment = Alignment.End) {
-                TextButton(
-                    onClick = onMoveUp,
-                    enabled = position > 0,
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                ) { Text("上移", fontSize = T.mini, color = if (position > 0) C.Brand700 else C.TextMuted) }
-                TextButton(
-                    onClick = onMoveDown,
-                    enabled = position < count - 1,
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                ) { Text("下移", fontSize = T.mini, color = if (position < count - 1) C.Brand700 else C.TextMuted) }
-                TextButton(
-                    onClick = onRemove,
-                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
-                ) { Text("移除", fontSize = T.mini, color = C.TextSecondary) }
-            }
+            DragHandle(onDragStart = onDragStart, onDrag = onDrag, onDragEnd = onDragEnd)
+            RemoveButton(onClick = onRemove)
         }
+    }
+}
+
+/** 长按拖拽手柄：视觉弱化（faint），按住后整行浮起跟随手指。 */
+@Composable
+private fun DragHandle(
+    onDragStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .pointerInput(Unit) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = { onDragStart() },
+                    onDrag = { change, amount ->
+                        change.consume()
+                        onDrag(amount.y)
+                    },
+                    onDragEnd = { onDragEnd() },
+                    onDragCancel = { onDragEnd() },
+                )
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            Icons.Outlined.DragHandle,
+            contentDescription = "长按拖动排序",
+            tint = C.Neutral300,
+            modifier = Modifier.size(20.dp),
+        )
+    }
+}
+
+@Composable
+private fun RemoveButton(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            Icons.Outlined.Close,
+            contentDescription = "移除",
+            tint = C.TextMuted,
+            modifier = Modifier.size(18.dp),
+        )
     }
 }
 
@@ -636,27 +887,62 @@ private fun SelectedFeaturedProductRow(
 private fun SelectableFeaturedProductRow(
     goods: Goods,
     imageUrl: String?,
+    enabled: Boolean,
+    showDividerAbove: Boolean,
     onClick: () -> Unit,
 ) {
-    CardBox {
+    Column {
+        if (showDividerAbove) {
+            Box(
+                Modifier
+                    .padding(start = FEATURED_DIVIDER_INSET)
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(C.Divider),
+            )
+        }
         Row(
-            modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 60.dp)
+                .clickable(enabled = enabled, onClick = onClick)
+                .background(C.Surface)
+                .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             FeaturedProductThumbnail(title = goods.title, imageUrl = imageUrl)
-            Spacer(Modifier.width(10.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(goods.title, fontSize = T.caption, fontWeight = FontWeight.SemiBold, color = C.TextPrimary, maxLines = 1)
+            Spacer(Modifier.width(11.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
-                    goods.specDesc.ifBlank { goods.simpleDesc.ifBlank { goods.inventoryUnit.ifBlank { "在售商品" } } },
+                    goods.title,
+                    fontSize = T.body,
+                    fontWeight = FontWeight.SemiBold,
+                    color = C.TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    buildAnnotatedString {
+                        append(goods.specDesc.ifBlank { goods.simpleDesc.ifBlank { goods.inventoryUnit.ifBlank { "在售商品" } } } + " · ")
+                        withStyle(SpanStyle(color = C.Price, fontWeight = FontWeight.SemiBold, fontFeatureSettings = TABULAR_FIGURES)) {
+                            append(money(goods.minPriceFen))
+                        }
+                    },
                     fontSize = T.mini,
                     color = C.TextMuted,
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Text("¥${fen2yuan(goods.minPriceFen)}", fontSize = T.caption, fontWeight = FontWeight.SemiBold, color = C.Price)
             }
-            TextButton(onClick = onClick, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)) {
-                Text("选择", color = C.Brand700, fontSize = T.caption)
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(if (enabled) C.Brand100 else C.Brand50)
+                    .clickable(enabled = enabled, onClick = onClick),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("+", fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = if (enabled) C.Brand700 else C.Neutral300)
             }
         }
     }
@@ -665,7 +951,10 @@ private fun SelectableFeaturedProductRow(
 @Composable
 private fun FeaturedProductThumbnail(title: String, imageUrl: String?) {
     Box(
-        modifier = Modifier.size(54.dp).clip(RoundedCornerShape(10.dp)).background(C.Brand100),
+        modifier = Modifier
+            .size(46.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(C.Brand50),
         contentAlignment = Alignment.Center,
     ) {
         if (!imageUrl.isNullOrBlank()) {
@@ -673,10 +962,10 @@ private fun FeaturedProductThumbnail(title: String, imageUrl: String?) {
                 model = imageUrl,
                 contentDescription = title,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
+                modifier = Modifier.fillMaxWidth().height(46.dp),
             )
         } else {
-            Text(title.take(1), fontSize = T.section, fontWeight = FontWeight.SemiBold, color = C.Brand700)
+            Text(title.take(1), fontSize = T.product, fontWeight = FontWeight.SemiBold, color = C.Brand700)
         }
     }
 }
