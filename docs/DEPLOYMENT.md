@@ -8,12 +8,14 @@
 
 2026-10-17 已发布 `chunlian-20261017-all-clients-v1`：顾客网页和后端同步更新，顾客 App 与店主 App 均升级至 1.0.5（versionCode 6）。店主分类管理按一级分类展示商品数、状态筛选、排序和下架提示；分类状态文案统一为“已下架”。部署备份恢复检查通过，公网网页、静态资源和只读 API 检查 28/28 通过；两款 APK、下载清单与下载页均经项目 CA 的 HTTPS 完整下载复核，大小和 SHA-256 一致。备份点为 `/opt/chunlian/backups/chunlian-fresh/20261016T202653Z/`；服务与 APK 回退文件位于 `/opt/chunlian/releases/chunlian-20261017-all-clients-v1/rollback/`。
 
+2026-10-17 已发布 `chunlian-20261017-farm-products-v1`：店主端新增 13 类、150 种农产品预设及配图，分类和商品资料均可修改；新商品默认下架，店主确认名称、价格和库存后再上架。顾客网页与 App 展示已配置的分类图，商品图在店主导入预设并保存商品后由顾客端读取。预设随 App 提供，未自动写入生产商品/分类数据。顾客与店主 Android 均升级至 1.0.6（versionCode 7）。网页构建、Playwright 70/70、顾客 Android 21/21、店主 Android 26/26、APK 核验 29/29、公网只读 28/28、下载页和 APK 公网完整校验 15/15 通过；商家 Lint 有 71 条 warning、0 error。服务包 193 个载荷文件，SHA-256 `5b470b589d0b3035ba8d4b80987d8e3da2fab824812630356fef2097bbf90a23`。备份恢复核验通过，备份点 `/opt/chunlian/backups/chunlian-fresh/20261017T022019Z/`；代码和旧下载文件回退目录 `/opt/chunlian/releases/chunlian-20261017-farm-products-v1/rollback/`。
+
 | 项目 | 当前状态 |
 |---|---|
 | 主机 | panshi-cloud，103.236.97.137，共享服务器 |
 | 项目路径 | /var/www/chunlian |
 | 网页 | https://103.236.97.137:8096/app/ |
-| Android 下载 | https://103.236.97.137:8096/downloads/ ；顾客1.0.5/code6，店主1.0.5/code6 |
+| Android 下载 | https://103.236.97.137:8096/downloads/ ；顾客1.0.6/code7，店主1.0.6/code7 |
 | API | https://103.236.97.137:8096/api/v1/ |
 | 网络 | NAT 8096；私有CA；Android内置限定IP信任，网页需安装公开CA |
 | 服务 | nginx、php8.3-fpm active，维护标记已解除 |
@@ -21,7 +23,7 @@
 | 新结构 | payment_qr_url、veg_notification_seen、veg_shop_profile、veg_fresh_category_root、veg_fresh_category_state 已存在 |
 | 资金方式 | OFFLINE_QR人工扫码核款/补款/退款和COD，无微信商户API |
 | 正式二维码 | 空；店主在App上传真实收款码 |
-| 容量快照 | 本次发布前约21GiB可用 |
+| 容量快照 | 本次发布前后约18GiB可用 |
 
 ## 2. 本次验证
 
@@ -30,6 +32,10 @@
 备份已下载到受控 `dist/private/backup-20261015-shop-config/`，数据库、代码配置、上传文件的完整 SHA-256 均核对一致。真实 MySQL 分类并发锁回归尚未补充，本次验证了迁移及生产只读分类接口。
 
 两款正式 APK 沿用原签名，单测16+15项、包体25项通过；公网重新下载核对完整SHA一致，下载页截图通过。下载文件位于 `shopxo/public/downloads/`，独立于网页切换目录。
+
+农产品预设发布验证：顾客 Web `npm run build` 与 Playwright 70/70 通过；顾客 Android Release 单测 21/21、店主 Android Release 单测 26/26，`lintRelease` 与 `assembleRelease` 均通过；店主 Lint 报告 71 warnings、0 errors。APK 的包名、签名、生产 HTTPS 地址、版本与清单核验 29/29；公网清单、顾客/店主 APK 完整下载大小与 SHA-256、下载页及其 6 张图片核验 15/15；生产网页、静态资源、API 与匿名权限只读检查 28/28。远端 dry-check 对 193 个包文件校验，并对 PHP 源码执行语法检查。生产订单/资金数据计数恢复核验通过，未写入预设商品或分类。
+
+本机未安装 PHP/Composer，且生产 PHP 未安装 PDO SQLite，因此未执行后端 PHPUnit/SQLite 隔离测试；分类图片创建、编辑和清除的数据库流程没有在生产业务数据上做写入测试。
 
 以下为历史验证记录：
 
@@ -65,9 +71,9 @@ python3 /opt/chunlian/rollback-existing.py --release chunlian-20261015-shop-conf
 
 ### Android App 在线更新
 
-顾客端已签名构建为 1.0.5（versionCode 6），店主端为 1.0.5（versionCode 6）。两端支持启动时检查更新和“我的”页手动检查；发现新版本后，用户可选择下载，App 校验文件大小与 SHA-256 后打开 Android 系统安装器，由用户确认安装。更新检查只在启动或手动触发时进行，不包含后台推送或静默安装。2026-10-16 已发布 `chunlian-20261016-category-products-v1`：店主商品管理按生鲜分类展示商品，并提供“全部 / 在售中 / 已下架”筛选；APK、清单和下载页已通过严格 TLS 公网完整性复核。随后发布 `chunlian-20261016-customer-ui-v1`，更新顾客网页和顾客 App。2026-10-17 发布 `chunlian-20261017-all-clients-v1`，顾客、店主 Android 同步升级至 1.0.5（code6），后端和顾客网页同步上线；APK、清单、下载页和网页资源均通过项目 CA HTTPS 与 SHA-256 复核。
+顾客端已签名构建为 1.0.6（versionCode 7），店主端为 1.0.6（versionCode 7）。两端支持启动时检查更新和“我的”页手动检查；发现新版本后，用户可选择下载，App 校验文件大小与 SHA-256 后打开 Android 系统安装器，由用户确认安装。更新检查只在启动或手动触发时进行，不包含后台推送或静默安装。2026-10-16 已发布 `chunlian-20261016-category-products-v1`：店主商品管理按生鲜分类展示商品，并提供“全部 / 在售中 / 已下架”筛选；APK、清单和下载页已通过严格 TLS 公网完整性复核。随后发布 `chunlian-20261016-customer-ui-v1`，更新顾客网页和顾客 App。2026-10-17 发布 `chunlian-20261017-all-clients-v1`，顾客、店主 Android 同步升级至 1.0.5（code6），后端和顾客网页同步上线；APK、清单、下载页和网页资源均通过项目 CA HTTPS 与 SHA-256 复核。 2026-10-17 发布 `chunlian-20261017-farm-products-v1`，顾客与店主 Android 升至 1.0.6（code7），同步发布农产品预设、分类图片支持、顾客端分类图和新版下载页；线上完整性检查通过。
 
-当前已安装的生产版本没有更新检查能力。首次启用时，用户需先从现有 `/downloads/` 下载页手动安装带更新能力的版本；此后 App 才能检查后续版本。更新包必须沿用已发布 App 的签名证书，否则 Android 会拒绝覆盖安装。
+早期已安装版本若不具备更新检查能力，需先从现有 `/downloads/` 下载页手动安装 1.0.6 版本；1.0.6 起，顾客端和店主端均支持启动时检查及“我的”页手动检查更新。更新包必须沿用已发布 App 的签名证书，否则 Android 会拒绝覆盖安装。
 
 发布 Android 更新时：
 
