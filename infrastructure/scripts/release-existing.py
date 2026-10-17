@@ -122,7 +122,9 @@ def schema_health():
         ('veg_push_device', 'uk_app_installation'),
     ):
         count = sql(
-            "SELECT COUNT(*) FROM information_schema.STATISTICS "
+            # 复合索引在 STATISTICS 里每列一行，必须按索引名去重后数，
+            # 否则两列索引永远查出来是 2，健康检查恒报缺失。
+            "SELECT COUNT(DISTINCT INDEX_NAME) FROM information_schema.STATISTICS "
             "WHERE TABLE_SCHEMA='chunlian_shop' AND TABLE_NAME='" + table + "' "
             "AND INDEX_NAME='" + index + "';"
         )

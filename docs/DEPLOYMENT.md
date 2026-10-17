@@ -75,7 +75,7 @@ python3 /opt/chunlian/rollback-existing.py --release chunlian-20261015-shop-conf
 
 顾客端已签名构建为 1.0.6（versionCode 7），店主端为 1.0.6（versionCode 7）。两端支持启动时检查更新和“我的”页手动检查；发现新版本后，用户可选择下载，App 校验文件大小与 SHA-256 后打开 Android 系统安装器，由用户确认安装。更新检查只在启动或手动触发时进行，不包含后台推送或静默安装。2026-10-16 已发布 `chunlian-20261016-category-products-v1`：店主商品管理按生鲜分类展示商品，并提供“全部 / 在售中 / 已下架”筛选；APK、清单和下载页已通过严格 TLS 公网完整性复核。随后发布 `chunlian-20261016-customer-ui-v1`，更新顾客网页和顾客 App。2026-10-17 发布 `chunlian-20261017-all-clients-v1`，顾客、店主 Android 同步升级至 1.0.5（code6），后端和顾客网页同步上线；APK、清单、下载页和网页资源均通过项目 CA HTTPS 与 SHA-256 复核。 2026-10-17 发布 `chunlian-20261017-farm-products-v1`，顾客与店主 Android 升至 1.0.6（code7），同步发布农产品预设、分类图片支持、顾客端分类图和新版下载页；线上完整性检查通过。
 
-本轮（订单状态统一 + 新订单推送）已签名构建为 1.0.7（versionCode 8，发布标识 `chunlian-20261017-order-status-push-v1`），尚未上传和切换；线上仍是 1.0.6（versionCode 7）。
+本轮（订单状态统一 + 新订单推送）已于 2026-10-17 发布 `chunlian-20261017-order-status-push-v1`：后端统一订单状态（expand-only 迁移 0006–0009，旧列保留可写）、顾客确认收货自动结清、首页精选与分类图、顾客/店主 Android 升至 1.0.7（versionCode 8）。备份点 `/opt/chunlian/backups/chunlian-fresh/20261017T101656Z`（恢复演练通过），回滚文件在 `/opt/chunlian/releases/chunlian-20261017-order-status-push-v1/rollback/`；公网 HTTPS 完整下载两包核对 SHA-256 一致，NAT 入口 36965 复验正常。**个推凭据尚未配置**（服务器 `GETUI_MERCHANT_*` 与安卓 `GETUI_APP_ID` 均缺）：推送链路静默降级——设备表为空时事件正常 SENT，不会堆积失败；凭据到位后需在 `chunlian.env` 与 `local.properties` 配置并重新构建两端 App 才能生效。历史 outbox 有 15 条 DEAD 事件（旧代码不认识 ORDER_DISPATCHED/DELIVERED/RECEIVED），属旧版遗留，未重放以免补发过期通知。
 
 早期已安装版本若不具备更新检查能力，需先从现有 `/downloads/` 下载页手动安装 1.0.6 版本；1.0.6 起，顾客端和店主端均支持启动时检查及“我的”页手动检查更新。更新包必须沿用已发布 App 的签名证书，否则 Android 会拒绝覆盖安装。
 
