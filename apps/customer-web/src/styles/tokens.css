@@ -95,6 +95,10 @@
   --color-on-brand: #ffffff;
   --color-on-brand-muted: rgba(255, 255, 255, 0.65);
   --color-on-brand-accent: var(--color-gold-300);
+  /* 深绿底上的容器只能靠白色透明度分层（DESIGN-SYSTEM §2.5），
+     与两端安卓 Theme.kt 的 OnBrandTranslucent(0x2E) / OnBrandTranslucentMuted(0x1A) 逐字对应 */
+  --color-on-brand-translucent: rgba(255, 255, 255, 0.18); /* 状态胶囊、图标底座、进度条未完成段 */
+  --color-on-brand-translucent-muted: rgba(255, 255, 255, 0.10); /* 弱化容器：待收货款条 */
 
   /* ============================================================
      半透明层

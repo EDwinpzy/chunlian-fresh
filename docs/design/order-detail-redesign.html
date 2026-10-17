@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>订单详情 · 重设计样板 — 春连鲜选</title>
+<style>
+/* ============================================================
+   春连鲜选 · 顾客端订单详情重设计样板
+   Token 全部沿用 docs/design/DESIGN-SYSTEM.md v1.0
+   （方案 01 有机鲜绿），此处按需内联，色值与
+   apps/customer-web/src/styles/tokens.css 逐字一致。
+   ============================================================ */
+:root {
+  --canvas: #F8F9F5;
+  --surface: #FFFFFF;
+  --divider: #E7EAE4;
+  --neutral-100: #F1F3EE;
+  --text-primary: #1E2823;
+  --text-deep: #313B35;
+  --text-secondary: #66736B;
+  --text-muted: #88938B;
+  --brand-50: #F2F7F4;
+  --brand-100: #E3EEE6;
+  --brand-600: #245947;
+  --brand-700: #173F34;
+  --gold-300: #E3C48C;
+  --gold-50: #FDF8EF;
+  --gold-100: #F8EEDB;
+  --gold-600: #A46B22;
+  --gold-700: #7A4E14;
+  --price: #B94C3F;
+  --warning: #A46B22;
+  --warning-bg: #FFF3E4;
+  --danger: #B53B39;
+  --danger-bg: #FCEDEB;
+  --success: #277653;
+  --success-bg: #E9F4EC;
+  --info-bg: #EEF3F0;
+  --ease: cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #EEF1EA;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans CJK SC',
+    'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; border: none; background: none; padding: 0; cursor: pointer; color: inherit; }
+:focus-visible { outline: 2px solid var(--brand-600); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+/* ---------- 工作台布局 ---------- */
+.studio { width: min(100%, 430px); margin: 0 auto; padding: 28px 16px 56px; }
+.studio-head h1 { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.studio-head p { margin: 6px 0 14px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+
+.tabs { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: none; border: 1px solid var(--divider); background: var(--surface); color: var(--text-secondary);
+  font-size: 13px; padding: 8px 16px; border-radius: 999px; transition: all .15s var(--ease);
+}
+.tab.on { background: var(--brand-700); border-color: var(--brand-700); color: #fff; font-weight: 600; }
+
+/* ---------- 手机框 ---------- */
+.phone {
+  position: relative; width: 375px; max-width: 100%; height: 780px; margin: 18px auto 0;
+  background: var(--canvas); border: 1px solid var(--divider); border-radius: 32px; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(23, 63, 52, 0.14), 0 4px 16px rgba(23, 63, 52, 0.06);
+}
+.screen { height: 100%; overflow-y: auto; scrollbar-width: none; }
+.screen::-webkit-scrollbar { display: none; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.pagefade { animation: rise .28s var(--ease) both; }
+
+/* ---------- 深绿状态主卡（含页头） ---------- */
+.hero {
+  position: relative; overflow: hidden; background: var(--brand-700); color: #fff;
+  padding: 12px 16px 20px; border-radius: 0 0 24px 24px;
+}
+.hero-deco { position: absolute; right: -16px; bottom: -18px; width: 150px; height: 150px; pointer-events: none; }
+.hero-top { display: flex; align-items: center; justify-content: space-between; height: 40px; position: relative; }
+.hero-back {
+  width: 36px; height: 36px; border-radius: 50%; background: rgba(255, 255, 255, 0.14);
+  display: flex; align-items: center; justify-content: center; color: #fff;
+}
+.hero-back--ghost { background: transparent; }
+.hero-title { font-size: 16px; font-weight: 600; }
+.hero-status { margin-top: 10px; display: flex; flex-direction: column; align-items: flex-start; gap: 9px; position: relative; }
+.hero-status h2 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.02em; }
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px; padding: 3px 10px; font-size: 11px; color: rgba(255, 255, 255, 0.92);
+}
+.hero-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+.hero-dot.is-gold { background: var(--gold-300); }
+.hero-hint { margin: 12px 0 0; font-size: 12px; line-height: 1.7; color: rgba(255, 255, 255, 0.65); position: relative; }
+.hero-meta { margin: 8px 0 0; font-size: 12px; color: rgba(255, 255, 255, 0.55); position: relative; }
+.hero-recv {
+  margin-top: 14px; display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255, 255, 255, 0.10); border-radius: 12px; padding: 10px 12px; position: relative;
+}
+.hero-recv span { font-size: 12px; color: rgba(255, 255, 255, 0.75); }
+.hero-recv b { font-size: 16px; font-weight: 700; color: var(--gold-300); }
+
+/* ---------- 订单进度条 ---------- */
+.steps { margin-top: 18px; display: flex; align-items: flex-start; position: relative; }
+.step { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 40px; }
+.step-dot {
+  width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, 0.22);
+  display: flex; align-items: center; justify-content: center;
+}
+.step.done .step-dot { background: #fff; color: var(--brand-700); }
+.step.cur .step-dot { background: var(--gold-300); }
+.step.cur .step-dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brand-700); }
+.step-label { font-size: 11px; line-height: 15px; color: rgba(255, 255, 255, 0.5); white-space: nowrap; }
+.step.done .step-label { color: rgba(255, 255, 255, 0.78); }
+.step.cur .step-label { color: #fff; font-weight: 600; }
+.step-line { flex: 1; height: 2px; border-radius: 1px; background: rgba(255, 255, 255, 0.22); margin-top: 10px; min-width: 10px; }
+.step-line.on { background: rgba(255, 255, 255, 0.85); }
+
+/* ---------- 内容区 ---------- */
+.body { padding: 0 16px 28px; }
+.body-bar { padding-bottom: 96px; }
+
+.notice {
+  margin: 14px 0 0; background: var(--warning-bg); color: var(--warning);
+  border-radius: 12px; padding: 10px 12px; font-size: 12px; line-height: 1.7;
+}
+
+.card { background: var(--surface); border: 1px solid var(--divider); border-radius: 18px; padding: 14px 16px; margin-top: 14px; }
+.card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.card-head h3 { margin: 0; font-size: 15px; font-weight: 600; color: var(--text-primary); flex: 1; }
+.card-extra { font-size: 12px; color: var(--text-muted); }
+.card-ico {
+  width: 28px; height: 28px; border-radius: 9px; background: var(--brand-100); color: var(--brand-700);
+  display: flex; align-items: center; justify-content: center; flex: none;
+}
+
+/* 收货信息 */
+.addr-name { margin: 0; font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.addr-name span { margin-left: 8px; font-size: 13px; color: var(--text-secondary); font-weight: 400; }
+.addr-text { margin: 3px 0 0; font-size: 13px; line-height: 1.65; color: var(--text-deep); }
+.slot-strip {
+  margin-top: 10px; display: flex; align-items: center; gap: 7px; background: var(--brand-50);
+  color: var(--brand-700); border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 600;
+}
+.slot-strip svg { color: var(--brand-600); flex: none; }
+.remark { margin: 8px 0 0; font-size: 12px; color: var(--text-secondary); }
+.remark b { font-weight: 600; margin-right: 6px; }
+.card-ops { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider); display: flex; justify-content: flex-end; gap: 18px; }
+.op { display: inline-flex; align-items: center; gap: 5px; color: var(--brand-600); font-size: 12px; font-weight: 600; }
+.op:active { opacity: 0.7; }
+
+/* 商品清单 */
+.g-line { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.g-line + .g-line { border-top: 1px solid var(--neutral-100); }
+.g-img { width: 52px; height: 52px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex: none; }
+.g-img--a { background: var(--brand-50); color: #43806A; }
+.g-img--b { background: var(--gold-50); color: var(--gold-600); }
+.g-img--c { background: var(--brand-100); color: var(--brand-700); }
+.g-img--d { background: var(--gold-100); color: var(--gold-700); }
+.g-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.g-name { font-size: 14px; font-weight: 600; line-height: 1.45; color: var(--text-primary); }
+.g-spec { font-size: 12px; color: var(--text-muted); }
+.g-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.g-sub { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.g-unit { font-size: 11px; color: var(--text-muted); }
+
+.hr { border: none; border-top: 1px solid var(--divider); margin: 10px 0 6px; }
+.amt-row { display: flex; justify-content: space-between; align-items: baseline; padding: 3px 0; font-size: 13px; color: var(--text-secondary); }
+.amt-row .num { color: var(--text-deep); }
+.amt-row .num.t-price { color: var(--price); font-weight: 600; }
+.amt-row .num.t-warn { color: var(--warning); }
+.amt-row .num.t-danger { color: var(--danger); }
+.amt-row .num.t-muted { color: var(--text-muted); }
+.amt-em { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--divider); }
+.amt-em > span:first-child { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.amt-big { font-size: 20px; font-weight: 700; color: var(--price); display: inline-flex; align-items: baseline; }
+.amt-big i { font-style: normal; font-size: 12px; font-weight: 600; margin-right: 1px; }
+
+/* 订单信息 */
+.kv { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 4px 0; font-size: 13px; }
+.kv-k { color: var(--text-secondary); flex: none; }
+.kv-v { color: var(--text-deep); text-align: right; }
+.kv-order { display: inline-flex; align-items: center; gap: 4px; }
+.copy-mini { width: 22px; height: 22px; border-radius: 6px; color: var(--brand-600); display: inline-flex; align-items: center; justify-content: center; }
+.copy-mini:active { background: var(--brand-50); }
+.link-row {
+  width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider);
+  display: flex; align-items: center; justify-content: space-between; color: var(--brand-600); font-size: 13px; font-weight: 600;
+}
+
+/* 状态标签 */
+.pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 2px 8px; font-size: 11px; line-height: 1.6; white-space: nowrap; }
+.pill--success { background: var(--success-bg); color: var(--success); }
+.pill--warning { background: var(--warning-bg); color: var(--warning); }
+.pill--danger { background: var(--danger-bg); color: var(--danger); }
+.pill--info { background: var(--info-bg); color: var(--brand-600); }
+
+/* 扫码付款卡 */
+.qr-card { text-align: center; }
+.qr-title { margin: 0; font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.qr-box { width: 200px; aspect-ratio: 1; padding: 10px; margin: 12px auto 0; background: #fff; border: 1px solid var(--divider); border-radius: 15px; }
+.qr { width: 100%; height: 100%; display: block; }
+.qr-amount { margin: 12px 0 0; font-size: 18px; font-weight: 700; color: var(--price); }
+.qr-hint { margin: 8px 0 12px; font-size: 12px; line-height: 1.7; color: var(--text-secondary); text-align: left; }
+
+/* ---------- 按钮 ---------- */
+.btn {
+  min-height: 44px; border-radius: 15px; font-size: 14px; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 18px;
+  transition: transform .15s var(--ease), opacity .15s var(--ease); user-select: none;
+}
+.btn:active { transform: scale(0.985); opacity: 0.9; }
+.btn-primary { background: var(--brand-700); color: #fff; }
+.btn-secondary { background: var(--brand-100); color: var(--brand-700); }
+.btn-ghost { background: var(--surface); border: 1px solid var(--divider); color: var(--text-primary); }
+.btn-ghost-danger { background: var(--surface); border: 1px solid var(--danger); color: var(--danger); }
+.btn-sm { min-height: 34px; font-size: 12px; padding: 0 14px; }
+
+.actionbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--divider); border-radius: 0 0 32px 32px;
+  padding: 10px 16px 14px; display: flex; gap: 12px;
+}
+.actionbar .btn { flex: 1; }
+
+/* ---------- 改动说明 ---------- */
+.notes { margin-top: 26px; background: var(--surface); border: 1px solid var(--divider); border-radius: 18px; padding: 16px 18px; }
+.notes h2 { margin: 0 0 10px; font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.notes ul { margin: 0; padding-left: 18px; }
+.notes li { font-size: 13px; line-height: 1.85; color: #4A554E; }
+.notes li b { color: var(--brand-700); font-weight: 600; }
+.notes-foot { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--divider); font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+
+@media (max-width: 460px) {
+  .studio { padding: 16px 10px 40px; }
+  .phone { height: calc(100dvh - 200px); min-height: 520px; border-radius: 22px; }
+  .actionbar { border-radius: 0 0 22px 22px; }
+  .hero { border-radius: 0 0 18px 18px; }
+}
+</style>
+</head>
+<body>
+<div class="studio">
+  <header class="studio-head">
+    <h1>顾客端 · 订单详情重设计样板</h1>
+    <p>风格方案 01 有机鲜绿 · 点击下方标签切换五种订单状态，观察状态卡、进度条与底部操作的变化</p>
+    <div class="tabs" id="tabs"></div>
+  </header>
+
+  <div class="phone" id="phone"></div>
+
+  <section class="notes">
+    <h2>这次改了什么</h2>
+    <ul>
+      <li><b>状态卡顶到页首：</b>深绿订单状态卡（规范 §2.5）合并了页头，状态文字、付款胶囊、进度条放进同一张卡，替代原来「一行孤零零的状态字」。</li>
+      <li><b>四步进度条：</b>已下单 → 配送中 → 已送达 → 已完成，当前步金点高亮；已取消订单不显示进度，改在卡内展示下单与取消时间。</li>
+      <li><b>卡片自带标题行：</b>去掉游离的「商品清单 / 订单信息」小节标题，改用卡头图标 + 标题 + 右侧附加信息（如「共 N 件」），滚动更短、层级更清楚。</li>
+      <li><b>金额区重排：</b>实付 / 应付用 20px 大字强调；已实付、待收货款、退款处理中分行分色显示、绝不相加（原则 5）；行单价（如 ¥4.50/份）补在行右侧。</li>
+      <li><b>期望送达独立成条：</b>淡绿底时钟条放在地址下方，顾客最高频查看的信息不再混在普通键值行里。</li>
+      <li><b>操作条按状态显隐：</b>待付款 = 取消 + 修改；已送达 = 确认收货；已取消 = 重新下单（新增建议）；配送中与已完成不出操作条。</li>
+      <li><b>扫码付款卡放最后：</b>扫码预付 / 货到扫码不再插在状态卡和地址之间打断阅读，改为页面最后一张卡，紧贴底部操作条（2026-10-17 定稿）。</li>
+      <li><b>Token 零新增：</b>色值、圆角 15/18、字号阶梯、等宽数字、强制浅色全部沿用 DESIGN-SYSTEM v1.0（仅补齐 §2.5 已定义、网页版此前未用到的 on-brand 半透明容器两个值）；确认方向后即可按此结构改 OrderDetailView.vue 与安卓端同名页面。</li>
+    </ul>
+    <p class="notes-foot">样板为纯静态演示，二维码为示意图形，未接后端。落地时结构对应 OrderDetailView.vue 的现有数据字段（order_status / payment_state / can_* 等），不需要新增接口。</p>
+  </section>
+</div>
+
+<script>
+/* ---------- 图标（内联 SVG，描边风格） ---------- */
+var SVG = {
+  back: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.2-7-11a7 7 0 1 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l1.5 4L8 10.5a12.5 12.5 0 0 0 5.5 5.5l2.5-2.5 4 1.5v4a2 2 0 0 1-2 2A16.5 16.5 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
+  bag: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1.1 11a1.8 1.8 0 0 1-1.8 1.6H8.9A1.8 1.8 0 0 1 7.1 19L6 8z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>',
+  receipt: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9.5 8.5h5M9.5 12.5h5"/></svg>',
+  refresh: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5A8 8 0 1 0 18.4 17"/><path d="M20 4v5h-5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  sprout: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-7"/><path d="M12 14C12 10 8.9 8 5 8c0 4 3.1 6 7 6z"/><path d="M12 12c0-3.3 2.4-5.2 6-5.2 0 3.3-2.4 5.2-6 5.2z"/></svg>',
+  deco: '<svg class="hero-deco" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-7"/><path d="M12 14C12 10 8.9 8 5 8c0 4 3.1 6 7 6z"/><path d="M12 12c0-3.3 2.4-5.2 6-5.2 0 3.3-2.4 5.2-6 5.2z"/></svg>'
+};
+
+/* ---------- 示意二维码（确定性伪随机，非真实收款码） ---------- */
+function qrSvg(seed) {
+  var n = 25, s = 8, v = seed;
+  function rnd() { v = (v * 1103515245 + 12345) % 2147483648; return v / 2147483648; }
+  function inFinder(x, y) { return (x < 8 && y < 8) || (x >= n - 8 && y < 8) || (x < 8 && y >= n - 8); }
+  var rects = '';
+  for (var y = 0; y < n; y++) {
+    for (var x = 0; x < n; x++) {
+      if (inFinder(x, y)) continue;
+      if (rnd() < 0.46) rects += '<rect x="' + (x * s) + '" y="' + (y * s) + '" width="' + s + '" height="' + s + '"/>';
+    }
+  }
+  function finder(fx, fy) {
+    var r = '';
+    for (var yy = 0; yy < 7; yy++) {
+      for (var xx = 0; xx < 7; xx++) {
+        var edge = xx === 0 || xx === 6 || yy === 0 || yy === 6;
+        var core = xx >= 2 && xx <= 4 && yy >= 2 && yy <= 4;
+        if (edge || core) r += '<rect x="' + ((fx + xx) * s) + '" y="' + ((fy + yy) * s) + '" width="' + s + '" height="' + s + '"/>';
+      }
+    }
+    return r;
+  }
+  rects += finder(0, 0) + finder(n - 7, 0) + finder(0, n - 7);
+  var size = n * s;
+  return '<svg class="qr" viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges" role="img" aria-label="收款二维码示意"><g fill="#1E2823">' + rects + '</g></svg>';
+}
+
+/* ---------- 五种订单状态的样板数据（金额单位：分） ---------- */
+var CONTACT = { name: '陈女士', phone: '138****6688', address: '春连小区 3 栋 2 单元 502（南门收发室旁）' };
+
+var STATES = [
+  {
+    key: 'pending', tab: '待付款', status: '待付款',
+    pill: '扫码支付 · 待付款', dot: 'gold',
+    hint: '请在店主备货前完成扫码转账，付款后由店主核实到账。',
+    step: 0,
+    qr: { title: '扫码预付', amount: 8650, seed: 11,
+      hint: '请核对金额后扫码转账。付款后由店主核实到账，系统不会自动确认；状态更新前请勿重复转账。可截图保存二维码，在付款应用的「扫一扫」中从相册识别。' },
+    addr: { slot: '今天 18:00–19:00', remark: '放门口快递柜旁，按门铃 502' },
+    goods: [
+      ['现摘水果黄瓜', '450g/份', 2, 450, 900],
+      ['散养土鸡蛋', '30枚装', 1, 2590, 2590],
+      ['黑猪前腿肉', '500g', 1, 3600, 3600],
+      ['有机西兰花', '单颗装 约300g', 2, 580, 1160]
+    ],
+    amounts: { goods: 8250, fee: 400, em: ['应付', 8650], rows: [] },
+    info: { pay: '扫码支付（店主收款码）', pill: ['待付款', 'warning'], rows: [['下单时间', '今天 17:42']] },
+    bar: ['cancel', 'edit']
+  },
+  {
+    key: 'delivering', tab: '配送中', status: '配送中',
+    pill: '在线支付 · 已付款', dot: 'ok',
+    hint: '商品正在配送途中，请保持电话畅通。',
+    step: 1,
+    addr: { slot: '尽快送达 · 预计 12:00 前' },
+    goods: [
+      ['智利车厘子', 'J级 500g', 1, 5990, 5990],
+      ['高山香蕉', '约1kg/把', 1, 890, 890]
+    ],
+    amounts: { goods: 6880, fee: 400, em: ['实付', 7280], rows: [] },
+    info: { pay: '在线支付（微信）', pill: ['已付款', 'success'], rows: [['下单时间', '今天 11:20']] },
+    bar: []
+  },
+  {
+    key: 'delivered', tab: '已送达', status: '已送达',
+    pill: '货到付款 · 待付款', dot: 'gold',
+    hint: '商家已标记送达，核对商品与金额后请确认收货。',
+    step: 2,
+    receivable: 4500,
+    qr: { title: '货到扫码', amount: 4500, seed: 23,
+      hint: '请与店主核对待收金额后扫码或现金付款。到账由店主核实，系统不会自动确认。可截图保存二维码，在付款应用的「扫一扫」中从相册识别。' },
+    addr: { slot: '今天 16:00–17:00', remark: '放南门收发室，电话联系' },
+    goods: [
+      ['黑猪五花肉', '500g', 1, 2800, 2800],
+      ['本地小白菜', '400g', 2, 350, 700],
+      ['内酯豆腐', '350g', 2, 300, 600]
+    ],
+    amounts: { goods: 4100, fee: 400, em: ['应付', 4500], rows: [['待收货款', 4500, 'price']] },
+    info: { pay: '货到付款', pill: ['待付款', 'warning'], rows: [['下单时间', '今天 14:50'], ['送达时间', '今天 16:05']] },
+    bar: ['receive']
+  },
+  {
+    key: 'finished', tab: '已完成', status: '已完成',
+    pill: '在线支付 · 退款处理中', dot: 'gold',
+    hint: '订单已完成。部分商品退款正在处理，请留意退款进度。',
+    step: 4,
+    addr: { slot: '10-15 18:00–19:00' },
+    goods: [['赣南脐橙', '5斤装 · 江西赣州', 1, 3280, 3280]],
+    amounts: { goods: 3280, fee: 0, em: ['实付', 3280], rows: [['退款处理中', 660, 'warn']] },
+    info: { pay: '在线支付（微信）', pill: ['退款处理中', 'warning'],
+      rows: [['下单时间', '10-15 09:12'], ['送达时间', '10-15 18:30'], ['完成时间', '10-15 19:40']],
+      refundLink: true },
+    bar: []
+  },
+  {
+    key: 'cancelled', tab: '已取消', status: '已取消',
+    pill: '扫码支付 · 退款处理中', dot: 'gold',
+    hint: '订单已取消，款项退款处理中，请留意退款进度。',
+    step: null,
+    meta: '下单 今天 14:05 · 取消 今天 14:32',
+    notice: '线下退款由店主人工核实和处理，到账前不会标记为退款成功。请联系店主确认进度。',
+    addr: { slot: '今天 18:00–19:00', remark: '放门口快递柜旁，按门铃 502' },
+    goods: [
+      ['鲜磨豆浆', '600ml', 2, 600, 1200],
+      ['葱油拌面', '份', 1, 1300, 1300]
+    ],
+    amounts: { goods: 2500, fee: 200, em: ['实付', 2700], rows: [['退款处理中', 2700, 'warn']] },
+    info: { pay: '扫码支付（店主收款码）', pill: ['退款处理中', 'warning'], rows: [['下单时间', '今天 14:05'], ['取消时间', '今天 14:32']] },
+    bar: ['reorder']
+  }
+];
+
+/* ---------- 渲染 ---------- */
+function y(fen) { return '¥' + (fen / 100).toFixed(2); }
+
+function stepsHtml(step) {
+  if (step === null) return '';
+  var labels = ['已下单', '配送中', '已送达', '已完成'];
+  var h = '<div class="steps">';
+  for (var i = 0; i < labels.length; i++) {
+    if (i > 0) h += '<span class="step-line' + (i <= step ? ' on' : '') + '"></span>';
+    var st = step === 4 ? 'done' : (i < step ? 'done' : (i === step ? 'cur' : 'todo'));
+    h += '<span class="step ' + st + '"><span class="step-dot">' + (st === 'done' ? SVG.check : '') +
+         '</span><span class="step-label">' + labels[i] + '</span></span>';
+  }
+  return h + '</div>';
+}
+
+function heroHtml(s) {
+  return '<div class="hero">' + SVG.deco +
+    '<div class="hero-top">' +
+      '<span class="hero-back">' + SVG.back + '</span>' +
+      '<span class="hero-title">订单详情</span>' +
+      '<span class="hero-back hero-back--ghost"></span>' +
+    '</div>' +
+    '<div class="hero-status"><h2>' + s.status + '</h2>' +
+      '<span class="hero-pill"><i class="hero-dot' + (s.dot === 'gold' ? ' is-gold' : '') + '"></i>' + s.pill + '</span>' +
+    '</div>' +
+    stepsHtml(s.step) +
+    '<p class="hero-hint">' + s.hint + '</p>' +
+    (s.meta ? '<p class="hero-meta num">' + s.meta + '</p>' : '') +
+    (s.receivable ? '<div class="hero-recv"><span>待收货款（货到付款）</span><b class="num">' + y(s.receivable) + '</b></div>' : '') +
+  '</div>';
+}
+
+function goodsHtml(lines) {
+  var tint = ['a', 'b', 'c', 'd'];
+  return lines.map(function (l, i) {
+    return '<div class="g-line">' +
+      '<span class="g-img g-img--' + tint[i % 4] + '">' + SVG.sprout + '</span>' +
+      '<span class="g-main"><span class="g-name">' + l[0] + '</span>' +
+      '<span class="g-spec">' + l[1] + ' × ' + l[2] + '</span></span>' +
+      '<span class="g-right"><span class="g-sub num">' + y(l[4]) + '</span>' +
+      '<span class="g-unit num">' + y(l[3]) + '/份</span></span>' +
+    '</div>';
+  }).join('');
+}
+
+function qrCardHtml(q) {
+  return '<section class="card qr-card">' +
+    '<h3 class="qr-title">' + q.title + '</h3>' +
+    '<div class="qr-box">' + qrSvg(q.seed) + '</div>' +
+    '<p class="qr-amount num">' + y(q.amount) + '</p>' +
+    '<p class="qr-hint">' + q.hint + '</p>' +
+    '<button class="btn btn-secondary btn-sm" type="button">' + SVG.refresh + '刷新核实状态</button>' +
+  '</section>';
+}
+
+function addrCardHtml(s) {
+  var a = s.addr;
+  return '<section class="card">' +
+    '<div class="card-head"><span class="card-ico">' + SVG.pin + '</span><h3>收货信息</h3></div>' +
+    '<p class="addr-name">' + CONTACT.name + '<span class="num">' + CONTACT.phone + '</span></p>' +
+    '<p class="addr-text">' + CONTACT.address + '</p>' +
+    '<div class="slot-strip">' + SVG.clock + '<span class="num">期望送达 ' + a.slot + '</span></div>' +
+    (a.remark ? '<p class="remark"><b>备注</b>' + a.remark + '</p>' : '') +
+    '<div class="card-ops">' +
+      '<button class="op" type="button">' + SVG.copy + '复制收货信息</button>' +
+      '<button class="op" type="button">' + SVG.phone + '联系店主</button>' +
+    '</div>' +
+  '</section>';
+}
+
+function goodsCardHtml(s) {
+  var A = s.amounts;
+  var count = s.goods.reduce(function (t, l) { return t + l[2]; }, 0);
+  var rows = A.rows.map(function (r) {
+    var cls = r[2] === 'price' ? ' t-price' : r[2] === 'warn' ? ' t-warn' : r[2] === 'danger' ? ' t-danger' : '';
+    return '<div class="amt-row"><span>' + r[0] + '</span><span class="num' + cls + '">' + y(r[1]) + '</span></div>';
+  }).join('');
+  return '<section class="card">' +
+    '<div class="card-head"><span class="card-ico">' + SVG.bag + '</span><h3>商品清单</h3>' +
+      '<span class="card-extra">共 ' + count + ' 件</span></div>' +
+    goodsHtml(s.goods) +
+    '<hr class="hr" />' +
+    '<div class="amt-row"><span>商品小计</span><span class="num">' + y(A.goods) + '</span></div>' +
+    '<div class="amt-row"><span>配送费</span>' +
+      (A.fee === 0 ? '<span class="num t-muted">免配送费</span>' : '<span class="num">' + y(A.fee) + '</span>') + '</div>' +
+    '<div class="amt-em"><span>' + A.em[0] + '</span>' +
+      '<span class="amt-big num"><i>¥</i>' + (A.em[1] / 100).toFixed(2) + '</span></div>' +
+    rows +
+  '</section>';
+}
+
+function infoCardHtml(s) {
+  var I = s.info;
+  var rows = I.rows.map(function (r) {
+    return '<div class="kv"><span class="kv-k">' + r[0] + '</span><span class="kv-v num">' + r[1] + '</span></div>';
+  }).join('');
+  return '<section class="card">' +
+    '<div class="card-head"><span class="card-ico">' + SVG.receipt + '</span><h3>订单信息</h3></div>' +
+    '<div class="kv"><span class="kv-k">订单号</span>' +
+      '<span class="kv-v kv-order num">CL202610178610<button class="copy-mini" type="button" aria-label="复制订单号">' + SVG.copy + '</button></span></div>' +
+    '<div class="kv"><span class="kv-k">支付方式</span><span class="kv-v">' + I.pay + '</span></div>' +
+    '<div class="kv"><span class="kv-k">付款状态</span><span class="kv-v"><span class="pill pill--' + I.pill[1] + '">' + I.pill[0] + '</span></span></div>' +
+    rows +
+    (I.refundLink ? '<button class="link-row" type="button">查看退款进度' + SVG.chev + '</button>' : '') +
+  '</section>';
+}
+
+function bodyHtml(s) {
+  var h = '<div class="body' + (s.bar.length ? ' body-bar' : '') + '">';
+  if (s.notice) h += '<div class="notice">' + s.notice + '</div>';
+  h += addrCardHtml(s) + goodsCardHtml(s) + infoCardHtml(s);
+  if (s.qr) h += qrCardHtml(s.qr);
+  h += '</div>';
+  return h;
+}
+
+function barHtml(s) {
+  if (!s.bar.length) return '';
+  var map = {
+    cancel: '<button class="btn btn-ghost-danger" type="button">取消订单</button>',
+    edit: '<button class="btn btn-ghost" type="button">修改订单</button>',
+    receive: '<button class="btn btn-primary" type="button">确认收货</button>',
+    reorder: '<button class="btn btn-secondary" type="button">重新下单</button>'
+  };
+  return '<div class="actionbar">' + s.bar.map(function (k) { return map[k]; }).join('') + '</div>';
+}
+
+var tabsEl = document.getElementById('tabs');
+var phoneEl = document.getElementById('phone');
+
+function render(key) {
+  var s = STATES.filter(function (x) { return x.key === key; })[0];
+  phoneEl.innerHTML =
+    '<div class="screen"><div class="pagefade">' + heroHtml(s) + bodyHtml(s) + '</div></div>' + barHtml(s);
+  var sc = phoneEl.querySelector('.screen');
+  if (sc) sc.scrollTop = 0;
+  var tabs = tabsEl.children;
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle('on', tabs[i].getAttribute('data-key') === key);
+  }
+}
+
+STATES.forEach(function (s) {
+  var b = document.createElement('button');
+  b.className = 'tab';
+  b.type = 'button';
+  b.setAttribute('data-key', s.key);
+  b.textContent = s.tab;
+  b.addEventListener('click', function () { render(s.key); });
+  tabsEl.appendChild(b);
+});
+
+render('pending');
+</script>
+</body>
+</html>
