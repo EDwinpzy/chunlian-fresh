@@ -185,6 +185,7 @@ export const api = {
   categories: () => request<Category[]>('/catalog/categories'),
   goodsList: (params: {
     category_id?: string
+    ids?: string
     keyword?: string
     sort?: string
     page?: number

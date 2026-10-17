@@ -129,7 +129,7 @@ async function load() {
     order.value = o
 
     if (!o.can_edit) {
-      toast.warning(o.fulfillment === 'PENDING' ? '当前订单暂不可修改' : '商家已开始配送，当前订单不能再自行修改')
+      toast.warning(o.order_status === 'PENDING' ? '当前订单暂不可修改' : '商家已开始配送，当前订单不能再自行修改')
 
       return
     }

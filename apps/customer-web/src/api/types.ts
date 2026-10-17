@@ -24,7 +24,7 @@ export interface PageData<T> {
 /** 配送方式：ASAP = 尽快配送，SCHEDULED = 预约送达。 */
 export type DeliveryMode = 'ASAP' | 'SCHEDULED'
 export type PaymentMethod = 'WECHAT' | 'OFFLINE_QR' | 'COD'
-export type Fulfillment = 'PENDING' | 'DELIVERING' | 'DELIVERED' | 'FINISHED' | 'CANCELLED'
+export type OrderStatus = 'PENDING' | 'DELIVERING' | 'DELIVERED' | 'FINISHED' | 'CANCELLED'
 export type PaymentState =
   | 'UNPAID'
   | 'PAYING'
@@ -45,6 +45,9 @@ export interface ShopSetting {
   home_banner_title?: string
   home_banner_subtitle?: string
   home_section_title?: string
+  home_featured_product_ids?: string[]
+  notification_popup_title?: string
+  notification_popup_image_url?: string
   search_hot_words?: string[]
   notice: string
   phone: string
@@ -124,11 +127,10 @@ export interface Order {
   id: string
   order_no: string
   version: number
-  fulfillment: Fulfillment
-  fulfillment_text: string
+  order_status: OrderStatus
+  order_status_text: string
   payment_state: PaymentState
   payment_state_text: string
-  receipt_state: string
   revision_state: RevisionState
   payment_method: PaymentMethod
   payment_method_text: string

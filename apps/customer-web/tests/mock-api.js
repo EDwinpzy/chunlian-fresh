@@ -33,10 +33,9 @@ const catalog = [
 
 export function makeOrder(id, overrides = {}) {
   const options = {
-    fulfillment: 'PENDING',
+    order_status: 'PENDING',
     payment_state: 'UNPAID',
     payment_method: 'COD',
-    receipt_state: 'UNCONFIRMED',
     revision_state: 'NONE',
     contact: { name: '测试顾客', phone: '13900000001', address: '测试小区 1 栋 101 室' },
     lines: [{ sku_id: '101', product_id: '1', name: '小青菜', spec: '500 克 / 份', image_url: '', unit_fen: 350, qty: 2, subtotal_fen: 700 }],
@@ -57,11 +56,11 @@ export function makeOrder(id, overrides = {}) {
   Object.assign(options, overrides)
 
   const goodsTotal = options.lines.reduce((sum, line) => sum + line.unit_fen * line.qty, 0)
-  const isDelivered = options.fulfillment === 'DELIVERED' || options.fulfillment === 'FINISHED'
+  const isDelivered = options.order_status === 'DELIVERED' || options.order_status === 'FINISHED'
   const receivable = options.payment_method === 'COD' && isDelivered && options.payment_state === 'UNPAID' ? goodsTotal + 300 : 0
-  const fulfillmentText = {
+  const orderStatusText = {
     PENDING: '待配送', DELIVERING: '配送中', DELIVERED: '已送达', FINISHED: '已完成', CANCELLED: '已取消',
-  }[options.fulfillment]
+  }[options.order_status]
   const paymentText = {
     UNPAID: '未付款', PAYING: '支付确认中', PAID: '已付款', PARTIAL_REFUNDED: '部分退款', REFUNDING: '退款处理中', REFUNDED: '已退款',
   }[options.payment_state]
@@ -73,8 +72,8 @@ export function makeOrder(id, overrides = {}) {
 
   return {
     id: String(id), order_no: `CL20261013${String(id).padStart(6, '0')}`,
-    version: options.version, fulfillment: options.fulfillment, fulfillment_text: fulfillmentText,
-    payment_state: options.payment_state, payment_state_text: paymentText, receipt_state: options.receipt_state,
+    version: options.version, order_status: options.order_status, order_status_text: orderStatusText,
+    payment_state: options.payment_state, payment_state_text: paymentText,
     revision_state: options.revision_state, payment_method: options.payment_method, payment_method_text: paymentMethodText,
     delivery_mode: options.delivery_mode, expected_at: options.expected_at,
     lines: options.lines, contact: options.contact, goods_total_fen: goodsTotal, delivery_fee_fen: 300,
@@ -90,17 +89,17 @@ export function makeOrder(id, overrides = {}) {
 function sampleOrders() {
   const out = new Map()
   for (let i = 1; i <= 12; i++) out.set(String(1000 + i), makeOrder(1000 + i))
-  out.set('2001', makeOrder('2001', { fulfillment: 'DELIVERING', can_edit: false, can_cancel: false }))
+  out.set('2001', makeOrder('2001', { order_status: 'DELIVERING', can_edit: false, can_cancel: false }))
   out.set('2002', makeOrder('2002', {
-    fulfillment: 'DELIVERED', delivered_at: '2026-10-13T10:00:00+08:00', can_edit: false, can_cancel: false, can_receive: true,
+    order_status: 'DELIVERED', delivered_at: '2026-10-13T10:00:00+08:00', can_edit: false, can_cancel: false, can_receive: true,
   }))
   out.set('2003', makeOrder('2003', { payment_method: 'WECHAT', can_switch_to_cod: true }))
   out.set('2004', makeOrder('2004', {
-    fulfillment: 'DELIVERED', payment_method: 'COD', delivered_at: '2026-10-13T10:00:00+08:00',
+    order_status: 'DELIVERED', payment_method: 'COD', delivered_at: '2026-10-13T10:00:00+08:00',
     can_edit: false, can_cancel: false, can_receive: true,
   }))
   out.set('2005', makeOrder('2005', {
-    fulfillment: 'CANCELLED', payment_state: 'REFUNDING', payment_method: 'WECHAT', paid_fen: 1000,
+    order_status: 'CANCELLED', payment_state: 'REFUNDING', payment_method: 'WECHAT', paid_fen: 1000,
     refunded_fen: 0, refunding_fen: 1000, can_edit: false, can_cancel: false,
   }))
   out.set('2006', makeOrder('2006', { payment_method: 'OFFLINE_QR' }))
@@ -116,6 +115,7 @@ export async function installMockApi(page, {
   cart = [],
   shopOpen = true,
   paymentQrUrl = '',
+  featuredProductIds = [],
   failPreview = false,
   timeoutFirstOrder = false,
   authFailures = {},
@@ -140,6 +140,7 @@ export async function installMockApi(page, {
     nextOrderId: 9000,
     shopOpen,
     paymentQrUrl,
+    featuredProductIds: [...featuredProductIds],
     failPreview,
     timeoutFirstOrder,
     authFailures: { login: authFailures.login || 0, register: authFailures.register || 0 },
@@ -207,7 +208,7 @@ export async function installMockApi(page, {
   state.confirmCodPayment = (orderId) => {
     const id = String(orderId)
     const order = state.orders.get(id)
-    if (!order || order.payment_method !== 'COD' || order.fulfillment !== 'DELIVERED' || order.payment_state !== 'UNPAID') {
+    if (!order || order.payment_method !== 'COD' || order.order_status !== 'DELIVERED' || order.payment_state !== 'UNPAID') {
       throw new Error('No delivered unpaid COD order to confirm')
     }
     const updated = makeOrder(id, { ...order, payment_state: 'PAID', paid_fen: order.total_fen })
@@ -237,13 +238,17 @@ export async function installMockApi(page, {
     if (protectedPath && !authorized) return fail('UNAUTHORIZED', '请先登录', 401)
 
     if (method === 'GET' && path === '/shop') {
-      return ok({ shop_name: '春连鲜选测试店', notice: '今日鲜菜到店', phone: '01012345678', ...(state.paymentQrUrl ? { payment_qr_url: state.paymentQrUrl } : {}), delivery_fee_fen: 300, is_open: state.shopOpen, min_lead_minutes: 30, updated_at: '2026-10-13 09:00:00' })
+      return ok({ shop_name: '春连鲜选测试店', notice: '今日鲜菜到店', phone: '01012345678', home_featured_product_ids: state.featuredProductIds, ...(state.paymentQrUrl ? { payment_qr_url: state.paymentQrUrl } : {}), delivery_fee_fen: 300, is_open: state.shopOpen, min_lead_minutes: 30, updated_at: '2026-10-13 09:00:00' })
     }
     if (method === 'GET' && path === '/catalog/categories') return ok(categories)
     if (method === 'GET' && path === '/catalog/goods') {
       const keyword = (url.searchParams.get('keyword') || '').trim()
       const categoryId = url.searchParams.get('category_id')
-      let list = state.catalog.filter((item) => item.is_active !== false && (!keyword || item.title.includes(keyword)) && (!categoryId || item.category_id === categoryId))
+      const ids = (url.searchParams.get('ids') || '').split(',').map((id) => id.trim()).filter(Boolean)
+      let list = ids.length
+        ? ids.map((id) => state.catalog.find((item) => item.id === id)).filter((item) => item && item.is_active !== false)
+        : state.catalog.filter((item) => item.is_active !== false)
+      list = list.filter((item) => (!keyword || item.title.includes(keyword)) && (!categoryId || item.category_id === categoryId))
       const pageSize = Number(url.searchParams.get('page_size') || 20)
       const pageNumber = Number(url.searchParams.get('page') || 1)
       const total = list.length
@@ -342,8 +347,8 @@ export async function installMockApi(page, {
       const status = url.searchParams.get('status') || ''
       const keyword = (url.searchParams.get('keyword') || '').trim().toLocaleLowerCase()
       let list = [...state.orders.values()].sort((a, b) => Number(b.id) - Number(a.id))
-      if (status === 'UNPAID') list = list.filter((order) => order.payment_state === 'UNPAID' && order.payment_method === 'WECHAT' && order.fulfillment === 'PENDING')
-      else if (status) list = list.filter((order) => order.fulfillment === status && !(status === 'PENDING' && order.payment_state === 'UNPAID' && order.payment_method === 'WECHAT'))
+      if (status === 'UNPAID') list = list.filter((order) => order.payment_state === 'UNPAID' && order.payment_method === 'WECHAT' && order.order_status === 'PENDING')
+      else if (status) list = list.filter((order) => order.order_status === status && !(status === 'PENDING' && order.payment_state === 'UNPAID' && order.payment_method === 'WECHAT'))
       if (keyword) {
         list = list.filter((order) =>
           order.order_no.toLocaleLowerCase().includes(keyword)
@@ -428,7 +433,7 @@ export async function installMockApi(page, {
       const [id, action] = [orderAction[1], orderAction[2]]
       let options = { ...old, version: old.version + 1 }
       if (action === 'cancel') {
-        options = { ...options, fulfillment: 'CANCELLED', can_edit: false, can_cancel: false, can_receive: false }
+        options = { ...options, order_status: 'CANCELLED', can_edit: false, can_cancel: false, can_receive: false }
         const refundable = Math.max(0, old.paid_fen - old.refunded_fen - old.refunding_fen)
         if (refundable > 0) {
           const refundNo = `RFQA-CANCEL-${id}-${old.version + 1}`
@@ -440,7 +445,20 @@ export async function installMockApi(page, {
           state.revisions.set(id, { state: 'CANCEL_REFUND', refund_fen: refundable, refund_no: refundNo })
         }
       }
-      if (action === 'receive') options = { ...options, fulfillment: 'FINISHED', receipt_state: 'CONFIRMED', can_edit: false, can_cancel: false, can_receive: false, received_at: '2026-10-13T12:00:00+08:00' }
+      if (action === 'receive') {
+        const remainingDue = Math.max(0, old.total_fen - old.paid_fen)
+        const autoPaid = remainingDue > 0 && old.payment_state === 'UNPAID'
+        options = {
+          ...options,
+          order_status: 'FINISHED',
+          payment_state: autoPaid ? 'PAID' : old.payment_state,
+          paid_fen: autoPaid ? old.total_fen : old.paid_fen,
+          can_edit: false,
+          can_cancel: false,
+          can_receive: false,
+          received_at: '2026-10-13T12:00:00+08:00',
+        }
+      }
       if (action === 'switch-to-cod') options = { ...options, payment_method: 'COD', can_switch_to_cod: false }
       const order = makeOrder(id, options)
       state.orders.set(id, order)

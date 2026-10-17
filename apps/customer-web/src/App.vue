@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import BottomSheet from '@/components/BottomSheet.vue'
+import GoodsImage from '@/components/GoodsImage.vue'
 import TabBar from '@/components/TabBar.vue'
 import ToastHost from '@/components/ToastHost.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -9,8 +11,25 @@ import { useShopStore } from '@/stores/shop'
 const route = useRoute()
 const auth = useAuthStore()
 const shop = useShopStore()
+const showNotificationPopup = ref(false)
+const notificationPopupEvaluated = ref(false)
+const notificationPopupTitle = ref('')
+const notificationPopupImageUrl = ref('')
 
 const showTabBar = computed(() => route.meta.tabbar === true)
+
+watch(() => shop.setting, (setting) => {
+  if (!setting || notificationPopupEvaluated.value) return
+
+  notificationPopupEvaluated.value = true
+  const title = setting.notification_popup_title?.trim() || ''
+  const imageUrl = setting.notification_popup_image_url?.trim() || ''
+  if (!title || !imageUrl) return
+
+  notificationPopupTitle.value = title
+  notificationPopupImageUrl.value = imageUrl
+  showNotificationPopup.value = true
+}, { immediate: true })
 
 watch(() => [route.meta.title, shop.setting?.shop_name], () => {
   const name = shop.setting?.shop_name || '店铺'
@@ -53,6 +72,11 @@ onMounted(async () => {
 
     <TabBar v-if="showTabBar" />
     <ToastHost />
+    <BottomSheet v-model="showNotificationPopup" :title="notificationPopupTitle">
+      <div class="notification-popup-image">
+        <GoodsImage :src="notificationPopupImageUrl" :alt="notificationPopupTitle" fallback-text="通知" />
+      </div>
+    </BottomSheet>
   </div>
 </template>
 
@@ -60,5 +84,13 @@ onMounted(async () => {
 .app-shell {
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+.notification-popup-image :deep(.goods-image) {
+  aspect-ratio: 4 / 3;
+}
+
+.notification-popup-image :deep(.goods-image img) {
+  object-fit: contain;
 }
 </style>

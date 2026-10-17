@@ -20,7 +20,7 @@ import type { Order } from '@/api/types'
  * 关键区别（方案 §5.3）：
  *  - 「待付款」「待配送」展示「修改订单」「取消订单」，是否可点由**服务端**决定
  *  - 「配送中」「已送达」「已完成」隐藏修改/取消，只提供联系店主/售后
- *  - 已取消且退款中的订单并行显示「履约已取消 + 款项退款处理中」
+ *  - 已取消且退款中的订单并行显示订单取消阶段与退款进度
  */
 const route = useRoute()
 const router = useRouter()
@@ -43,7 +43,7 @@ const cancelReasons = ['临时有事', '想换别的时间', '下错了', '商�
 const shopPhone = computed(() => shop.setting?.phone || '')
 const paymentQrUrl = computed(() => shop.setting?.payment_qr_url?.trim() || '')
 const showOfflineQr = computed(() => {
-  if (!order.value || order.value.fulfillment === 'CANCELLED') return false
+  if (!order.value || order.value.order_status === 'CANCELLED') return false
   if (order.value.payment_method === 'COD') {
     return order.value.payment_state === 'UNPAID' && paymentQrUrl.value !== ''
   }
@@ -127,7 +127,7 @@ async function doReceive() {
   try {
     order.value = await api.receiveOrder(order.value.id, order.value.version, uuid())
     showReceive.value = false
-    toast.success('已确认收货')
+    toast.success('已确认收货，剩余应付金额已自动记为已付款')
   } catch (error) {
     toast.error(error instanceof ApiError ? error.message : '确认收货失败，请重试')
   } finally {
@@ -194,20 +194,20 @@ onMounted(async () => {
     <div v-else class="page-body" :class="{ 'page-body--actionbar': order.can_cancel || order.can_edit || order.can_receive }">
       <!-- 状态 -->
       <section class="detail-status">
-        <h1 class="detail-status__title">{{ order.fulfillment_text }}</h1>
-        <StatusPill :order="order" />
+        <h1 class="detail-status__title">{{ order.order_status_text }}</h1>
+        <StatusPill :order="order" payment-only />
 
-        <p v-if="order.fulfillment === 'DELIVERED' && order.receipt_state === 'UNCONFIRMED'" class="detail-status__hint">
-          商家已标记送达，收到商品后请确认收货。
+        <p v-if="order.order_status === 'DELIVERED' && order.receivable_fen > 0" class="detail-status__hint">
+          待收货款 {{ formatFen(order.receivable_fen) }}，确认收货后剩余应付金额会自动记为已付款。
         </p>
-        <p v-else-if="order.fulfillment === 'CANCELLED' && order.payment_state === 'REFUNDING'" class="detail-status__hint">
+        <p v-else-if="order.order_status === 'CANCELLED' && order.payment_state === 'REFUNDING'" class="detail-status__hint">
           订单已取消，款项退款处理中，请留意退款进度。
         </p>
-        <p v-else-if="order.fulfillment === 'CANCELLED' && order.payment_state === 'UNPAID'" class="detail-status__hint">
+        <p v-else-if="order.order_status === 'CANCELLED' && order.payment_state === 'UNPAID'" class="detail-status__hint">
           订单已取消，无需付款。
         </p>
-        <p v-else-if="order.receivable_fen > 0 && order.fulfillment === 'DELIVERED'" class="detail-status__hint">
-          待收货款 {{ formatFen(order.receivable_fen) }}，请与店主确认。
+        <p v-else-if="order.order_status === 'DELIVERED'" class="detail-status__hint">
+          商家已标记送达，收到商品后请确认收货。
         </p>
       </section>
 
@@ -217,7 +217,7 @@ onMounted(async () => {
         :amount-fen="qrDueFen"
         :topup="order.revision_state === 'PENDING_TOPUP'"
         :cod="order.payment_method === 'COD'"
-        :cod-delivered="order.fulfillment === 'DELIVERED' || order.fulfillment === 'FINISHED'"
+        :cod-delivered="order.order_status === 'DELIVERED' || order.order_status === 'FINISHED'"
         :refreshing="refreshingQr"
         @refresh="refreshQrState"
       />
@@ -372,7 +372,7 @@ onMounted(async () => {
 
     <!-- 确认收货 -->
     <BottomSheet v-model="showReceive" title="确认收货" :mask-closable="false">
-      <p class="sheet-text">确认已经收到全部商品？确认后订单将进入已完成。</p>
+      <p class="sheet-text">确认已经收到全部商品？确认后订单将进入已完成，剩余应付金额会自动记为已付款，适用于所有付款方式。</p>
       <div v-if="order" class="receive-summary">
         <div class="row row--amount"><span>商品</span><span>{{ order.lines.length }} 种</span></div>
         <div class="row row--amount"><span>金额</span><span class="price num">{{ formatFen(order.total_fen) }}</span></div>

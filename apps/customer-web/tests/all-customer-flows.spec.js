@@ -34,6 +34,7 @@ test('顾客看到新上架商品、价格库存变化及下架后的旧订单�
   const card = page.locator('.goods-card').filter({ hasText: '春笋' })
   await expect(card).toContainText('¥6.00')
   await card.getByRole('button', { name: '加入购物车：春笋' }).click()
+  await expect(page.getByText('已加入购物车')).toBeVisible()
   // Search hides the bottom tab bar; follow the newly-added item to the cart route.
   await page.goto('cart')
   await expect(page.locator('.cart-item')).toContainText('春笋')
@@ -72,10 +73,10 @@ test('顾客看到新上架商品、价格库存变化及下架后的旧订单�
 test('快速切换订单筛选时，旧的全部订单响应不会覆盖新结果', async ({ page }, testInfo) => {
   await installMockApi(page, { token: true })
   const finished = makeOrder('9101', {
-    fulfillment: 'FINISHED', payment_state: 'PAID', can_edit: false, can_cancel: false,
+    order_status: 'FINISHED', payment_state: 'PAID', can_edit: false, can_cancel: false,
   })
   const cancelled = makeOrder('9102', {
-    fulfillment: 'CANCELLED', can_edit: false, can_cancel: false,
+    order_status: 'CANCELLED', can_edit: false, can_cancel: false,
   })
   let releaseInitialResponse
   let markInitialRequest
@@ -274,7 +275,7 @@ test('商品库存预览失败后恢复；订单页断网后重试可恢复', as
 test('订单状态筛选覆盖待付款、待配送、配送中、送达、完成和取消', async ({ page }) => {
   const api = await installMockApi(page, { token: true })
   api.orders.set('2011', makeOrder('2011', {
-    fulfillment: 'FINISHED', payment_method: 'OFFLINE_QR', payment_state: 'PAID', paid_fen: 1000,
+    order_status: 'FINISHED', payment_method: 'OFFLINE_QR', payment_state: 'PAID', paid_fen: 1000,
     can_edit: false, can_cancel: false,
   }))
   await page.goto('orders')
@@ -306,7 +307,7 @@ test('订单搜索支持商品名和订单号，叠加状态筛选并在搜索�
     api.orders.set(String(id), makeOrder(String(id), { lines: [redAppleLine] }))
   }
   api.orders.set('3013', makeOrder('3013', {
-    fulfillment: 'FINISHED', payment_state: 'PAID', payment_method: 'OFFLINE_QR', can_edit: false, can_cancel: false,
+    order_status: 'FINISHED', payment_state: 'PAID', payment_method: 'OFFLINE_QR', can_edit: false, can_cancel: false,
     lines: [redAppleLine],
   }))
   api.orders.set('3014', makeOrder('3014', {
@@ -520,7 +521,7 @@ test('已付款扫码订单取消生成待退款；店主确认后订单仍显�
   await page.screenshot({ path: evidencePath('cancel-refund-pending', testInfo.project.name), fullPage: true })
   await page.getByRole('button', { name: '查看退款进度' }).click()
   await expect(page.getByText('等待店主线下退款并核实')).toBeVisible()
-  expect(api.orders.get('2012').fulfillment).toBe('CANCELLED')
+  expect(api.orders.get('2012').order_status).toBe('CANCELLED')
   expect(api.orders.get('2012').payment_state).toBe('REFUNDING')
   api.confirmRefund('2012')
   await page.reload()
@@ -530,7 +531,7 @@ test('已付款扫码订单取消生成待退款；店主确认后订单仍显�
   await expect(page.locator('.status-group')).toContainText('已退款')
 })
 
-test('配送开始后不能改/取消；COD 未收款确认收货不改付款状态', async ({ page }, testInfo) => {
+test('配送开始后不能改/取消；确认收货会自动记账所有付款方式的剩余应付', async ({ page }, testInfo) => {
   const api = await installMockApi(page, { token: true, paymentQrUrl: qr })
   await page.goto('orders/2001')
   await expect(page.locator('.detail-status__title')).toHaveText('配送中')
@@ -545,14 +546,35 @@ test('配送开始后不能改/取消；COD 未收款确认收货不改付款状
   await expect(page.locator('.offline-qr__amount')).toHaveText('待收货款 ¥10.00')
   await expect(page.locator('.row--amount').filter({ hasText: '待收货款' })).toContainText('¥10.00')
   await page.getByRole('button', { name: '确认收货' }).click()
+  await expect(page.getByRole('dialog')).toContainText('剩余应付金额会自动记为已付款，适用于所有付款方式')
   await page.getByRole('dialog').getByRole('button', { name: '确认收货' }).click()
   await expect(page.locator('.detail-status__title')).toHaveText('已完成')
-  await expect(page.locator('.status-group')).toContainText('货到付款 · 未付款')
-  expect(api.orders.get('2004').payment_state).toBe('UNPAID')
-  expect(api.orders.get('2004').receivable_fen).toBe(1000)
+  await expect(page.locator('.status-group')).toContainText('货到付款 · 已付款')
+  expect(api.orders.get('2004').payment_state).toBe('PAID')
+  expect(api.orders.get('2004').paid_fen).toBe(api.orders.get('2004').total_fen)
+  expect(api.orders.get('2004').receivable_fen).toBe(0)
+
+  for (const [id, paymentMethod, paymentLabel] of [
+    ['2008', 'OFFLINE_QR', '线下扫码'],
+    ['2009', 'WECHAT', '微信支付'],
+  ]) {
+    api.orders.set(id, makeOrder(id, {
+      order_status: 'DELIVERED', payment_method: paymentMethod, payment_state: 'UNPAID',
+      delivered_at: '2026-10-13T10:00:00+08:00', can_edit: false, can_cancel: false, can_receive: true,
+    }))
+    await page.goto(`orders/${id}`)
+    if (paymentMethod === 'OFFLINE_QR') await expect(page.getByRole('heading', { name: '扫码预付' })).toBeVisible()
+    await page.getByRole('button', { name: '确认收货' }).click()
+    await expect(page.getByRole('dialog')).toContainText('剩余应付金额会自动记为已付款，适用于所有付款方式')
+    await page.getByRole('dialog').getByRole('button', { name: '确认收货' }).click()
+    await expect(page.locator('.status-group')).toContainText(`${paymentLabel} · 已付款`)
+    await expect(page.locator('.offline-qr')).toHaveCount(0)
+    expect(api.orders.get(id).payment_state).toBe('PAID')
+    expect(api.orders.get(id).paid_fen).toBe(api.orders.get(id).total_fen)
+  }
 
   api.orders.set('2002', makeOrder('2002', {
-    fulfillment: 'DELIVERED', delivered_at: '2026-10-13T10:00:00+08:00',
+    order_status: 'DELIVERED', delivered_at: '2026-10-13T10:00:00+08:00',
     payment_method: 'OFFLINE_QR', payment_state: 'PAID', paid_fen: 1000,
     can_edit: false, can_cancel: false, can_receive: true,
   }))
@@ -562,13 +584,12 @@ test('配送开始后不能改/取消；COD 未收款确认收货不改付款状
   await expect(page.locator('.detail-status__title')).toHaveText('已完成')
   await expect(page.locator('.status-group')).toContainText('线下扫码 · 已付款')
   expect(api.orders.get('2002').paid_fen).toBe(1000)
-  expect(api.orders.get('2002').receipt_state).toBe('CONFIRMED')
 })
 
-test('店主补记已送达 COD 收款后顾客能独立读取履约及付款状态', async ({ page }, testInfo) => {
+test('店主补记已送达 COD 收款后顾客能独立读取订单阶段及付款状态', async ({ page }, testInfo) => {
   const api = await installMockApi(page, { token: true })
   const updated = api.confirmCodPayment('2004')
-  expect(updated.fulfillment).toBe('DELIVERED')
+  expect(updated.order_status).toBe('DELIVERED')
   expect(updated.payment_state).toBe('PAID')
   expect(updated.paid_fen).toBe(updated.total_fen)
   expect(updated.receivable_fen).toBe(0)

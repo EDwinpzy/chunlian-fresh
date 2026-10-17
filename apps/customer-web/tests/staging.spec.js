@@ -401,7 +401,7 @@ test('隔离 staging：顾客账户地址、QR 补款退款、配送收货和 CO
   await expect(page.locator('.detail-status__title')).toHaveText('已取消')
   await expect(page.locator('.offline-qr')).toHaveCount(0)
   const cancelledCodOrder = await customerOrder(codOrderId)
-  expect(cancelledCodOrder.fulfillment).toBe('CANCELLED')
+  expect(cancelledCodOrder.order_status).toBe('CANCELLED')
   await page.screenshot({ path: 'test-results/web-cod-cancelled.png', fullPage: true })
   await page.goto(`order-result/${codOrderId}`)
   await expect(page.getByRole('heading', { name: '订单已取消' })).toBeVisible()

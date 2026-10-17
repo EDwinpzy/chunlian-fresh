@@ -14,6 +14,7 @@ async function capture(page, testInfo, name) {
 
 async function configuredShop(page) {
   const apiState = await installMockApi(page)
+  let shopSettingRequests = 0
   const setting = {
     shop_name: '邻里鲜果与海鲜店', shop_slogan: '鲜果海味，每日送达',
     shop_logo_url: 'https://shop.example/logo.svg',
@@ -34,7 +35,10 @@ async function configuredShop(page) {
       { id: 'fruit-apples', name: '苹果', icon_url: '' },
     ] },
   ]
-  await page.route('**/api/v1/customer/shop', route => route.fulfill({ json: { code: 'OK', data: setting } }))
+  await page.route('**/api/v1/customer/shop', route => {
+    shopSettingRequests += 1
+    return route.fulfill({ json: { code: 'OK', data: setting } })
+  })
   await page.route('**/api/v1/customer/catalog/categories', route => route.fulfill({ json: { code: 'OK', data: categories } }))
   await page.route('https://shop.example/logo.svg', route => route.fulfill({
     status: 200,
@@ -46,7 +50,7 @@ async function configuredShop(page) {
     contentType: 'image/svg+xml',
     body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#b6d9a8"/><path d="M12 22c7-11 13-11 17-3-4 8-10 10-17 3z" fill="#245947"/></svg>',
   }))
-  return { setting, categories, apiState }
+  return { setting, categories, apiState, shopSettingRequests: () => shopSettingRequests }
 }
 
 test('configured store copy, categories and contact details appear across customer pages', async ({ page }, testInfo) => {
@@ -58,7 +62,7 @@ test('configured store copy, categories and contact details appear across custom
   await expect.poll(() => page.locator('.shop-logo img').evaluate(image => image.naturalWidth)).toBeGreaterThan(0)
   await expect(page.locator('.home-head__highlights')).toHaveText('鲜果海味，每日送达 · 今日海鲜新到 · 店主精选 · 按需配送')
   await expect(page.locator('.section-title').first()).toContainText('本周精选')
-  await expect(page.locator('.home-cat__name')).toHaveText(['海鲜水产', '时令水果'])
+  await expect(page.locator('.home-cat__name')).toHaveText(['全部', '海鲜水产', '时令水果'])
   await expect(page.locator('.home-cat__image')).toHaveCount(2)
   await expect.poll(() => page.locator('.home-cat__image').first().evaluate(image => image.naturalWidth)).toBeGreaterThan(0)
   await capture(page, testInfo, 'home')
@@ -75,6 +79,42 @@ test('configured store copy, categories and contact details appear across custom
   await capture(page, testInfo, 'about')
 })
 
+test('notification popup shows once per page startup and stays dismissed during shop refreshes', async ({ page }) => {
+  const { setting, shopSettingRequests } = await configuredShop(page)
+  setting.notification_popup_title = '配送提醒'
+  setting.notification_popup_image_url = 'https://shop.example/notice.svg'
+  await page.route('https://shop.example/notice.svg', route => route.fulfill({
+    status: 200,
+    contentType: 'image/svg+xml',
+    body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 30"><rect width="40" height="30" fill="#245947"/></svg>',
+  }))
+
+  await page.goto('./')
+  const popup = page.getByRole('dialog')
+  await expect(popup).toBeVisible()
+  await expect(popup.getByRole('heading', { name: '配送提醒' })).toBeVisible()
+  await expect(popup.getByRole('img', { name: '配送提醒' })).toBeVisible()
+  await expect.poll(shopSettingRequests).toBeGreaterThan(1)
+
+  await popup.getByRole('button', { name: '关闭' }).click()
+  const requestsAfterDismiss = shopSettingRequests()
+  await page.getByRole('button', { name: '我的', exact: true }).click()
+  await expect.poll(shopSettingRequests).toBeGreaterThan(requestsAfterDismiss)
+  const requestsBeforeVisibility = shopSettingRequests()
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' })
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  await expect.poll(shopSettingRequests).toBeGreaterThan(requestsBeforeVisibility)
+  const requestsAfterVisibility = shopSettingRequests()
+  await page.getByRole('button', { name: '首页', exact: true }).click()
+  await expect.poll(shopSettingRequests).toBeGreaterThan(requestsAfterVisibility + 1)
+  await expect(popup).toHaveCount(0)
+
+  await page.reload()
+  await expect(popup).toBeVisible()
+})
+
 test('returning home refreshes changed name and category configuration without reloading the app', async ({ page }) => {
   const { setting, categories } = await configuredShop(page)
   await page.goto('./')
@@ -86,8 +126,7 @@ test('returning home refreshes changed name and category configuration without r
   categories.pop()
   await page.getByRole('button', { name: '首页', exact: true }).click()
   await expect(page.locator('.home-head__brand')).toHaveText('邻里鲜选新店名')
-  await expect(page.locator('.home-cat')).toHaveCount(1)
-  await expect(page.locator('.home-cat')).toContainText('冷鲜水产')
+  await expect(page.locator('.home-cat__name')).toHaveText(['全部', '冷鲜水产'])
   await expect(page).toHaveTitle('首页 · 邻里鲜选新店名')
 })
 
@@ -142,7 +181,7 @@ test('empty optional shop copy stays hidden and uses concise identity fallbacks'
   await expect(page.locator('.home-head__slogan')).toHaveCount(0)
   await expect(page.locator('.home-notice')).toHaveCount(0)
   await expect(page.locator('.home-head__highlights')).toHaveCount(0)
-  await expect(page.locator('.section-title > span').first()).toHaveText('店内商品')
+  await expect(page.locator('.section-title > span').first()).toHaveText('今日鲜选')
   await capture(page, testInfo, 'empty-home')
 
   await page.goto('search')

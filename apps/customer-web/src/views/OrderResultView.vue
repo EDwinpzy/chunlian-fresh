@@ -29,20 +29,20 @@ const switching = ref(false)
 const refreshingQr = ref(false)
 const paymentQrUrl = computed(() => shop.setting?.payment_qr_url?.trim() || '')
 const showOfflineQr = computed(() => {
-  if (!order.value || order.value.fulfillment === 'CANCELLED' || order.value.payment_state !== 'UNPAID') return false
+  if (!order.value || order.value.order_status === 'CANCELLED' || order.value.payment_state !== 'UNPAID') return false
   if (order.value.payment_method === 'OFFLINE_QR') return true
   return order.value.payment_method === 'COD' && paymentQrUrl.value !== ''
 })
 const resultIcon = computed(() => {
   if (!order.value) return 'success'
-  return order.value.fulfillment === 'CANCELLED' || (order.value.payment_method !== 'COD' && order.value.payment_state !== 'PAID')
+  return order.value.order_status === 'CANCELLED' || (order.value.payment_method !== 'COD' && order.value.payment_state !== 'PAID')
     ? 'warning'
     : 'success'
 })
 
 const resultTitle = computed(() => {
   if (!order.value) return ''
-  if (order.value.fulfillment === 'CANCELLED') return '订单已取消'
+  if (order.value.order_status === 'CANCELLED') return '订单已取消'
   if (order.value.payment_state === 'PAYING') return '支付确认中'
   if (order.value.payment_method === 'OFFLINE_QR' && order.value.payment_state === 'PAID') return '付款已核实'
   if (order.value.payment_method === 'COD' || order.value.payment_state === 'PAID') return '下单成功'
@@ -52,7 +52,7 @@ const resultTitle = computed(() => {
 
 const resultHint = computed(() => {
   if (!order.value) return ''
-  if (order.value.fulfillment === 'CANCELLED') return '订单已取消，无需付款。'
+  if (order.value.order_status === 'CANCELLED') return '订单已取消，无需付款。'
   if (order.value.payment_method === 'COD') {
     return paymentQrUrl.value
       ? '支持送达时扫码或现金付款；送达前请勿转账，到账后由店主核实。可截图保存二维码，在付款应用的“扫一扫”中从相册识别。'
@@ -125,7 +125,7 @@ onMounted(() => {
       <template v-else-if="order">
         <div
           class="result-icon"
-          :class="{ 'is-pending': order.fulfillment === 'CANCELLED' || (order.payment_method !== 'COD' && order.payment_state !== 'PAID') }"
+          :class="{ 'is-pending': order.order_status === 'CANCELLED' || (order.payment_method !== 'COD' && order.payment_state !== 'PAID') }"
         >
           <AssetIcon :name="resultIcon" :size="56" />
         </div>
@@ -135,7 +135,7 @@ onMounted(() => {
         </h1>
 
         <p class="result-sub">
-          {{ order.fulfillment_text }} · {{ order.payment_method_text }} ·
+          {{ order.order_status_text }} · {{ order.payment_method_text }} ·
           {{ deliveryText(order.delivery_mode, order.expected_at) }}
         </p>
         <p class="result-hint">{{ resultHint }}</p>

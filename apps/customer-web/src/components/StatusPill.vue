@@ -5,22 +5,19 @@ import type { Order } from '@/api/types'
 /**
  * 订单状态标签。
  *
- * 【为什么不直接把 fulfillment 画成一个彩色点】
- * 方案 §1.2 第 9 条：不允许把「已送达」「顾客确认收货」「已付款」
- * 混成一个布尔字段。页面上必须**同时**看到履约与付款两个状态，
- * 所以这里用两个独立标签，并且都带文字（不只靠颜色）。
+ * 订单阶段与付款情况是两个独立维度，页面上分别显示，避免把送达、收货和付款合成一个状态。
  */
 const props = defineProps<{
   order: Pick<
     Order,
-    'fulfillment' | 'fulfillment_text' | 'payment_state' | 'payment_state_text' | 'payment_method_text'
+    'order_status' | 'order_status_text' | 'payment_state' | 'payment_state_text' | 'payment_method_text'
   >
   /** 只显示付款状态 */
   paymentOnly?: boolean
 }>()
 
-const fulfillmentTone = computed(() => {
-  switch (props.order.fulfillment) {
+const orderStatusTone = computed(() => {
+  switch (props.order.order_status) {
     case 'PENDING':
       return 'info'
     case 'DELIVERING':
@@ -54,8 +51,8 @@ const paymentTone = computed(() => {
 
 <template>
   <span class="status-group">
-    <span v-if="!paymentOnly" class="pill" :class="`pill--${fulfillmentTone}`">
-      {{ order.fulfillment_text }}
+    <span v-if="!paymentOnly" class="pill" :class="`pill--${orderStatusTone}`">
+      {{ order.order_status_text }}
     </span>
     <span class="pill" :class="`pill--${paymentTone}`">
       {{ order.payment_method_text }} · {{ order.payment_state_text }}

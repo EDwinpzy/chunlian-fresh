@@ -15,7 +15,6 @@ const cart = useCartStore()
 const shop = useShopStore()
 const toast = useToast()
 
-const showShop = ref(false)
 const showLogout = ref(false)
 const showProfileEdit = ref(false)
 const profileNickname = ref('')
@@ -127,11 +126,6 @@ onMounted(async () => {
           <span class="group__content"><span class="group__label">联系店主</span></span><span class="group__value">{{ shopPhone || '暂未设置' }}</span>
           <span class="group__chevron" aria-hidden="true" />
         </button>
-        <button class="group__row" type="button" @click="showShop = true">
-          <AssetIcon class="group__icon" name="delivery" :size="22" />
-          <span class="group__content"><span class="group__label">店铺与配送</span></span>
-          <span class="group__chevron" aria-hidden="true" />
-        </button>
         <button class="group__row" type="button" @click="router.push('/cart')">
           <AssetIcon class="group__icon" name="cart" :size="22" />
           <span class="group__content"><span class="group__label">购物车</span></span>
@@ -147,17 +141,6 @@ onMounted(async () => {
       <button v-if="isLoggedIn" class="logout-btn" type="button" @click="showLogout = true">退出登录</button>
       <p class="mini profile-foot">{{ shop.setting?.shop_name || '店铺' }}<template v-if="shop.setting?.shop_slogan"> · {{ shop.setting.shop_slogan }}</template></p>
     </div>
-
-    <BottomSheet v-model="showShop" title="店铺与配送">
-      <dl class="shop-details">
-        <dt>店铺名称</dt><dd>{{ shop.setting?.shop_name || '店铺' }}</dd>
-        <template v-if="shop.setting?.shop_description"><dt>店铺简介</dt><dd>{{ shop.setting.shop_description }}</dd></template>
-        <template v-if="shop.setting?.shop_address"><dt>店铺地址</dt><dd>{{ shop.setting.shop_address }}</dd></template>
-        <template v-if="shop.setting?.business_hours"><dt>营业时间</dt><dd>{{ shop.setting.business_hours }}</dd></template>
-        <template v-if="shop.setting?.delivery_description"><dt>配送说明</dt><dd>{{ shop.setting.delivery_description }}</dd></template>
-        <template v-if="shop.setting?.notice"><dt>店铺公告</dt><dd>{{ shop.setting.notice }}</dd></template>
-      </dl>
-    </BottomSheet>
 
     <BottomSheet v-model="showLogout" title="退出登录" :mask-closable="false">
       <p class="sheet-text">退出后需要重新输入手机号和密码。购物车会保留在本机。</p>
@@ -220,8 +203,4 @@ onMounted(async () => {
 .profile-foot { margin: 20px 0 0; text-align: center; }
 .profile-edit-field { margin: 8px 0 4px; }
 .sheet-text { margin: 0; font-size: var(--font-body); color: var(--color-text-secondary); line-height: 1.6; }
-.shop-details { margin: 0; }
-.shop-details dt { margin-top: 18px; font-size: 13px; color: var(--color-text-secondary); }
-.shop-details dt:first-child { margin-top: 0; }
-.shop-details dd { margin: 5px 0 0; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
 </style>
