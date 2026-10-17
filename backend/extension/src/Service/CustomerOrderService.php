@@ -6,7 +6,8 @@ namespace Chunlian\Service;
 
 use Chunlian\Domain\DeliveryMode;
 use Chunlian\Domain\Order;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderApiCompatibility;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderPaymentState;
 use Chunlian\Domain\PaymentMethod;
 use Chunlian\Domain\RejectionCode;
@@ -22,7 +23,7 @@ use Chunlian\Repository\VersionConflictException;
  * 参数契约复杂（收货地址 ID、支付方式 ID、优惠、发票……），
  * 而本项目只需要其中很小的一部分：选菜 → 填地址 → 选时间 → 下单。
  * 更关键的是：ShopXO 原生下单**不会写 `veg_order_delivery` 扩展行**，
- * 而履约/支付/收货/修订这四维状态正是本项目的核心不变量所在 ——
+ * 而订单/支付/修订状态正是本项目的核心不变量所在 ——
  * 订单一旦缺少扩展行，商家端的「开始配送 / 确认送达 / COD 收款」全部无从判断。
  *
  * 因此这里直接按 ShopXO 的表结构建单，并在**同一事务**内补齐四张表：
@@ -477,12 +478,12 @@ final class CustomerOrderService
                 'upd_time' => $now,
             ]);
 
-            // ---------- 5. 四维状态扩展行 ----------
+            // ---------- 5. 订单、支付、修订状态扩展行 ----------
             $this->pdo->prepare(
                 "INSERT INTO `veg_order_delivery` "
-                . "(`order_id`, `delivery_mode`, `expected_at`, `fulfillment`, `payment_state`, "
+                . "(`order_id`, `delivery_mode`, `expected_at`, `order_status`, `fulfillment`, `payment_state`, "
                 . "`payment_method`, `receipt_state`, `revision_state`, `version`, `created_at`, `updated_at`) "
-                . "VALUES (:order_id, :mode, :expected_at, 'PENDING', 'UNPAID', :method, 'UNCONFIRMED', 'NONE', 1, NOW(), NOW())"
+                . "VALUES (:order_id, :mode, :expected_at, 'PENDING', 'PENDING', 'UNPAID', :method, 'UNCONFIRMED', 'NONE', 1, NOW(), NOW())"
             )->execute([
                 'order_id' => $orderId,
                 'mode' => $mode->value,
@@ -548,22 +549,22 @@ final class CustomerOrderService
         // 与四维状态一一映射，不在客户端做拼装
         switch ($status) {
             case 'UNPAID':
-                $where[] = "d.`payment_state` = 'UNPAID' AND d.`fulfillment` = 'PENDING'";
+                $where[] = "d.`payment_state` = 'UNPAID' AND d.`order_status` = 'PENDING'";
                 break;
             case 'PENDING':
-                $where[] = "d.`fulfillment` = 'PENDING' AND NOT (d.`payment_state` = 'UNPAID' AND d.`payment_method` IN ('WECHAT','OFFLINE_QR'))";
+                $where[] = "d.`order_status` = 'PENDING' AND NOT (d.`payment_state` = 'UNPAID' AND d.`payment_method` IN ('WECHAT','OFFLINE_QR'))";
                 break;
             case 'DELIVERING':
-                $where[] = "d.`fulfillment` = 'DELIVERING'";
+                $where[] = "d.`order_status` = 'DELIVERING'";
                 break;
             case 'DELIVERED':
-                $where[] = "d.`fulfillment` = 'DELIVERED'";
+                $where[] = "d.`order_status` = 'DELIVERED'";
                 break;
             case 'FINISHED':
-                $where[] = "d.`fulfillment` = 'FINISHED'";
+                $where[] = "d.`order_status` = 'FINISHED'";
                 break;
             case 'CANCELLED':
-                $where[] = "d.`fulfillment` = 'CANCELLED'";
+                $where[] = "d.`order_status` = 'CANCELLED'";
                 break;
             default:
                 break;
@@ -679,13 +680,23 @@ final class CustomerOrderService
             'customer.order.receive',
             $idemKey,
             ['version' => $clientVersion],
-            function (Order $order) use ($clientVersion): array {
+            function (Order $order) use ($clientVersion, $userId): array {
                 $result = $this->stateMachine->confirmReceipt($order, $clientVersion);
                 if (!$result->success) {
                     return $this->rejected($result);
                 }
 
-                return $this->applied($result, 'ORDER_RECEIVED', 'ORDER_RECEIVED', '已确认收货');
+                $outcome = $this->applied($result, 'ORDER_RECEIVED', 'ORDER_RECEIVED', '已确认收货，未结款项已自动记账');
+                $receiptFen = (int) $result->get('customer_receipt_fen', 0);
+                if ($receiptFen > 0) {
+                    $outcome['receipt_ledger'] = [
+                        'amount_fen' => $receiptFen,
+                        'payment_method' => $order->paymentMethod,
+                        'operator_id' => (string) $userId,
+                    ];
+                }
+
+                return $outcome;
             }
         );
     }
@@ -711,11 +722,11 @@ final class CustomerOrderService
             'customer.order.switch-to-cod',
             $idemKey,
             ['version' => $clientVersion],
-            function (Order $order) use ($clientVersion): array {
+            function (Order $order) use ($clientVersion, $userId): array {
                 if ($order->version !== $clientVersion) {
                     return $this->rejectedWith(RejectionCode::ORDER_VERSION_CONFLICT, '订单已发生变化，请刷新后重试');
                 }
-                if ($order->fulfillment !== OrderFulfillment::PENDING) {
+                if ($order->orderStatus !== OrderStatus::PENDING) {
                     return $this->rejectedWith(RejectionCode::ORDER_NOT_EDITABLE, '订单已开始配送，无法修改支付方式');
                 }
                 if ($order->paymentMethod === PaymentMethod::COD) {
@@ -790,7 +801,7 @@ final class CustomerOrderService
                 'current_version' => $order->version,
             ]);
         }
-        if (!$order->fulfillment->allowsCustomerSelfService()) {
+        if (!$order->orderStatus->allowsCustomerSelfService()) {
             return $this->fail(RejectionCode::ORDER_NOT_EDITABLE, '商家已开始配送，当前订单不能再自行修改');
         }
 
@@ -803,7 +814,7 @@ final class CustomerOrderService
                 $this->pdo->rollBack();
                 return $this->fail(RejectionCode::ORDER_VERSION_CONFLICT, '订单已发生变化，请刷新后重试');
             }
-            if (!$order->fulfillment->allowsCustomerSelfService()) {
+            if (!$order->orderStatus->allowsCustomerSelfService()) {
                 $this->pdo->rollBack();
                 return $this->fail(RejectionCode::ORDER_NOT_EDITABLE, '商家已开始配送，当前订单不能再自行修改');
             }
@@ -1200,6 +1211,17 @@ final class CustomerOrderService
             $transition = $outcome['transition'];
             $this->orders->applyTransition($order, $transition);
 
+            if (!empty($outcome['receipt_ledger'])) {
+                $receipt = $outcome['receipt_ledger'];
+                $this->orders->writeCustomerReceipt(
+                    $orderId,
+                    (int) $receipt['amount_fen'],
+                    $receipt['payment_method'],
+                    (string) $receipt['operator_id'],
+                    'customer-receipt-' . $orderId,
+                );
+            }
+
             $this->orders->writeAuditLog($actorId, $orderId, (string) $outcome['audit_action'], [
                 'actor_type' => 'CUSTOMER',
                 'endpoint' => $endpoint,
@@ -1319,7 +1341,7 @@ final class CustomerOrderService
      */
     private function serializeOrder(Order $order): array
     {
-        $canSelfService = $order->fulfillment->allowsCustomerSelfService();
+        $canSelfService = $order->orderStatus->allowsCustomerSelfService();
         $pending = $this->pdo->prepare("SELECT `delta_fen` FROM `veg_order_revision` WHERE `order_id` = :oid AND `status` = 'PENDING_TOPUP' ORDER BY `id` DESC LIMIT 1");
         $pending->execute(['oid' => $order->id]);
         $pendingFen = (int) ($pending->fetchColumn() ?: 0);
@@ -1328,11 +1350,11 @@ final class CustomerOrderService
             'id' => $order->id,
             'order_no' => $order->orderNo,
             'version' => $order->version,
-            'fulfillment' => $order->fulfillment->value,
-            'fulfillment_text' => $this->fulfillmentText($order->fulfillment),
+            'order_status' => $order->orderStatus->value,
+            'order_status_text' => $this->orderStatusText($order->orderStatus),
+            ...OrderApiCompatibility::legacyFields($order),
             'payment_state' => $order->paymentState->value,
             'payment_state_text' => $this->paymentStateText($order->paymentState),
-            'receipt_state' => $order->receiptState->value,
             'revision_state' => $order->revisionState->value,
             'pending_topup_fen' => $pendingFen,
             'payment_method' => $order->paymentMethod->value,
@@ -1368,22 +1390,22 @@ final class CustomerOrderService
             // 顾客能不能改/取消由**服务端**裁决，客户端只负责显示 ——
             // 否则一个过期页面就能绕过「已开始配送不可改」
             'can_edit' => $canSelfService && $order->revisionState->allowsNewRevision(),
-            'can_cancel' => $canSelfService && $order->fulfillment !== OrderFulfillment::CANCELLED,
-            'can_receive' => $order->receiptState->canConfirm($order->fulfillment),
+            'can_cancel' => $canSelfService && $order->orderStatus !== OrderStatus::CANCELLED,
+            'can_receive' => $order->orderStatus === OrderStatus::DELIVERED,
             'can_switch_to_cod' => $canSelfService
                 && $order->paymentMethod !== PaymentMethod::COD
                 && $order->paidFen === 0,
         ];
     }
 
-    private function fulfillmentText(OrderFulfillment $f): string
+    private function orderStatusText(OrderStatus $f): string
     {
         return match ($f) {
-            OrderFulfillment::PENDING => '待配送',
-            OrderFulfillment::DELIVERING => '配送中',
-            OrderFulfillment::DELIVERED => '已送达',
-            OrderFulfillment::FINISHED => '已完成',
-            OrderFulfillment::CANCELLED => '已取消',
+            OrderStatus::PENDING => '待配送',
+            OrderStatus::DELIVERING => '配送中',
+            OrderStatus::DELIVERED => '已送达',
+            OrderStatus::FINISHED => '已完成',
+            OrderStatus::CANCELLED => '已取消',
         };
     }
 
@@ -1422,6 +1444,7 @@ final class CustomerOrderService
             'outbox' => $outbox,
             'message' => $message,
             'ledger' => null,
+            'receipt_ledger' => null,
             'extra_outbox' => null,
         ];
     }

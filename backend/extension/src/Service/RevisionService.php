@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Chunlian\Service;
 
 use Chunlian\Domain\Order;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderLine;
 use Chunlian\Domain\OrderRevisionState;
 use Chunlian\Domain\PaymentMethod;
@@ -176,7 +176,7 @@ final class RevisionService
             }
 
             // 只有未出发的订单可改（与服务端 canCustomerEdit 同口径）
-            if ($order->fulfillment !== OrderFulfillment::PENDING) {
+            if ($order->orderStatus !== OrderStatus::PENDING) {
                 $this->pdo->rollBack();
 
                 return $this->fail(
@@ -925,9 +925,8 @@ final class RevisionService
             'id' => $order->id,
             'order_no' => $order->orderNo,
             'version' => $order->version,
-            'fulfillment' => $order->fulfillment->value,
+            'order_status' => $order->orderStatus->value,
             'payment_state' => $order->paymentState->value,
-            'receipt_state' => $order->receiptState->value,
             'revision_state' => $order->revisionState->value,
             'payment_method' => $order->paymentMethod->value,
             'delivery_mode' => $order->deliveryMode->value,

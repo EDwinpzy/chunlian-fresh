@@ -72,10 +72,12 @@ final class CustomerCatalogService
                 'id' => (string) $id,
                 'name' => (string) $r['name'],
                 'icon_url' => $this->assetUrl((string) $r['icon']),
+                'icon_active_url' => $this->assetUrl((string) $r['icon_active']),
                 'children' => array_map(fn (array $c): array => [
                     'id' => (string) $c['id'],
                     'name' => (string) $c['name'],
                     'icon_url' => $this->assetUrl((string) $c['icon']),
+                    'icon_active_url' => $this->assetUrl((string) $c['icon_active']),
                 ], $children[$id] ?? []),
             ];
         }
@@ -89,6 +91,7 @@ final class CustomerCatalogService
      * @param string|null $categoryId 分类筛选（含子分类）
      * @param string|null $keyword    标题模糊搜索
      * @param string|null $sort       new=最新 / price_asc / price_desc / sales
+     * @param string|null $ids        商品 ID 逗号分隔列表；最多 10 项，结果按输入顺序
      */
     public function goodsList(
         ?string $categoryId,
@@ -96,11 +99,28 @@ final class CustomerCatalogService
         ?string $sort,
         int $page,
         int $pageSize,
+        ?string $ids = null,
     ): array {
         $page = max(1, $page);
         $pageSize = min(50, max(1, $pageSize));
         $p = $this->tablePrefix;
         FreshCategoryPolicy::ensureLegacyRoots($this->pdo, $p);
+
+        $requestedIds = null;
+        if ($ids !== null && trim($ids) !== '') {
+            $requestedIds = array_map('trim', explode(',', trim($ids)));
+            if (count($requestedIds) > 10 || in_array('', $requestedIds, true)) {
+                return $this->fail(RejectionCode::VALIDATION_FAILED, '商品 ID 查询最多支持 10 项');
+            }
+            foreach ($requestedIds as $id) {
+                if (preg_match('/^[1-9][0-9]{0,19}$/', $id) !== 1) {
+                    return $this->fail(RejectionCode::VALIDATION_FAILED, '商品 ID 格式不正确');
+                }
+            }
+            if (count(array_unique($requestedIds)) !== count($requestedIds)) {
+                return $this->fail(RejectionCode::VALIDATION_FAILED, '商品 ID 不能重复');
+            }
+        }
 
         // 顾客侧永远只看已上架且未删除的商品 —— 这是硬约束，
         // 不提供「包含下架」的开关，避免调用方误传导致下架商品泄露到前端
@@ -110,6 +130,16 @@ final class CustomerCatalogService
             FreshCategoryPolicy::goodsPredicate($p, 'g'),
         ];
         $params = [];
+
+        if ($requestedIds !== null) {
+            $placeholders = [];
+            foreach ($requestedIds as $index => $id) {
+                $placeholder = 'featured_id_' . $index;
+                $placeholders[] = ':' . $placeholder;
+                $params[$placeholder] = $id;
+            }
+            $where[] = 'g.`id` IN (' . implode(', ', $placeholders) . ')';
+        }
 
         if ($categoryId !== null && $categoryId !== '') {
             if (!FreshCategoryPolicy::isAllowed($this->pdo, $p, $categoryId)) {
@@ -168,6 +198,10 @@ final class CustomerCatalogService
         $list = [];
         foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
             $list[] = $this->serializeGoodsSummary($row);
+        }
+        if ($requestedIds !== null) {
+            $order = array_flip($requestedIds);
+            usort($list, static fn (array $a, array $b): int => ($order[$a['id']] ?? PHP_INT_MAX) <=> ($order[$b['id']] ?? PHP_INT_MAX));
         }
 
         return $this->ok([

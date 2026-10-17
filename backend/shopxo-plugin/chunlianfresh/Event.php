@@ -30,8 +30,9 @@ final class Event
     /**
      * 安装：建立扩展表。
      *
-     * 【幂等】迁移脚本全部使用 `CREATE TABLE IF NOT EXISTS`，
-     * 重复执行安全 —— 安装失败后重试不会因为「表已存在」而中断。
+     * 【幂等】迁移脚本必须可重复执行：建表使用 `IF NOT EXISTS`，
+     * 初始化数据使用 `INSERT IGNORE`，新增字段先检查 `INFORMATION_SCHEMA`。
+     * 这样安装或升级重跑全部迁移时，不会因已有表或字段而中断。
      */
     public function Install(array $params = []): array
     {

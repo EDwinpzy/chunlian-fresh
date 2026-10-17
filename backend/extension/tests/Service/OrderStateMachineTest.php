@@ -7,10 +7,9 @@ namespace Chunlian\Tests\Service;
 use Chunlian\Domain\Contact;
 use Chunlian\Domain\DeliveryMode;
 use Chunlian\Domain\Order;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderLine;
 use Chunlian\Domain\OrderPaymentState;
-use Chunlian\Domain\OrderReceiptState;
 use Chunlian\Domain\OrderRevisionState;
 use Chunlian\Domain\PaymentMethod;
 use Chunlian\Domain\RejectionCode;
@@ -27,17 +26,16 @@ final class OrderStateMachineTest extends TestCase
     }
 
     /** 构造一个 COD 待配送订单：青菜×2 (3.50) + 土豆×1 (2.80) = 9.80。 */
-    private function makeCodOrder(int $version = 1): Order
+    private function makeCodOrder(int $version = 1, PaymentMethod $method = PaymentMethod::COD): Order
     {
         return new Order(
             id: '10025',
             orderNo: '20261012193000001',
             version: $version,
-            fulfillment: OrderFulfillment::PENDING,
+            orderStatus: OrderStatus::PENDING,
             paymentState: OrderPaymentState::UNPAID,
-            receiptState: OrderReceiptState::UNCONFIRMED,
             revisionState: OrderRevisionState::NONE,
-            paymentMethod: PaymentMethod::COD,
+            paymentMethod: $method,
             deliveryMode: DeliveryMode::ASAP,
             expectedAt: null,
             lines: [
@@ -60,9 +58,8 @@ final class OrderStateMachineTest extends TestCase
             id: $order->id,
             orderNo: $order->orderNo,
             version: $order->version,
-            fulfillment: $order->fulfillment,
+            orderStatus: $order->orderStatus,
             paymentState: OrderPaymentState::PAID,
-            receiptState: $order->receiptState,
             revisionState: $order->revisionState,
             paymentMethod: PaymentMethod::WECHAT,
             deliveryMode: $order->deliveryMode,
@@ -122,7 +119,7 @@ final class OrderStateMachineTest extends TestCase
         $result = $this->sm->startDelivery($order, 1);
 
         self::assertTrue($result->success);
-        self::assertSame(OrderFulfillment::DELIVERING, $result->get('fulfillment'));
+        self::assertSame(OrderStatus::DELIVERING, $result->get('order_status'));
         self::assertSame(2, $result->get('version'));
         self::assertTrue($result->get('locked_customer_editing'));
     }
@@ -130,7 +127,7 @@ final class OrderStateMachineTest extends TestCase
     public function testStartDeliveryRejectedWhenAlreadyDelivering(): void
     {
         $order = $this->makeCodOrder();
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->startDelivery($order, 1);
 
@@ -152,12 +149,12 @@ final class OrderStateMachineTest extends TestCase
     public function testCodConfirmDeliveryWithMoneyCollected(): void
     {
         $order = $this->makeCodOrder(version: 4);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->confirmDelivery($order, 4, receivedMoney: true, collectedFen: 980);
 
         self::assertTrue($result->success);
-        self::assertSame(OrderFulfillment::DELIVERED, $result->get('fulfillment'));
+        self::assertSame(OrderStatus::DELIVERED, $result->get('order_status'));
         self::assertSame(980, $result->get('paid_fen'));
         self::assertSame(OrderPaymentState::PAID, $result->get('payment_state'));
         self::assertSame(0, $result->get('receivable_fen'));
@@ -170,12 +167,12 @@ final class OrderStateMachineTest extends TestCase
     public function testCodConfirmDeliveryWithoutCollectionKeepsReceivable(): void
     {
         $order = $this->makeCodOrder(version: 4);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->confirmDelivery($order, 4, receivedMoney: false);
 
         self::assertTrue($result->success);
-        self::assertSame(OrderFulfillment::DELIVERED, $result->get('fulfillment'));
+        self::assertSame(OrderStatus::DELIVERED, $result->get('order_status'));
         self::assertSame(0, $result->get('paid_fen'));
         self::assertSame(OrderPaymentState::UNPAID, $result->get('payment_state'));
         self::assertSame(980, $result->get('receivable_fen'));
@@ -185,7 +182,7 @@ final class OrderStateMachineTest extends TestCase
     public function testCodCollectedAmountMustEqualReceivable(): void
     {
         $order = $this->makeCodOrder(version: 4);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->confirmDelivery($order, 4, receivedMoney: true, collectedFen: 900);
 
@@ -197,7 +194,7 @@ final class OrderStateMachineTest extends TestCase
     public function testCodCollectedWithoutAmountRejected(): void
     {
         $order = $this->makeCodOrder(version: 4);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->confirmDelivery($order, 4, receivedMoney: true, collectedFen: null);
 
@@ -210,12 +207,12 @@ final class OrderStateMachineTest extends TestCase
     public function testWechatOrderConfirmDeliveryDoesNotCollectAgain(): void
     {
         $order = $this->makePaidWechatOrder(paidFen: 980, version: 4);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->confirmDelivery($order, 4, receivedMoney: false);
 
         self::assertTrue($result->success);
-        self::assertSame(OrderFulfillment::DELIVERED, $result->get('fulfillment'));
+        self::assertSame(OrderStatus::DELIVERED, $result->get('order_status'));
         self::assertSame(980, $result->get('paid_fen'));
         self::assertFalse($result->get('write_cod_receipt'));
     }
@@ -223,7 +220,7 @@ final class OrderStateMachineTest extends TestCase
     public function testWechatOrderRejectsCollectionAttempt(): void
     {
         $order = $this->makePaidWechatOrder(paidFen: 980, version: 4);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->confirmDelivery($order, 4, receivedMoney: true, collectedFen: 980);
 
@@ -244,7 +241,7 @@ final class OrderStateMachineTest extends TestCase
     public function testConfirmDeliveryVersionConflict(): void
     {
         $order = $this->makeCodOrder(version: 5);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->confirmDelivery($order, 4, receivedMoney: false);
 
@@ -257,7 +254,7 @@ final class OrderStateMachineTest extends TestCase
     public function testRecordCodReceiptAfterUndeliveredCollection(): void
     {
         $order = $this->makeCodOrder(version: 5);
-        $order->fulfillment = OrderFulfillment::DELIVERED;
+        $order->orderStatus = OrderStatus::DELIVERED;
 
         $result = $this->sm->recordCodReceipt($order, 5, 980);
 
@@ -271,7 +268,7 @@ final class OrderStateMachineTest extends TestCase
     public function testRecordCodReceiptRejectedWhenAlreadyCollected(): void
     {
         $order = $this->makeCodOrder(version: 6);
-        $order->fulfillment = OrderFulfillment::DELIVERED;
+        $order->orderStatus = OrderStatus::DELIVERED;
         $order->paidFen = 980;
         $order->paymentState = OrderPaymentState::PAID;
 
@@ -294,7 +291,7 @@ final class OrderStateMachineTest extends TestCase
     public function testRecordCodReceiptRejectedForWechatOrder(): void
     {
         $order = $this->makePaidWechatOrder(paidFen: 0, version: 5);
-        $order->fulfillment = OrderFulfillment::DELIVERED;
+        $order->orderStatus = OrderStatus::DELIVERED;
 
         $result = $this->sm->recordCodReceipt($order, 5, 980);
 
@@ -311,7 +308,7 @@ final class OrderStateMachineTest extends TestCase
         $result = $this->sm->cancel($order, 2);
 
         self::assertTrue($result->success);
-        self::assertSame(OrderFulfillment::CANCELLED, $result->get('fulfillment'));
+        self::assertSame(OrderStatus::CANCELLED, $result->get('order_status'));
         self::assertSame(0, $result->get('refund_fen'));
         self::assertTrue($result->get('release_stock'));
         self::assertSame(3, $result->get('version'));
@@ -325,7 +322,7 @@ final class OrderStateMachineTest extends TestCase
         $result = $this->sm->cancel($order, 3);
 
         self::assertTrue($result->success);
-        self::assertSame(OrderFulfillment::CANCELLED, $result->get('fulfillment'));
+        self::assertSame(OrderStatus::CANCELLED, $result->get('order_status'));
         self::assertSame(980, $result->get('refund_fen'));
         self::assertSame(OrderPaymentState::REFUNDING, $result->get('payment_state'));
     }
@@ -395,7 +392,7 @@ final class OrderStateMachineTest extends TestCase
     public function testCancelRejectedAfterDispatch(): void
     {
         $order = $this->makeCodOrder(version: 3);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->cancel($order, 3);
 
@@ -407,7 +404,7 @@ final class OrderStateMachineTest extends TestCase
     public function testRevisionRejectedAfterDispatch(): void
     {
         $order = $this->makeCodOrder(version: 3);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->canStartRevision($order, 3);
 
@@ -440,36 +437,71 @@ final class OrderStateMachineTest extends TestCase
     public function testConfirmReceiptRequiresDelivered(): void
     {
         $order = $this->makeCodOrder(version: 5);
-        $order->fulfillment = OrderFulfillment::DELIVERED;
+        $order->orderStatus = OrderStatus::DELIVERED;
 
         $result = $this->sm->confirmReceipt($order, 5);
 
         self::assertTrue($result->success);
-        self::assertSame(OrderFulfillment::FINISHED, $result->get('fulfillment'));
-        self::assertSame(OrderReceiptState::CONFIRMED, $result->get('receipt_state'));
+        self::assertSame(OrderStatus::FINISHED, $result->get('order_status'));
+        self::assertSame(OrderPaymentState::PAID, $result->get('payment_state'));
+        self::assertSame(980, $result->get('paid_fen'));
+        self::assertSame(980, $result->get('customer_receipt_fen'));
+        self::assertTrue($result->get('received_at'));
     }
 
     public function testConfirmReceiptRejectedWhenDelivering(): void
     {
         $order = $this->makeCodOrder(version: 5);
-        $order->fulfillment = OrderFulfillment::DELIVERING;
+        $order->orderStatus = OrderStatus::DELIVERING;
 
         $result = $this->sm->confirmReceipt($order, 5);
 
         self::assertFalse($result->success);
     }
 
-    /** 收货独立于支付：COD 送达未收款也能确认收货。 */
-    public function testConfirmReceiptIndependentOfPayment(): void
+    /** 所有付款方式都在顾客确认收货时自动结清剩余应收。 */
+    public function testConfirmReceiptAutomaticallySettlesEveryPaymentMethod(): void
     {
-        $order = $this->makeCodOrder(version: 5);
-        $order->fulfillment = OrderFulfillment::DELIVERED;
-        $order->paymentState = OrderPaymentState::UNPAID;
+        foreach ([PaymentMethod::COD, PaymentMethod::WECHAT, PaymentMethod::OFFLINE_QR] as $method) {
+            $order = $this->makeCodOrder(version: 5, method: $method);
+            $order->orderStatus = OrderStatus::DELIVERED;
 
-        $result = $this->sm->confirmReceipt($order, 5);
+            $result = $this->sm->confirmReceipt($order, 5);
+
+            self::assertTrue($result->success, $method->value);
+            self::assertSame(OrderPaymentState::PAID, $result->get('payment_state'), $method->value);
+            self::assertSame(980, $result->get('customer_receipt_fen'), $method->value);
+            self::assertSame(980, $result->get('paid_fen'), $method->value);
+        }
+    }
+
+    /** 已足额付款的订单不再产生自动收款金额，避免重复登记。 */
+    public function testConfirmReceiptDoesNotDuplicateAlreadyPaidOrder(): void
+    {
+        $order = $this->makePaidWechatOrder();
+        $order->orderStatus = OrderStatus::DELIVERED;
+
+        $result = $this->sm->confirmReceipt($order, $order->version);
 
         self::assertTrue($result->success);
-        self::assertSame(OrderPaymentState::UNPAID, $order->paymentState);
+        self::assertSame(0, $result->get('customer_receipt_fen'));
+        self::assertSame(OrderPaymentState::PAID, $result->get('payment_state'));
+        self::assertSame(980, $result->get('paid_fen'));
+    }
+
+    /** 处理中退款不被收货确认覆盖。 */
+    public function testConfirmReceiptPreservesRefundInFlightState(): void
+    {
+        $order = $this->makePaidWechatOrder();
+        $order->orderStatus = OrderStatus::DELIVERED;
+        $order->paymentState = OrderPaymentState::REFUNDING;
+        $order->refundingFen = 200;
+
+        $result = $this->sm->confirmReceipt($order, $order->version);
+
+        self::assertTrue($result->success);
+        self::assertSame(OrderPaymentState::REFUNDING, $result->get('payment_state'));
+        self::assertSame(0, $result->get('customer_receipt_fen'));
     }
 
     // ---------- T08：预约时间校验 ----------

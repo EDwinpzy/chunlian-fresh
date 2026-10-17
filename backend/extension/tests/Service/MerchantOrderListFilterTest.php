@@ -12,7 +12,7 @@ final class MerchantOrderListFilterTest extends TestCase
     public function testDeliveredFilterIncludesDeliveredAndFinishedOrders(): void
     {
         self::assertSame([
-            'where_sql' => "1 = 1 AND d.`fulfillment` IN ('DELIVERED','FINISHED')",
+            'where_sql' => "1 = 1 AND d.`order_status` IN ('DELIVERED','FINISHED')",
             'params' => [],
         ], MerchantOrderListFilter::build('DELIVERED', null));
     }
@@ -20,7 +20,7 @@ final class MerchantOrderListFilterTest extends TestCase
     public function testOtherStatusesRemainExactAndKeywordCanBeCombined(): void
     {
         self::assertSame([
-            'where_sql' => '1 = 1 AND d.`fulfillment` = :status AND (o.`order_no` LIKE :kw_no OR a.`name` LIKE :kw_name OR a.`tel` LIKE :kw_tel)',
+            'where_sql' => '1 = 1 AND d.`order_status` = :status AND (o.`order_no` LIKE :kw_no OR a.`name` LIKE :kw_name OR a.`tel` LIKE :kw_tel)',
             'params' => [
                 'status' => 'DELIVERING',
                 'kw_no' => '%林女士%',

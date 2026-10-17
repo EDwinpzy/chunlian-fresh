@@ -9,6 +9,7 @@ require_once dirname(__DIR__) . '/Bootstrap.php';
 use Chunlian\Domain\RejectionCode;
 use Chunlian\Repository\PdoIdempotencyStore;
 use Chunlian\Repository\PdoOrderRepository;
+use Chunlian\Repository\PdoPushDeviceRepository;
 use Chunlian\Service\CatalogService;
 use Chunlian\Service\FreshCategoryManagementService;
 use Chunlian\Service\GoodsWriteService;
@@ -17,6 +18,7 @@ use Chunlian\Service\LedgerCalculator;
 use Chunlian\Service\ManualPaymentService;
 use Chunlian\Service\MerchantInsightService;
 use Chunlian\Service\MerchantOrderService;
+use Chunlian\Service\PushDeviceService;
 use Chunlian\Service\MerchantOpenAccessPolicy;
 use Chunlian\Service\OrderStateMachine;
 use Chunlian\Service\RevisionCalculator;
@@ -24,6 +26,7 @@ use Chunlian\Service\RevisionService;
 use Chunlian\Service\ShopSettingService;
 
 use function app\plugins\chunlianfresh\pdo;
+use function app\plugins\chunlianfresh\extension_root;
 use function app\plugins\chunlianfresh\table_prefix;
 
 /**
@@ -66,6 +69,8 @@ class Merchant
         $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
         $allowedMethods = match (true) {
             in_array($path, ['auth/login', 'auth/open-session', 'auth/logout', 'notifications/read', 'uploads'], true) => ['POST'],
+            $path === 'push-devices' => ['POST'],
+            preg_match('#^push-devices/[A-Za-z0-9._:-]{8,128}$#', $path) === 1 => ['DELETE'],
             $path === 'store' => ['GET', 'PATCH', 'PUT'],
             $path === 'goods/categories' => ['GET', 'POST'],
             preg_match('#^goods/categories/\\d+$#', $path) === 1 => ['PATCH', 'PUT', 'DELETE'],
@@ -103,6 +108,13 @@ class Merchant
             $this->pdo->prepare('UPDATE `veg_merchant_session` SET `revoked_at` = NOW() WHERE `id` = :id')
                 ->execute(['id' => $session['id']]);
             return $this->ok(null, '已退出登录');
+        }
+
+        if ($path === 'push-devices' && $method === 'POST') {
+            return $this->pushDevices()->bind('MERCHANT', $actorId, $this->body());
+        }
+        if (preg_match('#^push-devices/([A-Za-z0-9._:-]{8,128})$#', $path, $m) === 1 && $method === 'DELETE') {
+            return $this->pushDevices()->revoke('MERCHANT', $actorId, $m[1]);
         }
 
         // ---------- 路由 ----------
@@ -549,6 +561,14 @@ class Merchant
         $repo = new PdoOrderRepository($this->pdo, table_prefix());
 
         return $repo;
+    }
+
+    private function pushDevices(): PushDeviceService
+    {
+        $config = require extension_root() . '/config/extension.php';
+        $getuiConfig = is_array($config['getui'] ?? null) ? $config['getui'] : [];
+
+        return new PushDeviceService(new PdoPushDeviceRepository($this->pdo), $getuiConfig);
     }
 
     private function catalog(): CatalogService

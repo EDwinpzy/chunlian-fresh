@@ -52,7 +52,7 @@ final class MerchantInsightService
         }
 
         $stmt = $this->pdo->prepare(
-            'SELECT `kind`, `amount_fen`, `status`, `occurred_at` FROM `veg_payment_ledger` '
+            'SELECT `kind`, `amount_fen`, `status`, `occurred_at`, `collection_method` FROM `veg_payment_ledger` '
             . 'WHERE DATE(`occurred_at`) BETWEEN :f AND :t ORDER BY `occurred_at` ASC, `id` ASC'
         );
         $stmt->execute(['f' => $from, 't' => $to]);
@@ -300,7 +300,7 @@ final class MerchantInsightService
             "SELECT COALESCE(SUM(o.`total_price` - o.`pay_price`), 0) AS fen, COUNT(*) AS c "
             . "FROM `veg_order_delivery` d "
             . "INNER JOIN `{$p}order` o ON o.`id` = d.`order_id` "
-            . "WHERE d.`payment_method` = 'COD' AND d.`fulfillment` IN ('DELIVERED','FINISHED') AND d.`payment_state` = 'UNPAID'"
+            . "WHERE d.`payment_method` = 'COD' AND d.`order_status` IN ('DELIVERED','FINISHED') AND d.`payment_state` = 'UNPAID'"
         );
         $stmt->execute();
         $row = $stmt->fetch(\PDO::FETCH_ASSOC) ?: [];
@@ -352,6 +352,7 @@ final class MerchantInsightService
             'amount_fen' => (int) $r['amount_fen'],
             'status' => (string) $r['status'],
             'occurred_at' => (string) $r['occurred_at'],
+            'collection_method' => (string) ($r['collection_method'] ?? ''),
         ], $rows);
     }
 
@@ -362,6 +363,7 @@ final class MerchantInsightService
             LedgerKind::TOPUP => '改单补款',
             LedgerKind::WX_REFUND => '退款',
             LedgerKind::COD_RECEIPT => '货到付款收款',
+            LedgerKind::CUSTOMER_RECEIPT => '确认收货自动记账',
             LedgerKind::OFFLINE_RECEIPT => '扫码预付款核实',
             LedgerKind::OFFLINE_REFUND => '人工退款',
             null => '其他',

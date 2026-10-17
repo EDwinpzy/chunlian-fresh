@@ -62,6 +62,24 @@ return [
         'login_window_seconds' => 300,
     ],
 
+    'getui' => [
+        // App IDs are public identifiers; App Keys and Master Secrets stay server-side.
+        // Keep customer and merchant projects separate so a client cannot select credentials.
+        'merchant' => [
+            'app_id' => trim((string) (getenv('GETUI_MERCHANT_APP_ID') ?: '')),
+            'app_key' => trim((string) (getenv('GETUI_MERCHANT_APP_KEY') ?: '')),
+            'master_secret' => trim((string) (getenv('GETUI_MERCHANT_MASTER_SECRET') ?: '')),
+        ],
+        'customer' => [
+            'app_id' => trim((string) (getenv('GETUI_CUSTOMER_APP_ID') ?: '')),
+            'app_key' => trim((string) (getenv('GETUI_CUSTOMER_APP_KEY') ?: '')),
+            'master_secret' => trim((string) (getenv('GETUI_CUSTOMER_MASTER_SECRET') ?: '')),
+        ],
+        'timeout_seconds' => (int) (getenv('GETUI_HTTP_TIMEOUT_SECONDS') ?: 8),
+        'push_ttl_ms' => (int) (getenv('GETUI_PUSH_TTL_MS') ?: 7200000),
+        'token_cache_dir' => trim((string) (getenv('GETUI_TOKEN_CACHE_DIR') ?: '')),
+    ],
+
     'upload' => [
         'max_mb' => (int) (getenv('UPLOAD_MAX_MB') ?: 5),
         'allowed_mime' => ['image/jpeg', 'image/png', 'image/webp'],

@@ -10,7 +10,7 @@ declare(strict_types=1);
  *   php scripts/outbox-worker.php --loop        # 常驻循环
  *   php scripts/outbox-worker.php --status      # 只打印积压状态
  *
- * 职责：支付核对、退款查询、App 提醒重试。
+ * 职责：支付核对、退款查询、商家新订单系统通知。
  *
  * ⚠️  方案 §8.1 / §13.3：禁止在 HTTP 请求内做长耗时外部调用或无限重试。
  *     本 worker 用指数退避 + 最大重试次数，超限标记 DEAD 进入人工处理。
@@ -25,6 +25,17 @@ $config = require dirname(__DIR__) . '/config/extension.php';
 $maxRetry = (int) $config['outbox']['max_retry'];
 $backoffBase = (int) $config['outbox']['backoff_base_seconds'];
 $backoffCap = (int) $config['outbox']['backoff_cap_seconds'];
+$getuiConfig = is_array($config['getui'] ?? null) ? $config['getui'] : [];
+$shopxoTablePrefix = getenv('DB_PREFIX') ?: 'shopxo_';
+if (preg_match('/^[a-zA-Z0-9_]*$/', $shopxoTablePrefix) !== 1) {
+    fwrite(STDERR, "DB_PREFIX 只能包含英文字母、数字和下划线。\n");
+    exit(1);
+}
+
+require_once dirname(__DIR__) . '/src/Repository/PdoPushDeviceRepository.php';
+require_once dirname(__DIR__) . '/src/Service/PdoOutboxWorkerLease.php';
+require_once dirname(__DIR__) . '/src/Service/GetuiRestV2Client.php';
+require_once dirname(__DIR__) . '/src/Service/MerchantPushNotificationService.php';
 
 $options = [];
 foreach (array_slice($argv, 1) as $arg) {
@@ -49,20 +60,32 @@ if ($mode === 'status') {
 }
 
 $running = true;
+$workerLockName = 'chunlian_veg_outbox_worker';
+$lockStmt = $pdo->prepare('SELECT GET_LOCK(?, 0)');
+$lockStmt->execute([$workerLockName]);
+if ((int) $lockStmt->fetchColumn() !== 1) {
+    echo "已有 Outbox Worker 正在运行，本进程退出\n";
+    exit(0);
+}
 
-do {
-    $processed = processBatch($pdo, $maxRetry, $backoffBase, $backoffCap);
+try {
+    do {
+        $processed = processBatch($pdo, $maxRetry, $backoffBase, $backoffCap, $getuiConfig, $shopxoTablePrefix);
 
-    if ($processed === 0) {
-        echo "[" . now() . "] 无待处理事件\n";
-    }
+        if ($processed === 0) {
+            echo "[" . now() . "] 无待处理事件\n";
+        }
 
-    if ($mode === 'once') {
-        $running = false;
-    } else {
-        sleep(5);
-    }
-} while ($running);
+        if ($mode === 'once') {
+            $running = false;
+        } else {
+            sleep(5);
+        }
+    } while ($running);
+} finally {
+    $releaseStmt = $pdo->prepare('SELECT RELEASE_LOCK(?)');
+    $releaseStmt->execute([$workerLockName]);
+}
 
 function connect(): ?PDO
 {
@@ -92,21 +115,60 @@ function connect(): ?PDO
     }
 }
 
-function processBatch(PDO $pdo, int $maxRetry, int $backoffBase, int $backoffCap): int
+function processBatch(
+    PDO $pdo,
+    int $maxRetry,
+    int $backoffBase,
+    int $backoffCap,
+    array $getuiConfig,
+    string $shopxoTablePrefix,
+): int
 {
-    // 抢占一批事件（避免多 worker 重复处理）
-    $stmt = $pdo->prepare(
-        "SELECT id, event_type, entity_id, payload, retry_count
-         FROM veg_outbox_event
-         WHERE status = 'PENDING'
-           AND (next_retry_at IS NULL OR next_retry_at <= NOW())
-         ORDER BY id ASC
-         LIMIT 20"
+    $lease = new Chunlian\Service\PdoOutboxWorkerLease(
+        $pdo,
+        bin2hex(random_bytes(16)),
+        Chunlian\Service\PdoOutboxWorkerLease::DEFAULT_LEASE_SECONDS,
+        $maxRetry,
+        $backoffBase,
+        $backoffCap,
     );
-    $stmt->execute();
-    $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $processed = 0;
 
-    if ($events === []) {
+    // Claim and finish one event at a time. The MySQL named lock serializes
+    // normal worker runs; the per-row compare-and-set also protects against a
+    // lost connection, stale lock, or another consumer that does not use it.
+    while ($processed < 20 && ($event = $lease->claimNext()) !== null) {
+        $id = (int) $event['id'];
+        $type = (string) $event['event_type'];
+        $retry = (int) $event['retry_count'];
+
+        try {
+            handleEvent($pdo, $type, $event, $getuiConfig, $shopxoTablePrefix, $lease);
+
+            if (!$lease->markSent($id)) {
+                echo '[' . now() . "] #{$id} {$type} lease 已失效，跳过旧 worker 的状态更新\n";
+            } else {
+                echo '[' . now() . "] ✓ #{$id} {$type}\n";
+            }
+        } catch (\Throwable $e) {
+            $retry++;
+            $message = substr($e->getMessage(), 0, 480);
+            $delay = min($backoffCap, $backoffBase * $retry);
+            $updated = $lease->markFailed($id, $retry, $maxRetry, $delay, $message);
+
+            if (!$updated) {
+                echo '[' . now() . "] #{$id} {$type} lease 已失效，未覆盖新 worker 的状态\n";
+            } elseif ($retry >= $maxRetry) {
+                echo '[' . now() . "] ✗ #{$id} {$type} → DEAD（需人工处理）：{$message}\n";
+            } else {
+                echo '[' . now() . "] ↻ #{$id} {$type} 失败，{$delay}s 后重试（第 {$retry} 次）：{$message}\n";
+            }
+        }
+
+        $processed++;
+    }
+
+    if ($processed === 0) {
         // 同时检查 DEAD 积压
         $dead = (int) $pdo->query("SELECT COUNT(*) FROM veg_outbox_event WHERE status = 'DEAD'")->fetchColumn();
         if ($dead > 0) {
@@ -116,59 +178,27 @@ function processBatch(PDO $pdo, int $maxRetry, int $backoffBase, int $backoffCap
         return 0;
     }
 
-    $processed = 0;
-
-    foreach ($events as $event) {
-        $id = (int) $event['id'];
-        $type = (string) $event['event_type'];
-        $retry = (int) $event['retry_count'];
-
-        try {
-            handleEvent($pdo, $type, $event);
-
-            $pdo->prepare(
-                "UPDATE veg_outbox_event SET status='SENT', sent_at=NOW(), updated_at=NOW(), last_error=NULL WHERE id=?"
-            )->execute([$id]);
-
-            echo "[" . now() . "] ✓ #{$id} {$type}\n";
-            $processed++;
-        } catch (\Throwable $e) {
-            $retry++;
-            $message = substr($e->getMessage(), 0, 480);
-
-            if ($retry >= $maxRetry) {
-                $pdo->prepare(
-                    "UPDATE veg_outbox_event SET status='DEAD', retry_count=?, last_error=?, updated_at=NOW() WHERE id=?"
-                )->execute([$retry, $message, $id]);
-
-                echo "[" . now() . "] ✗ #{$id} {$type} → DEAD（需人工处理）：{$message}\n";
-            } else {
-                // 指数退避
-                $delay = min($backoffCap, $backoffBase * $retry);
-                $pdo->prepare(
-                    "UPDATE veg_outbox_event
-                     SET status='PENDING', retry_count=?, last_error=?, next_retry_at=DATE_ADD(NOW(), INTERVAL ? SECOND), updated_at=NOW()
-                     WHERE id=?"
-                )->execute([$retry, $message, $delay, $id]);
-
-                echo "[" . now() . "] ↻ #{$id} {$type} 失败，{$delay}s 后重试（第 {$retry} 次）：{$message}\n";
-            }
-            $processed++;
-        }
-    }
-
     return $processed;
 }
 
 /**
  * 事件分发。
  *
- * 具体业务实现（调用微信查单/退款查询/推送）需在接入真实商户配置后完成。
- * 这里只保留分发骨架与告警路径，**不伪造成功**。
+ * 支付核验与退款查询仍需接入对应商户配置；ORDER_CREATED 已通过 GeTui
+ * 实际发送。推送配置或调用失败会抛出异常，由批处理逻辑退避重试并在
+ * 超限后标记 DEAD，不伪造成功。
  */
-function handleEvent(PDO $pdo, string $type, array $event): void
+function handleEvent(
+    PDO $pdo,
+    string $type,
+    array $event,
+    array $getuiConfig,
+    string $shopxoTablePrefix,
+    Chunlian\Service\PdoOutboxWorkerLease $lease,
+): void
 {
-    $payload = json_decode((string) $event['payload'], true) ?: [];
+    $decodedPayload = json_decode((string) $event['payload'], true);
+    $payload = is_array($decodedPayload) ? $decodedPayload : [];
 
     switch ($type) {
         case 'PAYMENT_VERIFY':
@@ -181,10 +211,52 @@ function handleEvent(PDO $pdo, string $type, array $event): void
             throw new \RuntimeException('REFUND_QUERY 未实现：需接入微信退款查询 API');
 
         case 'ORDER_CREATED':
+            if (!is_array($decodedPayload)) {
+                throw new \RuntimeException('ORDER_CREATED payload must be a JSON object');
+            }
+            $workerPush = $payload['_worker_push'] ?? [];
+            if (!is_array($workerPush)) {
+                throw new \RuntimeException('ORDER_CREATED push progress is malformed');
+            }
+            $pushResults = $workerPush['merchant_cid_results'] ?? [];
+            if (!is_array($pushResults)) {
+                throw new \RuntimeException('ORDER_CREATED push progress is malformed');
+            }
+
+            $eventId = (int) ($event['id'] ?? 0);
+            $checkpoint = static function (string $cid, string $status) use (&$payload, &$workerPush, $eventId, $lease): void {
+                $workerPush['merchant_cid_results'][hash('sha256', $cid)] = $status;
+                $payload['_worker_push'] = $workerPush;
+                $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+                if (!$lease->savePayload($eventId, $encoded)) {
+                    throw new \RuntimeException('Outbox worker lease expired while saving GeTui CID progress');
+                }
+            };
+            $renew = static function () use ($eventId, $lease): void {
+                if (!$lease->renew($eventId)) {
+                    throw new \RuntimeException('Outbox worker lease expired before GeTui push');
+                }
+            };
+
+            $recipients = (new Chunlian\Service\MerchantPushNotificationService($pdo, $getuiConfig))
+                ->dispatchOrderCreated(
+                    $eventId,
+                    (string) ($event['entity_id'] ?? ''),
+                    $shopxoTablePrefix,
+                    $pushResults,
+                    $checkpoint,
+                    $renew,
+                );
+            if ($recipients === 0) {
+                echo '[' . now() . "] #" . (int) ($event['id'] ?? 0) . " ORDER_CREATED: no active merchant push devices; skipped\n";
+            }
+
+            return;
+
         case 'ORDER_REVISED':
         case 'ORDER_CANCELLED':
-            // App 提醒：写入通知表 / 触发推送。首期依赖 App 前台轮询兜底。
-            // 这里不视为失败，避免因未接入推送而无限重试。
+            // These event types remain in the in-app feed; only ORDER_CREATED has
+            // a configured system-notification recipient policy in this rollout.
             return;
 
         case 'REFUND_NEEDS_ATTENTION':

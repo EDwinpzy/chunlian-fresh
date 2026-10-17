@@ -29,10 +29,9 @@ use Chunlian\Domain\DeliveryMode;
 use Chunlian\Domain\LedgerKind;
 use Chunlian\Domain\Money;
 use Chunlian\Domain\Order;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderLine;
 use Chunlian\Domain\OrderPaymentState;
-use Chunlian\Domain\OrderReceiptState;
 use Chunlian\Domain\OrderRevisionState;
 use Chunlian\Domain\PaymentMethod;
 use Chunlian\Domain\RejectionCode;
@@ -115,9 +114,8 @@ function makeOrder(int $version = 1, PaymentMethod $method = PaymentMethod::COD)
         id: '10025',
         orderNo: '20261012193000001',
         version: $version,
-        fulfillment: OrderFulfillment::PENDING,
+        orderStatus: OrderStatus::PENDING,
         paymentState: OrderPaymentState::UNPAID,
-        receiptState: OrderReceiptState::UNCONFIRMED,
         revisionState: OrderRevisionState::NONE,
         paymentMethod: $method,
         deliveryMode: DeliveryMode::ASAP,
@@ -176,14 +174,14 @@ $t->check('订单总额 = 商品小计 + 配送费', function (): void {
 echo "\n[状态机] 四维独立与迁移守卫\n";
 
 $t->check('仅 PENDING 允许顾客自助改/取消', function (): void {
-    assertTrue(OrderFulfillment::PENDING->allowsCustomerSelfService());
-    assertFalse(OrderFulfillment::DELIVERING->allowsCustomerSelfService());
-    assertFalse(OrderFulfillment::DELIVERED->allowsCustomerSelfService());
+    assertTrue(OrderStatus::PENDING->allowsCustomerSelfService());
+    assertFalse(OrderStatus::DELIVERING->allowsCustomerSelfService());
+    assertFalse(OrderStatus::DELIVERED->allowsCustomerSelfService());
 });
 
 $t->check('不允许跳步：PENDING → DELIVERED', function (): void {
-    assertFalse(OrderFulfillment::PENDING->canTransitionTo(OrderFulfillment::DELIVERED));
-    assertTrue(OrderFulfillment::PENDING->canTransitionTo(OrderFulfillment::DELIVERING));
+    assertFalse(OrderStatus::PENDING->canTransitionTo(OrderStatus::DELIVERED));
+    assertTrue(OrderStatus::PENDING->canTransitionTo(OrderStatus::DELIVERING));
 });
 
 $t->check('T20 待补款修订时禁止开始配送', function () use ($sm): void {
@@ -206,14 +204,14 @@ $t->check('T19 版本冲突拒绝', function () use ($sm): void {
 $t->check('开始配送成功并锁定顾客编辑', function () use ($sm): void {
     $result = $sm->startDelivery(makeOrder(version: 1), 1);
     assertTrue($result->success);
-    assertSame(OrderFulfillment::DELIVERING, $result->get('fulfillment'));
+    assertSame(OrderStatus::DELIVERING, $result->get('order_status'));
     assertSame(2, $result->get('version'));
     assertTrue($result->get('locked_customer_editing'));
 });
 
 $t->check('T21 已开始配送后顾客不可再修改', function () use ($sm): void {
     $order = makeOrder(version: 3);
-    $order->fulfillment = OrderFulfillment::DELIVERING;
+    $order->orderStatus = OrderStatus::DELIVERING;
     $result = $sm->canStartRevision($order, 3);
     assertFalse($result->success);
     assertSame(RejectionCode::ORDER_NOT_EDITABLE, $result->code);
@@ -221,7 +219,7 @@ $t->check('T21 已开始配送后顾客不可再修改', function () use ($sm): 
 
 $t->check('T22 已开始配送后顾客不可自助取消（给售后入口）', function () use ($sm): void {
     $order = makeOrder(version: 3);
-    $order->fulfillment = OrderFulfillment::DELIVERING;
+    $order->orderStatus = OrderStatus::DELIVERING;
     $result = $sm->cancel($order, 3);
     assertFalse($result->success);
     assertSame(RejectionCode::ORDER_NOT_EDITABLE, $result->code);
@@ -232,10 +230,10 @@ echo "\n[COD 送达与收款] 合并动作的正确语义\n";
 
 $t->check('T24 COD 已收款并送达：同事务写 DELIVERED + 流水', function () use ($sm): void {
     $order = makeOrder(version: 4);
-    $order->fulfillment = OrderFulfillment::DELIVERING;
+    $order->orderStatus = OrderStatus::DELIVERING;
     $result = $sm->confirmDelivery($order, 4, receivedMoney: true, collectedFen: 980);
     assertTrue($result->success);
-    assertSame(OrderFulfillment::DELIVERED, $result->get('fulfillment'));
+    assertSame(OrderStatus::DELIVERED, $result->get('order_status'));
     assertSame(980, $result->get('paid_fen'));
     assertSame(OrderPaymentState::PAID, $result->get('payment_state'));
     assertSame(0, $result->get('receivable_fen'));
@@ -244,10 +242,10 @@ $t->check('T24 COD 已收款并送达：同事务写 DELIVERED + 流水', functi
 
 $t->check('T25 COD 仅送达未收款：保留应收，不记实收', function () use ($sm): void {
     $order = makeOrder(version: 4);
-    $order->fulfillment = OrderFulfillment::DELIVERING;
+    $order->orderStatus = OrderStatus::DELIVERING;
     $result = $sm->confirmDelivery($order, 4, receivedMoney: false);
     assertTrue($result->success);
-    assertSame(OrderFulfillment::DELIVERED, $result->get('fulfillment'));
+    assertSame(OrderStatus::DELIVERED, $result->get('order_status'));
     assertSame(OrderPaymentState::UNPAID, $result->get('payment_state'));
     assertSame(980, $result->get('receivable_fen'));
     assertFalse($result->get('write_cod_receipt'));
@@ -255,7 +253,7 @@ $t->check('T25 COD 仅送达未收款：保留应收，不记实收', function (
 
 $t->check('实收金额必须与应收一致', function () use ($sm): void {
     $order = makeOrder(version: 4);
-    $order->fulfillment = OrderFulfillment::DELIVERING;
+    $order->orderStatus = OrderStatus::DELIVERING;
     $result = $sm->confirmDelivery($order, 4, receivedMoney: true, collectedFen: 900);
     assertFalse($result->success);
     assertSame(RejectionCode::VALIDATION_FAILED, $result->code);
@@ -263,7 +261,7 @@ $t->check('实收金额必须与应收一致', function () use ($sm): void {
 
 $t->check('T23 在线已付款订单送达不重复收款', function () use ($sm): void {
     $order = makeOrder(version: 4, method: PaymentMethod::WECHAT);
-    $order->fulfillment = OrderFulfillment::DELIVERING;
+    $order->orderStatus = OrderStatus::DELIVERING;
     $order->paidFen = 980;
     $order->paymentState = OrderPaymentState::PAID;
 
@@ -275,7 +273,7 @@ $t->check('T23 在线已付款订单送达不重复收款', function () use ($sm
 
 $t->check('在线订单不得登记 COD 收款', function () use ($sm): void {
     $order = makeOrder(version: 4, method: PaymentMethod::WECHAT);
-    $order->fulfillment = OrderFulfillment::DELIVERING;
+    $order->orderStatus = OrderStatus::DELIVERING;
     $order->paidFen = 980;
     $result = $sm->confirmDelivery($order, 4, receivedMoney: true, collectedFen: 980);
     assertFalse($result->success);
@@ -283,7 +281,7 @@ $t->check('在线订单不得登记 COD 收款', function () use ($sm): void {
 
 $t->check('T26 送达后补记收款只生效一次', function () use ($sm): void {
     $order = makeOrder(version: 5);
-    $order->fulfillment = OrderFulfillment::DELIVERED;
+    $order->orderStatus = OrderStatus::DELIVERED;
 
     $first = $sm->recordCodReceipt($order, 5, 980);
     assertTrue($first->success);
@@ -390,9 +388,8 @@ $t->check('回归：无法整除时拆行，仍保证行小计守恒', function 
         id: '90001',
         orderNo: 'NO90001',
         version: 1,
-        fulfillment: OrderFulfillment::PENDING,
+        orderStatus: OrderStatus::PENDING,
         paymentState: OrderPaymentState::UNPAID,
-        receiptState: OrderReceiptState::UNCONFIRMED,
         revisionState: OrderRevisionState::NONE,
         paymentMethod: PaymentMethod::COD,
         deliveryMode: DeliveryMode::ASAP,

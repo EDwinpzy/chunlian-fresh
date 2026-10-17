@@ -6,9 +6,9 @@ declare(strict_types=1);
  * 迁移执行器。
  *
  * 用法：
- *   php scripts/migrate.php --dry-run     # 预演，只打印将要执行的 SQL
- *   php scripts/migrate.php --apply       # 正式执行
- *   php scripts/migrate.php --rollback    # 回滚（危险，需 --force）
+ *   php scripts/migrate.php --dry-run     # 预演全部正向迁移，只打印 SQL
+ *   php scripts/migrate.php --apply       # 按顺序执行全部正向迁移
+ *   php scripts/migrate.php --rollback    # 回滚初始建表迁移（危险，需 --force）
  *
  * ⚠️  执行前必须已完成数据库备份。
  *     本脚本不会自动备份，也不会自动确认表结构兼容性。
@@ -34,25 +34,40 @@ if ($mode === 'rollback' && !($options['force'] ?? false)) {
     exit(0);
 }
 
-$file = $mode === 'rollback'
-    ? "{$root}/migrations/2026_10_12_000001_create_veg_tables_rollback.sql"
-    : "{$root}/migrations/2026_10_12_000001_create_veg_tables.sql";
+$migrationFiles = $mode === 'rollback'
+    ? ["{$root}/migrations/2026_10_12_000001_create_veg_tables_rollback.sql"]
+    : array_values(array_filter(
+        glob("{$root}/migrations/*.sql") ?: [],
+        static fn (string $path): bool => !str_contains($path, '_rollback')
+    ));
+sort($migrationFiles);
 
-if (!is_file($file)) {
-    fwrite(STDERR, "找不到迁移文件: {$file}\n");
+if ($migrationFiles === [] || array_filter($migrationFiles, static fn (string $path): bool => !is_file($path)) !== []) {
+    fwrite(STDERR, "找不到迁移文件。\n");
     exit(1);
 }
 
-$sql = (string) file_get_contents($file);
-$statements = splitStatements($sql);
+$statementsByFile = [];
+$statementCount = 0;
+foreach ($migrationFiles as $file) {
+    $statementsByFile[$file] = splitStatements((string) file_get_contents($file));
+    $statementCount += count($statementsByFile[$file]);
+}
 
-echo "迁移文件: " . basename($file) . "\n";
-echo "语句数量: " . count($statements) . "\n\n";
+echo "迁移文件数: " . count($migrationFiles) . "\n";
+foreach ($migrationFiles as $file) {
+    echo "  - " . basename($file) . " (" . count($statementsByFile[$file]) . " 条语句)\n";
+}
+echo "语句总数: {$statementCount}\n\n";
 
 if ($mode === 'dry-run') {
     echo "--- 预演（未连接数据库）---\n";
-    foreach ($statements as $i => $stmt) {
-        echo sprintf("[%02d] %s\n", $i + 1, firstLine($stmt));
+    $sequence = 0;
+    foreach ($migrationFiles as $file) {
+        echo "\n" . basename($file) . "\n";
+        foreach ($statementsByFile[$file] as $stmt) {
+            echo sprintf("[%02d] %s\n", ++$sequence, firstLine($stmt));
+        }
     }
     echo "\n预演结束。确认无误后使用 --apply 正式执行。\n";
     exit(0);
@@ -65,6 +80,11 @@ $name = getenv('DB_NAME') ?: '';
 $user = getenv('DB_USER') ?: '';
 $pass = getenv('DB_PASS') ?: '';
 $prefix = getenv('DB_PREFIX') ?: 'shopxo_';
+
+if (preg_match('/^[a-zA-Z0-9_]*$/', $prefix) !== 1) {
+    fwrite(STDERR, "DB_PREFIX 只能包含英文字母、数字和下划线。\n");
+    exit(1);
+}
 
 if ($name === '' || $user === '') {
     fwrite(STDERR, "缺少 DB_NAME / DB_USER 环境变量。请先 source infrastructure/.env\n");
@@ -83,24 +103,30 @@ try {
     exit(1);
 }
 
+$pdo->exec('SET @cl_shopxo_prefix = ' . $pdo->quote($prefix));
+
 echo "已连接 {$host}:{$port}/{$name}\n";
 echo "ShopXO 表前缀: {$prefix}（迁移脚本使用独立 veg_ 前缀，不受影响）\n\n";
 
 $ok = 0;
 $failed = 0;
+$sequence = 0;
 
-foreach ($statements as $i => $stmt) {
-    $label = sprintf('[%02d] %s', $i + 1, firstLine($stmt));
-    try {
-        $pdo->exec($stmt);
-        echo "✓ {$label}\n";
-        $ok++;
-    } catch (PDOException $e) {
-        echo "✗ {$label}\n    错误: " . $e->getMessage() . "\n";
-        $failed++;
-        if ($mode === 'apply') {
-            fwrite(STDERR, "\n迁移中断。请检查错误并恢复备份后重试。\n");
-            exit(1);
+foreach ($migrationFiles as $file) {
+    echo "\n" . basename($file) . "\n";
+    foreach ($statementsByFile[$file] as $stmt) {
+        $label = sprintf('[%02d] %s', ++$sequence, firstLine($stmt));
+        try {
+            $pdo->exec($stmt);
+            echo "✓ {$label}\n";
+            $ok++;
+        } catch (PDOException $e) {
+            echo "✗ {$label}\n    错误: " . $e->getMessage() . "\n";
+            $failed++;
+            if ($mode === 'apply') {
+                fwrite(STDERR, "\n迁移中断。请检查错误并恢复备份后重试。\n");
+                exit(1);
+            }
         }
     }
 }

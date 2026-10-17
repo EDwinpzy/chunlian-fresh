@@ -17,9 +17,9 @@ final class MerchantOrderListFilter
 
         if ($status !== null && $status !== '') {
             if ($status === 'DELIVERED') {
-                $where[] = "d.`fulfillment` IN ('DELIVERED','FINISHED')";
+                $where[] = "d.`order_status` IN ('DELIVERED','FINISHED')";
             } else {
-                $where[] = 'd.`fulfillment` = :status';
+                $where[] = 'd.`order_status` = :status';
                 $params['status'] = $status;
             }
         }

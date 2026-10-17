@@ -280,6 +280,12 @@ function run_migrations(\PDO $pdo): array
         throw new \RuntimeException('找不到迁移目录：' . $dir);
     }
 
+    $prefix = table_prefix();
+    if (preg_match('/^[a-zA-Z0-9_]*$/', $prefix) !== 1) {
+        throw new \RuntimeException('ShopXO 数据表前缀包含不支持的字符');
+    }
+    $pdo->exec('SET @cl_shopxo_prefix = ' . $pdo->quote($prefix));
+
     $files = glob($dir . '/*.sql') ?: [];
     $files = array_values(array_filter(
         $files,

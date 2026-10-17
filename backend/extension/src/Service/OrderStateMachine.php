@@ -6,7 +6,7 @@ namespace Chunlian\Service;
 
 use Chunlian\Domain\DeliveryMode;
 use Chunlian\Domain\Order;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderPaymentState;
 use Chunlian\Domain\PaymentMethod;
 use Chunlian\Domain\RejectionCode;
@@ -31,9 +31,9 @@ final class OrderStateMachine
             ]);
         }
 
-        if ($order->fulfillment !== OrderFulfillment::PENDING) {
+        if ($order->orderStatus !== OrderStatus::PENDING) {
             return TransitionResult::reject(RejectionCode::ORDER_NOT_EDITABLE, [
-                'fulfillment' => $order->fulfillment->value,
+                'order_status' => $order->orderStatus->value,
             ]);
         }
 
@@ -50,12 +50,12 @@ final class OrderStateMachine
             ]);
         }
 
-        if (!$order->fulfillment->canTransitionTo(OrderFulfillment::DELIVERING)) {
+        if (!$order->orderStatus->canTransitionTo(OrderStatus::DELIVERING)) {
             return TransitionResult::reject(RejectionCode::ORDER_NOT_EDITABLE);
         }
 
         return TransitionResult::ok([
-            'fulfillment' => OrderFulfillment::DELIVERING,
+            'order_status' => OrderStatus::DELIVERING,
             'version' => $order->version + 1,
             'locked_customer_editing' => true,
         ]);
@@ -79,9 +79,9 @@ final class OrderStateMachine
             ]);
         }
 
-        if ($order->fulfillment !== OrderFulfillment::DELIVERING) {
+        if ($order->orderStatus !== OrderStatus::DELIVERING) {
             return TransitionResult::reject(RejectionCode::ORDER_NOT_EDITABLE, [
-                'fulfillment' => $order->fulfillment->value,
+                'order_status' => $order->orderStatus->value,
             ]);
         }
 
@@ -115,7 +115,7 @@ final class OrderStateMachine
         $isCod = $order->paymentMethod === PaymentMethod::COD;
 
         return TransitionResult::ok([
-            'fulfillment' => OrderFulfillment::DELIVERED,
+            'order_status' => OrderStatus::DELIVERED,
             'version' => $order->version + 1,
             'paid_fen' => $newPaidFen,
             'payment_state' => $this->derivePaymentState($order->paymentMethod, $newPaidFen, $order->total()->fen(), $order->refundedFen),
@@ -142,9 +142,9 @@ final class OrderStateMachine
             ]);
         }
 
-        if (!in_array($order->fulfillment, [OrderFulfillment::DELIVERED, OrderFulfillment::FINISHED], true)) {
+        if (!in_array($order->orderStatus, [OrderStatus::DELIVERED, OrderStatus::FINISHED], true)) {
             return TransitionResult::reject(RejectionCode::ORDER_NOT_EDITABLE, [
-                'fulfillment' => $order->fulfillment->value,
+                'order_status' => $order->orderStatus->value,
             ]);
         }
 
@@ -180,17 +180,30 @@ final class OrderStateMachine
             ]);
         }
 
-        if (!$order->receiptState->canConfirm($order->fulfillment)) {
+        if ($order->orderStatus !== OrderStatus::DELIVERED) {
             return TransitionResult::reject(RejectionCode::ORDER_NOT_EDITABLE, [
-                'fulfillment' => $order->fulfillment->value,
-                'receipt_state' => $order->receiptState->value,
+                'order_status' => $order->orderStatus->value,
             ]);
         }
 
+        $receivableFen = max(0, $order->receivable()->fen());
+        $newPaidFen = $order->paidFen + $receivableFen;
+        $paymentState = $order->refundingFen > 0
+            ? OrderPaymentState::REFUNDING
+            : $this->derivePaymentState(
+                $order->paymentMethod,
+                $newPaidFen,
+                $order->total()->fen(),
+                $order->refundedFen,
+            );
+
         return TransitionResult::ok([
-            'fulfillment' => OrderFulfillment::FINISHED,
-            'receipt_state' => \Chunlian\Domain\OrderReceiptState::CONFIRMED,
+            'order_status' => OrderStatus::FINISHED,
             'version' => $order->version + 1,
+            'received_at' => true,
+            'paid_fen' => $newPaidFen,
+            'payment_state' => $paymentState,
+            'customer_receipt_fen' => $receivableFen,
         ]);
     }
 
@@ -212,7 +225,7 @@ final class OrderStateMachine
         if (!$order->canCustomerCancel()) {
             // 已出发：不允许自助取消，进入售后
             return TransitionResult::reject(RejectionCode::ORDER_NOT_EDITABLE, [
-                'fulfillment' => $order->fulfillment->value,
+                'order_status' => $order->orderStatus->value,
                 'next_step' => 'AFTER_SALES',
             ]);
         }
@@ -227,7 +240,7 @@ final class OrderStateMachine
         };
 
         return TransitionResult::ok([
-            'fulfillment' => OrderFulfillment::CANCELLED,
+            'order_status' => OrderStatus::CANCELLED,
             'payment_state' => $paymentState,
             'version' => $order->version + 1,
             'refund_fen' => $refundFen,
@@ -249,7 +262,7 @@ final class OrderStateMachine
 
         if (!$order->canCustomerEdit()) {
             return TransitionResult::reject(RejectionCode::ORDER_NOT_EDITABLE, [
-                'fulfillment' => $order->fulfillment->value,
+                'order_status' => $order->orderStatus->value,
             ]);
         }
 
@@ -287,7 +300,7 @@ final class OrderStateMachine
      */
     public function isDispatchable(Order $order): bool
     {
-        return $order->fulfillment === OrderFulfillment::PENDING
+        return $order->orderStatus === OrderStatus::PENDING
             && !$order->revisionState->blocksDispatch();
     }
 

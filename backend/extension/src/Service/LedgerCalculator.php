@@ -10,7 +10,7 @@ use Chunlian\Domain\LedgerKind;
  * 资金账本计算器。
  *
  * 统计口径（docs/DATA-MODEL.md §5.7）：
- *   今日实收 = 当天在线确认入账 + 当天 COD 实收 − 当天已成功退款
+     *   今日实收 = 当天入账 + 当天顾客收货自动记账 − 当天已成功退款
  *
  * 跨日支付/退款按**资金发生日**归集，另提供"按订单日销售额"指标，不混算。
  */
@@ -57,6 +57,12 @@ final class LedgerCalculator
                 $codFen += $amount;
             } elseif ($kind === LedgerKind::OFFLINE_RECEIPT) {
                 $offlineQrFen += $amount;
+            } elseif ($kind === LedgerKind::CUSTOMER_RECEIPT) {
+                match ((string) ($entry['collection_method'] ?? '')) {
+                    'COD' => $codFen += $amount,
+                    'OFFLINE_QR' => $offlineQrFen += $amount,
+                    default => $onlineFen += $amount,
+                };
             } else {
                 $onlineFen += $amount;
             }

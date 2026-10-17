@@ -11,16 +11,19 @@ use app\service\UserService;
 use Chunlian\Domain\RejectionCode;
 use Chunlian\Repository\PdoIdempotencyStore;
 use Chunlian\Repository\PdoOrderRepository;
+use Chunlian\Repository\PdoPushDeviceRepository;
 use Chunlian\Service\CustomerAuthService;
 use Chunlian\Service\CustomerCatalogService;
 use Chunlian\Service\CustomerOrderService;
 use Chunlian\Service\IdempotencyService;
 use Chunlian\Service\OrderStateMachine;
+use Chunlian\Service\PushDeviceService;
 use Chunlian\Service\RevisionCalculator;
 use Chunlian\Service\RevisionService;
 use Chunlian\Service\ShopSettingService;
 
 use function app\plugins\chunlianfresh\pdo;
+use function app\plugins\chunlianfresh\extension_root;
 use function app\plugins\chunlianfresh\table_prefix;
 
 /**
@@ -77,6 +80,7 @@ class Customer
                 sort: $this->query('sort'),
                 page: (int) ($this->query('page') ?? 1),
                 pageSize: (int) ($this->query('page_size') ?? 20),
+                ids: $this->query('ids'),
             );
         }
 
@@ -125,6 +129,13 @@ class Customer
 
         if ($path === 'auth/profile' && ($method === 'PATCH' || $method === 'POST')) {
             return $this->auth()->updateProfile($userId, $this->body());
+        }
+
+        if ($path === 'push-devices' && $method === 'POST') {
+            return $this->pushDevices()->bind('CUSTOMER', (string) $userId, $this->body());
+        }
+        if (preg_match('#^push-devices/([A-Za-z0-9._:-]{8,128})$#', $path, $m) === 1 && $method === 'DELETE') {
+            return $this->pushDevices()->revoke('CUSTOMER', (string) $userId, $m[1]);
         }
 
         // ---------------- 收货地址 ----------------
@@ -407,6 +418,14 @@ class Customer
         $svc = new CustomerAuthService($this->pdo, table_prefix());
 
         return $svc;
+    }
+
+    private function pushDevices(): PushDeviceService
+    {
+        $config = require extension_root() . '/config/extension.php';
+        $getuiConfig = is_array($config['getui'] ?? null) ? $config['getui'] : [];
+
+        return new PushDeviceService(new PdoPushDeviceRepository($this->pdo), $getuiConfig);
     }
 
     private function catalog(): CustomerCatalogService

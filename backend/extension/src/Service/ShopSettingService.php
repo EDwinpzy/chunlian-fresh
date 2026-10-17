@@ -37,7 +37,8 @@ final class ShopSettingService
         $profileStmt = $this->pdo->prepare(
             'SELECT `shop_logo_url`, `shop_address`, `business_hours`, `shop_description`, '
             . '`delivery_description`, `home_banner_title`, `home_banner_subtitle`, `shop_slogan`, '
-            . '`search_hot_words`, `home_section_title`, `updated_at` AS `updated_at_2` '
+            . '`search_hot_words`, `home_section_title`, `home_featured_product_ids`, `notification_popup_title`, '
+            . '`notification_popup_image_url`, `updated_at` AS `updated_at_2` '
             . 'FROM `veg_shop_profile` WHERE `id` = :id LIMIT 1'
         );
         $profileStmt->execute(['id' => self::ROW_ID]);
@@ -52,6 +53,9 @@ final class ShopSettingService
             'shop_slogan' => '',
             'search_hot_words' => '[]',
             'home_section_title' => '',
+            'home_featured_product_ids' => '[]',
+            'notification_popup_title' => '',
+            'notification_popup_image_url' => '',
             'updated_at_2' => '',
         ];
 
@@ -65,6 +69,7 @@ final class ShopSettingService
             'shop_name', 'notice', 'phone', 'payment_qr_url', 'delivery_fee_fen', 'is_open', 'min_lead_minutes',
             'shop_logo_url', 'shop_address', 'business_hours', 'shop_description', 'delivery_description',
             'home_banner_title', 'home_banner_subtitle', 'shop_slogan', 'search_hot_words', 'home_section_title',
+            'notification_popup_title', 'notification_popup_image_url', 'home_featured_product_ids',
         ];
         if (array_diff(array_keys($patch), $allowed) !== []) {
             return $this->fail(RejectionCode::VALIDATION_FAILED, '店铺设置包含不支持的字段');
@@ -84,6 +89,7 @@ final class ShopSettingService
             'home_banner_subtitle' => 120,
             'shop_slogan' => 120,
             'home_section_title' => 80,
+            'notification_popup_title' => 80,
         ] as $field => $maxLength) {
             if (!array_key_exists($field, $patch)) {
                 continue;
@@ -107,25 +113,33 @@ final class ShopSettingService
                     return $this->fail(RejectionCode::VALIDATION_FAILED, '请上传有效的店铺 Logo 图片');
                 }
                 $profileChanges[$field] = $value;
-            } elseif (in_array($field, ['shop_address', 'business_hours', 'shop_description', 'delivery_description', 'home_banner_title', 'home_banner_subtitle', 'shop_slogan', 'home_section_title'], true)) {
+            } elseif (in_array($field, ['shop_address', 'business_hours', 'shop_description', 'delivery_description', 'home_banner_title', 'home_banner_subtitle', 'shop_slogan', 'home_section_title', 'notification_popup_title'], true)) {
                 $profileChanges[$field] = $value;
             } else {
                 $mainChanges[$field] = $value;
             }
         }
 
-        foreach (['payment_qr_url' => '收款二维码', 'shop_logo_url' => '店铺 Logo'] as $field => $label) {
+        foreach ([
+            'payment_qr_url' => '收款二维码',
+            'shop_logo_url' => '店铺 Logo',
+            'notification_popup_image_url' => '通知弹窗',
+        ] as $field => $label) {
             if (!array_key_exists($field, $patch) || $field === 'shop_logo_url') {
                 continue;
             }
             if (!is_string($patch[$field])) {
-                return $this->fail(RejectionCode::VALIDATION_FAILED, $label . ' 地址必须是文本');
+                return $this->fail(RejectionCode::VALIDATION_FAILED, $label . '地址必须是文本');
             }
             $url = trim($patch[$field]);
             if (!$this->isImageUrl($url)) {
                 return $this->fail(RejectionCode::VALIDATION_FAILED, '请上传有效的' . $label . '图片');
             }
-            $mainChanges[$field] = $url;
+            if ($field === 'notification_popup_image_url') {
+                $profileChanges[$field] = $url;
+            } else {
+                $mainChanges[$field] = $url;
+            }
         }
 
         if (array_key_exists('phone', $patch)) {
@@ -185,6 +199,24 @@ final class ShopSettingService
                 $normalized[] = $word;
             }
             $profileChanges['search_hot_words'] = json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        }
+
+        if (array_key_exists('home_featured_product_ids', $patch)) {
+            $ids = $patch['home_featured_product_ids'];
+            if (!is_array($ids) || !array_is_list($ids) || count($ids) > 10) {
+                return $this->fail(RejectionCode::VALIDATION_FAILED, '每日鲜选商品必须是最多 10 项的商品 ID 数组');
+            }
+            $normalized = [];
+            foreach ($ids as $id) {
+                if (!is_string($id) || preg_match('/^[1-9][0-9]{0,19}$/', $id) !== 1) {
+                    return $this->fail(RejectionCode::VALIDATION_FAILED, '每日鲜选商品 ID 格式不正确');
+                }
+                if (in_array($id, $normalized, true)) {
+                    return $this->fail(RejectionCode::VALIDATION_FAILED, '每日鲜选商品不能重复');
+                }
+                $normalized[] = $id;
+            }
+            $profileChanges['home_featured_product_ids'] = json_encode($normalized, JSON_THROW_ON_ERROR);
         }
 
         if ($mainChanges === [] && $profileChanges === []) {
@@ -259,7 +291,7 @@ final class ShopSettingService
     private function ensureProfileRow(): void
     {
         $this->pdo->exec(
-            "INSERT IGNORE INTO `veg_shop_profile` (`id`, `search_hot_words`, `updated_at`) VALUES (1, '[]', NOW())"
+            "INSERT IGNORE INTO `veg_shop_profile` (`id`, `search_hot_words`, `home_featured_product_ids`, `updated_at`) VALUES (1, '[]', '[]', NOW())"
         );
     }
 
@@ -283,6 +315,8 @@ final class ShopSettingService
             'home_banner_subtitle' => '首页副标题',
             'shop_slogan' => '店铺宣传语',
             'home_section_title' => '首页商品分区标题',
+            'notification_popup_title' => '通知弹窗标题',
+            'notification_popup_image_url' => '通知弹窗图片地址',
         ][$field] ?? $field;
     }
 
@@ -294,6 +328,14 @@ final class ShopSettingService
             $words = [];
         }
         $words = array_values(array_filter($words, 'is_string'));
+        $featuredIds = json_decode((string) ($row['home_featured_product_ids'] ?? '[]'), true);
+        if (!is_array($featuredIds) || !array_is_list($featuredIds)) {
+            $featuredIds = [];
+        }
+        $featuredIds = array_values(array_filter(
+            $featuredIds,
+            static fn ($id): bool => is_string($id) && preg_match('/^[1-9][0-9]{0,19}$/', $id) === 1,
+        ));
 
         $settingUpdated = (string) ($row['updated_at'] ?? '');
         $profileUpdated = (string) ($row['updated_at_2'] ?? '');
@@ -316,6 +358,9 @@ final class ShopSettingService
             'shop_slogan' => (string) ($row['shop_slogan'] ?? ''),
             'search_hot_words' => $words,
             'home_section_title' => (string) ($row['home_section_title'] ?? ''),
+            'home_featured_product_ids' => $featuredIds,
+            'notification_popup_title' => (string) ($row['notification_popup_title'] ?? ''),
+            'notification_popup_image_url' => (string) ($row['notification_popup_image_url'] ?? ''),
             'updated_at' => max($settingUpdated, $profileUpdated),
         ];
     }

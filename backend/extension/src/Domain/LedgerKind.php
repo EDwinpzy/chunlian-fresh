@@ -19,6 +19,9 @@ enum LedgerKind: string
     /** 货到付款线下实收。 */
     case COD_RECEIPT = 'COD_RECEIPT';
 
+    /** 顾客确认收货时结清的订单应收。 */
+    case CUSTOMER_RECEIPT = 'CUSTOMER_RECEIPT';
+
     case OFFLINE_RECEIPT = 'OFFLINE_RECEIPT';
     case OFFLINE_REFUND = 'OFFLINE_REFUND';
 
@@ -37,6 +40,6 @@ enum LedgerKind: string
     /** 统计"今日实收"时计入的类型。 */
     public static function receivedKinds(): array
     {
-        return [self::WX_PAY, self::TOPUP, self::COD_RECEIPT, self::WX_REFUND, self::OFFLINE_RECEIPT, self::OFFLINE_REFUND];
+        return [self::WX_PAY, self::TOPUP, self::COD_RECEIPT, self::CUSTOMER_RECEIPT, self::WX_REFUND, self::OFFLINE_RECEIPT, self::OFFLINE_REFUND];
     }
 }

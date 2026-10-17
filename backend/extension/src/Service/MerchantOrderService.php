@@ -7,6 +7,7 @@ namespace Chunlian\Service;
 use Chunlian\Domain\CollectionMethod;
 use Chunlian\Domain\LedgerKind;
 use Chunlian\Domain\Order;
+use Chunlian\Domain\OrderApiCompatibility;
 use Chunlian\Domain\PaymentMethod;
 use Chunlian\Domain\RejectionCode;
 use Chunlian\Repository\OrderRowMapper;
@@ -304,14 +305,14 @@ final class MerchantOrderService
         $offset = ($page - 1) * $pageSize;
         $orderBy = $sort === 'EXPECTED_AT'
             // ASAP orders have expected_at = NULL and are shown before scheduled orders.
-            ? "(d.`expected_at` IS NOT NULL) ASC, d.`expected_at` ASC, FIELD(d.`fulfillment`, 'PENDING','DELIVERING','DELIVERED','FINISHED','CANCELLED') ASC, d.`order_id` DESC"
-            : "FIELD(d.`fulfillment`, 'PENDING','DELIVERING','DELIVERED','FINISHED','CANCELLED') ASC, d.`order_id` DESC";
+            ? "(d.`expected_at` IS NOT NULL) ASC, d.`expected_at` ASC, FIELD(d.`order_status`, 'PENDING','DELIVERING','DELIVERED','FINISHED','CANCELLED') ASC, d.`order_id` DESC"
+            : "FIELD(d.`order_status`, 'PENDING','DELIVERING','DELIVERED','FINISHED','CANCELLED') ASC, d.`order_id` DESC";
         $stmt = $this->pdo->prepare(
             "SELECT d.`order_id` FROM `veg_order_delivery` d "
             . "INNER JOIN `{$p}order` o ON o.`id` = d.`order_id` "
             . "LEFT JOIN `{$p}order_address` a ON a.`order_id` = d.`order_id` "
             . "WHERE {$whereSql} "
-            // Default keeps the fulfillment priority; delivery-time sorting is global and page-safe.
+            // Default keeps the order_status priority; delivery-time sorting is global and page-safe.
             . "ORDER BY {$orderBy} "
             . "LIMIT {$pageSize} OFFSET {$offset}"
         );
@@ -340,9 +341,9 @@ final class MerchantOrderService
 
         $counts = $this->pdo->query(
             "SELECT "
-            . "SUM(d.`fulfillment` = 'PENDING') AS pending_count, "
-            . "SUM(d.`fulfillment` = 'DELIVERING') AS delivering_count, "
-            . "SUM(d.`fulfillment` IN ('DELIVERED','FINISHED') AND d.`payment_method` = 'COD' AND d.`payment_state` = 'UNPAID') AS uncollected_count, "
+            . "SUM(d.`order_status` = 'PENDING') AS pending_count, "
+            . "SUM(d.`order_status` = 'DELIVERING') AS delivering_count, "
+            . "SUM(d.`order_status` IN ('DELIVERED','FINISHED') AND d.`payment_method` = 'COD' AND d.`payment_state` = 'UNPAID') AS uncollected_count, "
             . "SUM(d.`revision_state` = 'PENDING_TOPUP') AS topup_count, "
             . "SUM(d.`revision_state` = 'APPLYING' OR d.`payment_state` = 'REFUNDING') AS refund_count "
             . "FROM `veg_order_delivery` d"
@@ -422,19 +423,19 @@ final class MerchantOrderService
             ],
             'pending_orders' => [
                 'join' => '',
-                'where' => "d.`fulfillment` = 'PENDING'",
+                'where' => "d.`order_status` = 'PENDING'",
                 'order' => 'd.`order_id` DESC',
                 'params' => [],
             ],
             'delivering_orders' => [
                 'join' => '',
-                'where' => "d.`fulfillment` = 'DELIVERING'",
+                'where' => "d.`order_status` = 'DELIVERING'",
                 'order' => 'd.`order_id` DESC',
                 'params' => [],
             ],
             'uncollected_orders' => [
                 'join' => '',
-                'where' => "d.`fulfillment` IN ('DELIVERED','FINISHED') AND d.`payment_method` = 'COD' AND d.`payment_state` = 'UNPAID'",
+                'where' => "d.`order_status` IN ('DELIVERED','FINISHED') AND d.`payment_method` = 'COD' AND d.`payment_state` = 'UNPAID'",
                 'order' => 'd.`order_id` DESC',
                 'params' => [],
             ],
@@ -486,7 +487,10 @@ final class MerchantOrderService
             'order_id' => $serialized['id'],
             'order_no' => $serialized['order_no'],
             'summary' => $this->lineSummary($order),
+            'order_status' => $serialized['order_status'],
             'fulfillment' => $serialized['fulfillment'],
+            'fulfillment_text' => $serialized['fulfillment_text'],
+            'receipt_state' => $serialized['receipt_state'],
             'payment_state' => $serialized['payment_state'],
             'payment_method' => $serialized['payment_method'],
             'total_fen' => $serialized['total_fen'],
@@ -542,7 +546,7 @@ final class MerchantOrderService
             "SELECT COALESCE(SUM(o.`total_price` - o.`pay_price`), 0) AS receivable, COUNT(*) AS c "
             . "FROM `veg_order_delivery` d "
             . "INNER JOIN `{$p}order` o ON o.`id` = d.`order_id` "
-            . "WHERE d.`payment_method` = 'COD' AND d.`fulfillment` IN ('DELIVERED','FINISHED') AND d.`payment_state` = 'UNPAID'"
+            . "WHERE d.`payment_method` = 'COD' AND d.`order_status` IN ('DELIVERED','FINISHED') AND d.`payment_state` = 'UNPAID'"
         );
         $stmt->execute();
         $row = $stmt->fetch(\PDO::FETCH_ASSOC) ?: [];
@@ -765,9 +769,9 @@ final class MerchantOrderService
             'id' => $order->id,
             'order_no' => $order->orderNo,
             'version' => $order->version,
-            'fulfillment' => $order->fulfillment->value,
+            'order_status' => $order->orderStatus->value,
+            ...OrderApiCompatibility::legacyFields($order),
             'payment_state' => $order->paymentState->value,
-            'receipt_state' => $order->receiptState->value,
             'revision_state' => $order->revisionState->value,
             'can_start_delivery' => $this->stateMachine->startDelivery($order, $order->version)->success,
             'pending_topup_fen' => (int) ($pending->fetchColumn() ?: 0),
@@ -831,7 +835,7 @@ final class MerchantOrderService
             "SELECT COALESCE(SUM(o.`total_price` - o.`pay_price`), 0) AS receivable "
             . "FROM `veg_order_delivery` d "
             . "INNER JOIN `{$p}order` o ON o.`id` = d.`order_id` "
-            . "WHERE d.`payment_method` = 'COD' AND d.`fulfillment` IN ('DELIVERED','FINISHED') AND d.`payment_state` = 'UNPAID'"
+            . "WHERE d.`payment_method` = 'COD' AND d.`order_status` IN ('DELIVERED','FINISHED') AND d.`payment_state` = 'UNPAID'"
         );
         $stmt->execute();
 

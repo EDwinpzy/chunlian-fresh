@@ -8,6 +8,9 @@ use Chunlian\Domain\CollectionMethod;
 use Chunlian\Domain\Contact;
 use Chunlian\Domain\LedgerKind;
 use Chunlian\Domain\Order;
+use Chunlian\Domain\OrderApiCompatibility;
+use Chunlian\Domain\OrderStatus;
+use Chunlian\Domain\PaymentMethod;
 use Chunlian\Service\TransitionResult;
 
 /**
@@ -15,7 +18,7 @@ use Chunlian\Service\TransitionResult;
  *
  * 【表归属与真源】
  *   `veg_*`（我方扩展表，固定名，不加前缀）
- *     veg_order_delivery  四维状态 + 乐观锁 version  ← 履约真源
+ *     veg_order_delivery  订单、支付、修订状态 + 乐观锁 version
  *     veg_order_line      商品行（含 SKU 身份）      ← 商品真源
  *     veg_payment_ledger  资金流水                   ← 资金真源
  *     veg_operation_log   操作审计（只增）
@@ -26,7 +29,7 @@ use Chunlian\Service\TransitionResult;
  *
  * 【为什么状态与金额分属两张表】
  * ShopXO 的 `order.status` 是单一维度且 `4=已完成` 合并了「已送达」与
- * 「已完成」，不能作为履约真源；但金额与订单号仍以 ShopXO 为准。
+ * 「已完成」，不能区分「已送达」和「已完成」；订单状态以扩展表为准，金额与订单号仍以 ShopXO 为准。
  * 因此本实现**跨两张表读、写时同事务更新两张表**。
  *
  * 【事务约定】
@@ -135,8 +138,8 @@ final class PdoOrderRepository implements OrderRepository
      * 应用状态迁移（乐观锁 CAS）。
      *
      * 两处写入，同一事务：
-     *   1. `veg_order_delivery` —— 四维状态 + version 自增
-     *   2. `{prefix}order`     —— 金额（若迁移结果带 `paid_fen`）
+     *   1. `veg_order_delivery` —— 订单状态 + 支付 / 修订状态 + version 自增
+     *   2. `{prefix}order`     —— ShopXO 原生订单阶段与已付金额 / 状态
      *
      * 【version 的 CAS 语义】
      * UPDATE 的 WHERE 同时带 `version = :expected`。
@@ -159,19 +162,26 @@ final class PdoOrderRepository implements OrderRepository
         $sets = ['`version` = `version` + 1', '`updated_at` = :updated_at'];
         $params = ['order_id' => $order->id, 'expected_version' => $expectedVersion, 'updated_at' => $now];
 
-        // ---- 四维状态：只写迁移结果里显式给出的字段 ----
-        // 不写「结果里没提到的维度」，避免把无关维度意外重置。
-        if (($v = $result->get('fulfillment')) !== null) {
-            $sets[] = '`fulfillment` = :fulfillment';
-            $params['fulfillment'] = $v instanceof \BackedEnum ? $v->value : (string) $v;
+        // ---- 状态：只写迁移结果里显式给出的字段 ----
+        // 不写「结果里没提到的状态」，避免把无关状态意外重置。
+        if (($v = $result->get('order_status')) !== null) {
+            $sets[] = '`order_status` = :order_status';
+            $params['order_status'] = $v instanceof \BackedEnum ? $v->value : (string) $v;
+            // Keep the 1.0.5 database contract live for code rollback and any
+            // legacy server instance that still reads `fulfillment`.
+            $legacyStatus = $v instanceof OrderStatus ? $v : OrderStatus::from($params['order_status']);
+            $legacyFields = OrderApiCompatibility::legacyFieldsFor(
+                $legacyStatus,
+                $result->get('received_at') === true || $order->receivedAt !== null,
+            );
+            $sets[] = '`fulfillment` = :legacy_fulfillment';
+            $params['legacy_fulfillment'] = $legacyFields['fulfillment'];
+            $sets[] = '`receipt_state` = :legacy_receipt_state';
+            $params['legacy_receipt_state'] = $legacyFields['receipt_state'];
         }
         if (($v = $result->get('payment_state')) !== null) {
             $sets[] = '`payment_state` = :payment_state';
             $params['payment_state'] = $v instanceof \BackedEnum ? $v->value : (string) $v;
-        }
-        if (($v = $result->get('receipt_state')) !== null) {
-            $sets[] = '`receipt_state` = :receipt_state';
-            $params['receipt_state'] = $v instanceof \BackedEnum ? $v->value : (string) $v;
         }
         if (($v = $result->get('revision_state')) !== null) {
             $sets[] = '`revision_state` = :revision_state';
@@ -215,18 +225,34 @@ final class PdoOrderRepository implements OrderRepository
             );
         }
 
-        // ---- 金额：写回 ShopXO 原生表（decimal），需做 fen → decimal 转换 ----
+        // ---- ShopXO 原生阶段与支付字段：和扩展状态保持同一事务 ----
         $paidFen = $result->get('paid_fen');
+        $nativeSets = [];
+        $nativeParams = ['id' => $order->id, 'upd_time' => time()];
+        if (($nextStatus = $result->get('order_status')) !== null) {
+            $nativeStatus = match ($nextStatus) {
+                OrderStatus::PENDING => $order->paymentMethod === PaymentMethod::COD
+                    || $order->paymentState !== \Chunlian\Domain\OrderPaymentState::UNPAID ? 2 : 1,
+                OrderStatus::DELIVERING, OrderStatus::DELIVERED => 3,
+                OrderStatus::FINISHED => 4,
+                OrderStatus::CANCELLED => 5,
+            };
+            $nativeSets[] = '`status` = :native_status';
+            $nativeParams['native_status'] = $nativeStatus;
+        }
         if ($paidFen !== null) {
+            $nativeSets[] = '`pay_price` = :pay_price';
+            $nativeSets[] = '`pay_status` = CASE WHEN :is_fully_paid = 1 THEN 1 ELSE `pay_status` END';
+            $nativeParams['pay_price'] = OrderRowMapper::fenToDecimal((int) $paidFen);
+            $nativeParams['is_fully_paid'] = (int) $paidFen >= $order->total()->fen() ? 1 : 0;
+        }
+        if ($nativeSets !== []) {
             $stmt = $this->pdo->prepare(sprintf(
-                'UPDATE `%sorder` SET `pay_price` = :pay_price, `upd_time` = :upd_time WHERE `id` = :id',
-                $this->tablePrefix
+                'UPDATE `%sorder` SET %s, `upd_time` = :upd_time WHERE `id` = :id',
+                $this->tablePrefix,
+                implode(', ', $nativeSets)
             ));
-            $stmt->execute([
-                'pay_price' => OrderRowMapper::fenToDecimal((int) $paidFen),
-                'upd_time' => time(),
-                'id' => $order->id,
-            ]);
+            $stmt->execute($nativeParams);
         }
     }
 
@@ -303,6 +329,67 @@ final class PdoOrderRepository implements OrderRepository
         }
     }
 
+    /**
+     * 写入顾客确认收货时的自动结清流水。唯一业务单号按订单固定，
+     * 即使发生幂等重放也不会为同一订单生成第二条自动收款记录。
+     */
+    public function writeCustomerReceipt(
+        string $orderId,
+        int $amountFen,
+        PaymentMethod $paymentMethod,
+        string $operatorId,
+        string $idempotencyKey,
+    ): int {
+        if ($amountFen <= 0) {
+            throw new \InvalidArgumentException('顾客收货自动记账金额必须大于零');
+        }
+
+        $businessNo = 'CUSTOMER-RECEIPT-' . $orderId;
+        $now = date('Y-m-d H:i:s');
+        try {
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO `veg_payment_ledger` '
+                . '(`order_id`, `kind`, `amount_fen`, `status`, `business_no`, `collection_method`, '
+                . '`idempotency_key`, `operator_id`, `occurred_at`, `created_at`, `updated_at`) '
+                . 'VALUES (:order_id, :kind, :amount_fen, \'SUCCESS\', :business_no, :payment_method, '
+                . ':idempotency_key, :operator_id, :occurred_at, :created_at, :updated_at)'
+            );
+            $stmt->execute([
+                'order_id' => $orderId,
+                'kind' => LedgerKind::CUSTOMER_RECEIPT->value,
+                'amount_fen' => $amountFen,
+                'business_no' => $businessNo,
+                'payment_method' => $paymentMethod->value,
+                'idempotency_key' => $idempotencyKey,
+                'operator_id' => $operatorId === '' ? null : $operatorId,
+                'occurred_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            return (int) $this->pdo->lastInsertId();
+        } catch (\PDOException $e) {
+            if ($e->getCode() !== '23000') {
+                throw $e;
+            }
+
+            $existing = $this->queryOne(
+                'SELECT `id`, `order_id`, `kind`, `amount_fen`, `collection_method` '
+                . 'FROM `veg_payment_ledger` WHERE `idempotency_key` = :key OR `business_no` = :business LIMIT 1',
+                ['key' => $idempotencyKey, 'business' => $businessNo]
+            );
+            if ($existing !== null
+                && (string) $existing['order_id'] === $orderId
+                && (string) $existing['kind'] === LedgerKind::CUSTOMER_RECEIPT->value
+                && (int) $existing['amount_fen'] === $amountFen
+                && (string) $existing['collection_method'] === $paymentMethod->value) {
+                return (int) $existing['id'];
+            }
+
+            throw new \LogicException('自动收货流水唯一键冲突，但现有流水内容不匹配', 0, $e);
+        }
+    }
+
     /** 写审计日志。只增不改，禁止前台删除。 */
     public function writeAuditLog(string $actorId, string $orderId, string $action, array $detail): void
     {
@@ -356,7 +443,7 @@ final class PdoOrderRepository implements OrderRepository
     public function ledgerEntries(string $orderId): array
     {
         $rows = $this->queryAll(
-            'SELECT `kind`, `business_no`, `amount_fen`, `status`, `occurred_at` FROM `veg_payment_ledger` '
+            'SELECT `kind`, `business_no`, `amount_fen`, `status`, `occurred_at`, `collection_method` FROM `veg_payment_ledger` '
             . 'WHERE `order_id` = :id ORDER BY `id` ASC',
             ['id' => $orderId]
         );
@@ -367,6 +454,7 @@ final class PdoOrderRepository implements OrderRepository
             'amount_fen' => (int) $r['amount_fen'],
             'status' => (string) $r['status'],
             'occurred_at' => (string) $r['occurred_at'],
+            'collection_method' => (string) ($r['collection_method'] ?? ''),
         ], $rows);
     }
 
@@ -389,7 +477,7 @@ final class PdoOrderRepository implements OrderRepository
             . 'INNER JOIN `%sorder` o ON o.`id` = d.`order_id` '
             . 'LEFT JOIN `%sorder_address` a ON a.`order_id` = d.`order_id` '
             . 'WHERE d.`payment_method` = :method '
-            . "AND d.`fulfillment` IN ('DELIVERED', 'FINISHED') "
+            . "AND d.`order_status` IN ('DELIVERED', 'FINISHED') "
             . 'AND d.`payment_state` = :payment_state '
             . 'ORDER BY d.`delivered_at` ASC, o.`id` ASC',
             $this->tablePrefix,

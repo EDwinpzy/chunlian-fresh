@@ -6,9 +6,8 @@ namespace Chunlian\Tests\Domain;
 
 use Chunlian\Domain\Contact;
 use Chunlian\Domain\DeliveryMode;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderPaymentState;
-use Chunlian\Domain\OrderReceiptState;
 use Chunlian\Domain\OrderRevisionState;
 use Chunlian\Domain\PaymentMethod;
 use Chunlian\Domain\RejectionCode;
@@ -18,32 +17,32 @@ final class DomainEnumsTest extends TestCase
 {
     public function testOnlyPendingAllowsCustomerSelfService(): void
     {
-        self::assertTrue(OrderFulfillment::PENDING->allowsCustomerSelfService());
-        self::assertFalse(OrderFulfillment::DELIVERING->allowsCustomerSelfService());
-        self::assertFalse(OrderFulfillment::DELIVERED->allowsCustomerSelfService());
-        self::assertFalse(OrderFulfillment::FINISHED->allowsCustomerSelfService());
-        self::assertFalse(OrderFulfillment::CANCELLED->allowsCustomerSelfService());
+        self::assertTrue(OrderStatus::PENDING->allowsCustomerSelfService());
+        self::assertFalse(OrderStatus::DELIVERING->allowsCustomerSelfService());
+        self::assertFalse(OrderStatus::DELIVERED->allowsCustomerSelfService());
+        self::assertFalse(OrderStatus::FINISHED->allowsCustomerSelfService());
+        self::assertFalse(OrderStatus::CANCELLED->allowsCustomerSelfService());
     }
 
     public function testMerchantPrimaryActionPerStatus(): void
     {
-        self::assertSame('START_DELIVERY', OrderFulfillment::PENDING->merchantPrimaryAction());
-        self::assertSame('CONFIRM_DELIVERY', OrderFulfillment::DELIVERING->merchantPrimaryAction());
-        self::assertSame('NONE', OrderFulfillment::DELIVERED->merchantPrimaryAction());
+        self::assertSame('START_DELIVERY', OrderStatus::PENDING->merchantPrimaryAction());
+        self::assertSame('CONFIRM_DELIVERY', OrderStatus::DELIVERING->merchantPrimaryAction());
+        self::assertSame('NONE', OrderStatus::DELIVERED->merchantPrimaryAction());
     }
 
-    public function testFulfillmentTransitions(): void
+    public function testOrderStatusTransitions(): void
     {
-        self::assertTrue(OrderFulfillment::PENDING->canTransitionTo(OrderFulfillment::DELIVERING));
-        self::assertTrue(OrderFulfillment::PENDING->canTransitionTo(OrderFulfillment::CANCELLED));
-        self::assertTrue(OrderFulfillment::DELIVERING->canTransitionTo(OrderFulfillment::DELIVERED));
+        self::assertTrue(OrderStatus::PENDING->canTransitionTo(OrderStatus::DELIVERING));
+        self::assertTrue(OrderStatus::PENDING->canTransitionTo(OrderStatus::CANCELLED));
+        self::assertTrue(OrderStatus::DELIVERING->canTransitionTo(OrderStatus::DELIVERED));
 
         // 不允许跳步
-        self::assertFalse(OrderFulfillment::PENDING->canTransitionTo(OrderFulfillment::DELIVERED));
-        self::assertFalse(OrderFulfillment::PENDING->canTransitionTo(OrderFulfillment::FINISHED));
+        self::assertFalse(OrderStatus::PENDING->canTransitionTo(OrderStatus::DELIVERED));
+        self::assertFalse(OrderStatus::PENDING->canTransitionTo(OrderStatus::FINISHED));
         // 终态不可再迁移
-        self::assertFalse(OrderFulfillment::CANCELLED->canTransitionTo(OrderFulfillment::DELIVERING));
-        self::assertFalse(OrderFulfillment::FINISHED->canTransitionTo(OrderFulfillment::CANCELLED));
+        self::assertFalse(OrderStatus::CANCELLED->canTransitionTo(OrderStatus::DELIVERING));
+        self::assertFalse(OrderStatus::FINISHED->canTransitionTo(OrderStatus::CANCELLED));
     }
 
     public function testPaymentStateHelpers(): void
@@ -54,19 +53,6 @@ final class DomainEnumsTest extends TestCase
         self::assertFalse(OrderPaymentState::REFUNDED->isRefundInFlight());
         self::assertTrue(OrderPaymentState::UNPAID->allowsNewPayment());
         self::assertFalse(OrderPaymentState::PAID->allowsNewPayment());
-    }
-
-    public function testReceiptRequiresDelivered(): void
-    {
-        self::assertTrue(
-            OrderReceiptState::UNCONFIRMED->canConfirm(OrderFulfillment::DELIVERED)
-        );
-        self::assertFalse(
-            OrderReceiptState::UNCONFIRMED->canConfirm(OrderFulfillment::DELIVERING)
-        );
-        self::assertFalse(
-            OrderReceiptState::CONFIRMED->canConfirm(OrderFulfillment::DELIVERED)
-        );
     }
 
     public function testRevisionStateBlocksDispatch(): void

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Chunlian\Service;
 
 use Chunlian\Domain\OrderPaymentState;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderRevisionState;
 use Chunlian\Domain\PaymentMethod;
 use Chunlian\Domain\RejectionCode;
@@ -133,7 +133,7 @@ final class ManualPaymentService
             if ($order->paymentMethod !== PaymentMethod::OFFLINE_QR) {
                 return $this->finishRejected(RejectionCode::VALIDATION_FAILED, '该订单未选择线下扫码付款');
             }
-            if ($order->fulfillment !== OrderFulfillment::PENDING) {
+            if ($order->orderStatus !== OrderStatus::PENDING) {
                 return $this->finishRejected(RejectionCode::VALIDATION_FAILED, '只有待配送订单可以登记扫码预付款或补款');
             }
 
@@ -272,7 +272,7 @@ final class ManualPaymentService
                     || abs((int) $revision['delta_fen']) !== $amountFen) {
                     return $this->finishRejected(RejectionCode::VALIDATION_FAILED, '退款金额必须与待确认修订差额一致');
                 }
-            } elseif ($order->fulfillment !== OrderFulfillment::CANCELLED
+            } elseif ($order->orderStatus !== OrderStatus::CANCELLED
                 || $order->paymentState !== OrderPaymentState::REFUNDING) {
                 return $this->finishRejected(RejectionCode::VALIDATION_FAILED, '订单级线下退款只允许在订单取消后确认');
             }

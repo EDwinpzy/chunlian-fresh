@@ -49,6 +49,8 @@ return [
         'routes' => [
             ['GET',  '/api/v1/customer/addresses',              'Customer\\AddressController@index'],
             ['POST', '/api/v1/customer/addresses',              'Customer\\AddressController@store'],
+            ['POST',   '/api/v1/customer/push-devices',                          'Customer\\PushDeviceController@store'],
+            ['DELETE', '/api/v1/customer/push-devices/{installation_id}',        'Customer\\PushDeviceController@destroy'],
 
             ['POST', '/api/v1/customer/orders/preview',         'Customer\\OrderController@preview'],
             ['POST', '/api/v1/customer/orders',                 'Customer\\OrderController@store'],
@@ -76,6 +78,9 @@ return [
             // 认证本身不需前置 token
             ['POST', '/api/v1/merchant/auth/login',   'Merchant\\AuthController@login',  ['public' => true]],
             ['POST', '/api/v1/merchant/auth/logout',  'Merchant\\AuthController@logout'],
+
+            ['POST',   '/api/v1/merchant/push-devices',                          'Merchant\\PushDeviceController@store'],
+            ['DELETE', '/api/v1/merchant/push-devices/{installation_id}',        'Merchant\\PushDeviceController@destroy'],
 
             ['GET',  '/api/v1/merchant/dashboard',               'Merchant\\DashboardController@show'],
 

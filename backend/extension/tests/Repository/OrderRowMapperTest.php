@@ -6,9 +6,8 @@ namespace Chunlian\Tests\Repository;
 
 use Chunlian\Domain\Contact;
 use Chunlian\Domain\DeliveryMode;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderPaymentState;
-use Chunlian\Domain\OrderReceiptState;
 use Chunlian\Domain\OrderRevisionState;
 use Chunlian\Domain\PaymentMethod;
 use Chunlian\Repository\OrderRowMapper;
@@ -131,7 +130,7 @@ final class OrderRowMapperTest extends TestCase
             [$this->lineRow()]
         );
 
-        self::assertSame(OrderFulfillment::DELIVERED, $order->fulfillment);
+        self::assertSame(OrderStatus::DELIVERED, $order->orderStatus);
         self::assertSame(OrderPaymentState::UNPAID, $order->paymentState);
         self::assertSame(OrderRevisionState::NONE, $order->revisionState);
         self::assertSame(PaymentMethod::COD, $order->paymentMethod);
@@ -175,12 +174,12 @@ final class OrderRowMapperTest extends TestCase
     public function testUnknownEnumDegradesAndWarns(): void
     {
         $row = $this->deliveryRow();
-        $row['fulfillment'] = 'PARTIAL_DELIVERED';   // 服务端不存在的取值
+        $row['order_status'] = 'PARTIAL_DELIVERED';   // 服务端不存在的取值
 
         $order = $this->mapper->toOrder($this->orderRow(), $this->addressRow(), $row, [$this->lineRow()]);
 
         // 降级到安全默认值，不抛异常
-        self::assertSame(OrderFulfillment::PENDING, $order->fulfillment);
+        self::assertSame(OrderStatus::PENDING, $order->orderStatus);
 
         // 但必须留下痕迹
         $warnings = $this->mapper->flushWarnings();
@@ -192,19 +191,19 @@ final class OrderRowMapperTest extends TestCase
     public function testEmptyEnumValueWarns(): void
     {
         $row = $this->deliveryRow();
-        $row['receipt_state'] = '';
+        $row['payment_state'] = '';
 
         $this->mapper->toOrder($this->orderRow(), $this->addressRow(), $row, [$this->lineRow()]);
 
         $warnings = $this->mapper->flushWarnings();
         self::assertNotEmpty($warnings);
-        self::assertStringContainsString('receipt_state', $warnings[0]);
+        self::assertStringContainsString('payment_state', $warnings[0]);
     }
 
     public function testFlushWarningsClearsBuffer(): void
     {
         $row = $this->deliveryRow();
-        $row['fulfillment'] = 'NOPE';
+        $row['order_status'] = 'NOPE';
 
         $this->mapper->toOrder($this->orderRow(), $this->addressRow(), $row, [$this->lineRow()]);
 
@@ -218,13 +217,13 @@ final class OrderRowMapperTest extends TestCase
 
     public function testShopxoStatusFallbackMapping(): void
     {
-        self::assertSame(OrderFulfillment::PENDING, OrderRowMapper::fulfillmentFromShopxoStatus(0));
-        self::assertSame(OrderFulfillment::PENDING, OrderRowMapper::fulfillmentFromShopxoStatus(1));
-        self::assertSame(OrderFulfillment::PENDING, OrderRowMapper::fulfillmentFromShopxoStatus(2));
-        self::assertSame(OrderFulfillment::DELIVERING, OrderRowMapper::fulfillmentFromShopxoStatus(3));
-        self::assertSame(OrderFulfillment::FINISHED, OrderRowMapper::fulfillmentFromShopxoStatus(4));
-        self::assertSame(OrderFulfillment::CANCELLED, OrderRowMapper::fulfillmentFromShopxoStatus(5));
-        self::assertSame(OrderFulfillment::CANCELLED, OrderRowMapper::fulfillmentFromShopxoStatus(6));
+        self::assertSame(OrderStatus::PENDING, OrderRowMapper::orderStatusFromShopxoStatus(0));
+        self::assertSame(OrderStatus::PENDING, OrderRowMapper::orderStatusFromShopxoStatus(1));
+        self::assertSame(OrderStatus::PENDING, OrderRowMapper::orderStatusFromShopxoStatus(2));
+        self::assertSame(OrderStatus::DELIVERING, OrderRowMapper::orderStatusFromShopxoStatus(3));
+        self::assertSame(OrderStatus::FINISHED, OrderRowMapper::orderStatusFromShopxoStatus(4));
+        self::assertSame(OrderStatus::CANCELLED, OrderRowMapper::orderStatusFromShopxoStatus(5));
+        self::assertSame(OrderStatus::CANCELLED, OrderRowMapper::orderStatusFromShopxoStatus(6));
     }
 
     /**
@@ -236,10 +235,10 @@ final class OrderRowMapperTest extends TestCase
      */
     public function testShopxoStatusCannotDistinguishDeliveredFromFinished(): void
     {
-        $mapped = OrderRowMapper::fulfillmentFromShopxoStatus(4);
+        $mapped = OrderRowMapper::orderStatusFromShopxoStatus(4);
 
-        self::assertSame(OrderFulfillment::FINISHED, $mapped);
-        self::assertNotSame(OrderFulfillment::DELIVERED, $mapped);
+        self::assertSame(OrderStatus::FINISHED, $mapped);
+        self::assertNotSame(OrderStatus::DELIVERED, $mapped);
     }
 
     /** 扩展行缺失时必须告警，不能静默兜底。 */
@@ -252,7 +251,7 @@ final class OrderRowMapperTest extends TestCase
             [$this->lineRow()]
         );
 
-        self::assertSame(OrderFulfillment::DELIVERING, $order->fulfillment);
+        self::assertSame(OrderStatus::DELIVERING, $order->orderStatus);
 
         $warnings = $this->mapper->flushWarnings();
         self::assertNotEmpty($warnings);
@@ -502,10 +501,9 @@ final class OrderRowMapperTest extends TestCase
             'order_id' => '10025',
             'delivery_mode' => 'ASAP',
             'expected_at' => null,
-            'fulfillment' => 'DELIVERED',
+            'order_status' => 'DELIVERED',
             'payment_state' => 'UNPAID',
             'payment_method' => 'COD',
-            'receipt_state' => 'UNCONFIRMED',
             'revision_state' => 'NONE',
             'delivered_at' => '2026-10-12 19:40:00',
             'received_at' => null,

@@ -35,6 +35,20 @@ final class LedgerCalculatorTest extends TestCase
         self::assertSame(-200, $summary['refund_fen']);
     }
 
+    public function testCustomerReceiptEntriesAreCountedByOriginalPaymentMethod(): void
+    {
+        $summary = $this->calc->dailySummary([
+            ['kind' => 'CUSTOMER_RECEIPT', 'amount_fen' => 1000, 'status' => 'SUCCESS', 'occurred_at' => '2026-10-13 10:00:00', 'collection_method' => 'WECHAT'],
+            ['kind' => 'CUSTOMER_RECEIPT', 'amount_fen' => 2000, 'status' => 'SUCCESS', 'occurred_at' => '2026-10-13 11:00:00', 'collection_method' => 'COD'],
+            ['kind' => 'CUSTOMER_RECEIPT', 'amount_fen' => 3000, 'status' => 'SUCCESS', 'occurred_at' => '2026-10-13 12:00:00', 'collection_method' => 'OFFLINE_QR'],
+        ]);
+
+        self::assertSame(6000, $summary['received_fen']);
+        self::assertSame(1000, $summary['online_fen']);
+        self::assertSame(2000, $summary['cod_fen']);
+        self::assertSame(3000, $summary['offline_qr_fen']);
+    }
+
     public function testDailySummarySeparatesOnlineAndCod(): void
     {
         $entries = [

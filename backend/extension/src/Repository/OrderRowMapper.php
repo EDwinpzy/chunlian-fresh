@@ -8,10 +8,9 @@ use Chunlian\Domain\CollectionMethod;
 use Chunlian\Domain\Contact;
 use Chunlian\Domain\DeliveryMode;
 use Chunlian\Domain\Order;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderLine;
 use Chunlian\Domain\OrderPaymentState;
-use Chunlian\Domain\OrderReceiptState;
 use Chunlian\Domain\OrderRevisionState;
 use Chunlian\Domain\PaymentMethod;
 
@@ -27,11 +26,11 @@ use Chunlian\Domain\PaymentMethod;
  * SQL 本身很直白，放到集成测试里对真实 MySQL 验证即可。
  *
  * 【真源划分 —— 本层最重要的约定】
- *   履约 / 支付 / 收货 / 修订 四维状态  → `veg_order_delivery`（我方表，**唯一真源**）
+ *   订单 / 支付 / 修订状态  → `veg_order_delivery`（我方表，**唯一真源**）
  *   商品行（含 SKU 身份）              → `veg_order_line`（我方表，**唯一真源**）
  *   订单号 / 金额 / 收货地址            → `shopxo_order` + `shopxo_order_address`（ShopXO 原生）
  *
- *   ShopXO 的 `status` 字段**不作为履约真源**，仅在缺失扩展行时兜底。
+ *   ShopXO 的 `status` 字段**不作为订单状态真源**，仅在缺失扩展行时兜底。
  *   原因：它的 `4 = 已完成` 把「已送达」与「已完成」合并了，
  *   直接采信会把 COD 未收款显示成已完成 → 漏账。
  */
@@ -193,19 +192,18 @@ final class OrderRowMapper
         $orderId = (string) $orderRow['id'];
         $shopxoStatus = (int) ($orderRow['status'] ?? 0);
 
-        // ---------- 四维状态 ----------
+        // ---------- 订单、支付、修订状态 ----------
         if ($deliveryRow === null) {
             // 扩展行缺失：通常是插件安装前创建的历史订单
             $this->warn(sprintf(
                 '订单 %s 缺少 veg_order_delivery 扩展行，已用 ShopXO status=%d 兜底；'
-                . '该兜底无法区分「已送达」与「已完成」，履约状态可能不准',
+                . '该兜底无法区分「已送达」与「已完成」，订单状态可能不准',
                 $orderId,
                 $shopxoStatus
             ));
 
-            $fulfillment = self::fulfillmentFromShopxoStatus($shopxoStatus);
+            $orderStatus = self::orderStatusFromShopxoStatus($shopxoStatus);
             $paymentState = $this->paymentStateFromShopxo($orderRow);
-            $receiptState = OrderReceiptState::UNCONFIRMED;
             $revisionState = OrderRevisionState::NONE;
             $paymentMethod = ((int) ($orderRow['is_under_line'] ?? 0)) === 1
                 ? PaymentMethod::COD
@@ -216,11 +214,11 @@ final class OrderRowMapper
             $deliveredAt = null;
             $receivedAt = null;
         } else {
-            $fulfillment = $this->parseEnum(
-                OrderFulfillment::class,
-                (string) $deliveryRow['fulfillment'],
-                OrderFulfillment::PENDING,
-                'fulfillment',
+            $orderStatus = $this->parseEnum(
+                OrderStatus::class,
+                (string) $deliveryRow['order_status'],
+                OrderStatus::PENDING,
+                'order_status',
                 $orderId
             );
             $paymentState = $this->parseEnum(
@@ -228,13 +226,6 @@ final class OrderRowMapper
                 (string) $deliveryRow['payment_state'],
                 OrderPaymentState::UNPAID,
                 'payment_state',
-                $orderId
-            );
-            $receiptState = $this->parseEnum(
-                OrderReceiptState::class,
-                (string) $deliveryRow['receipt_state'],
-                OrderReceiptState::UNCONFIRMED,
-                'receipt_state',
                 $orderId
             );
             $revisionState = $this->parseEnum(
@@ -303,9 +294,8 @@ final class OrderRowMapper
             id: $orderId,
             orderNo: (string) ($orderRow['order_no'] ?? ''),
             version: $version,
-            fulfillment: $fulfillment,
+            orderStatus: $orderStatus,
             paymentState: $paymentState,
-            receiptState: $receiptState,
             revisionState: $revisionState,
             paymentMethod: $paymentMethod,
             deliveryMode: $deliveryMode,
@@ -333,7 +323,7 @@ final class OrderRowMapper
     // =========================================================
 
     /**
-     * ShopXO 单一 status → 我们的履约维度（**仅兜底**）。
+     * ShopXO 单一 status → 我们的订单状态（**仅兜底**）。
      *
      * 取值来源：`app/lang/zh.php` 的 `common_order_status`
      *   0 待确认 / 1 待付款 / 2 待发货 / 3 待收货 / 4 已完成 / 5 已取消 / 6 已关闭
@@ -343,14 +333,14 @@ final class OrderRowMapper
      * 因此这里只能映射到 FINISHED —— 无法还原 DELIVERED。
      * 这正是必须有 `veg_order_delivery` 的原因，不是可选优化。
      */
-    public static function fulfillmentFromShopxoStatus(int $status): OrderFulfillment
+    public static function orderStatusFromShopxoStatus(int $status): OrderStatus
     {
         return match ($status) {
-            2 => OrderFulfillment::PENDING,      // 待发货
-            3 => OrderFulfillment::DELIVERING,   // 待收货 = 已发货
-            4 => OrderFulfillment::FINISHED,     // 已完成
-            5, 6 => OrderFulfillment::CANCELLED, // 已取消 / 已关闭
-            default => OrderFulfillment::PENDING, // 0 待确认 / 1 待付款
+            2 => OrderStatus::PENDING,      // 待发货
+            3 => OrderStatus::DELIVERING,   // 待收货 = 已发货
+            4 => OrderStatus::FINISHED,     // 已完成
+            5, 6 => OrderStatus::CANCELLED, // 已取消 / 已关闭
+            default => OrderStatus::PENDING, // 0 待确认 / 1 待付款
         };
     }
 

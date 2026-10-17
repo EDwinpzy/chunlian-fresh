@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Chunlian\Domain;
 
 /**
- * 订单聚合根（四维状态 + 版本 + 快照）。
+ * 订单聚合根（订单状态、支付状态、修订状态 + 版本 + 快照）。
  *
  * 只承载**业务规则**；持久化由 Repository 负责。
  */
@@ -15,9 +15,8 @@ final class Order
         public readonly string $id,
         public readonly string $orderNo,
         public int $version,
-        public OrderFulfillment $fulfillment,
+        public OrderStatus $orderStatus,
         public OrderPaymentState $paymentState,
-        public OrderReceiptState $receiptState,
         public OrderRevisionState $revisionState,
         public readonly PaymentMethod $paymentMethod,
         public readonly DeliveryMode $deliveryMode,
@@ -65,12 +64,12 @@ final class Order
     /** 顾客自助修改/取消的权威裁决：仅未出发时允许。 */
     public function canCustomerEdit(): bool
     {
-        return $this->fulfillment->allowsCustomerSelfService();
+        return $this->orderStatus->allowsCustomerSelfService();
     }
 
     public function canCustomerCancel(): bool
     {
-        return $this->fulfillment->allowsCustomerSelfService();
+        return $this->orderStatus->allowsCustomerSelfService();
     }
 
     /** 尚待收取的金额（COD 已送达未收款时 > 0）。 */

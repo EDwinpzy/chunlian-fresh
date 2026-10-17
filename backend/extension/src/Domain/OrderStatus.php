@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Chunlian\Domain;
 
 /**
- * 履约维度状态。
+ * 统一订单状态。
  *
- * 与支付/收货/修订维度**完全解耦**：COD 送达未收款时可处于
- * fulfillment=DELIVERED 且 payment=UNPAID。
+ * 订单从待配送到已完成的完整阶段都由此状态表示。顾客确认收货后
+ * 从 DELIVERED 迁移到 FINISHED；付款信息由支付状态和资金流水记录。
  */
-enum OrderFulfillment: string
+enum OrderStatus: string
 {
     /** 已下单，未出发；顾客可自助修改/取消。 */
     case PENDING = 'PENDING';
@@ -18,10 +18,10 @@ enum OrderFulfillment: string
     /** 已出发；锁定顾客自助改/取消。 */
     case DELIVERING = 'DELIVERING';
 
-    /** 已送达（收款状态独立）。 */
+    /** 已送达，等待顾客确认收货。 */
     case DELIVERED = 'DELIVERED';
 
-    /** 订单流程终结（顾客确认收货或平台规则）。 */
+    /** 顾客已确认收货，或订单流程按平台规则终结。 */
     case FINISHED = 'FINISHED';
 
     /** 已取消。 */

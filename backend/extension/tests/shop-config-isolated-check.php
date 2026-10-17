@@ -83,13 +83,13 @@ function expect(bool $condition, string $message): void
 $pdo = new SQLiteCompatPDO();
 $schema = [
     'CREATE TABLE veg_shop_setting (id INTEGER PRIMARY KEY, shop_name TEXT NOT NULL, notice TEXT NOT NULL, phone TEXT NOT NULL, payment_qr_url TEXT NOT NULL, delivery_fee_fen INTEGER NOT NULL, is_open INTEGER NOT NULL, min_lead_minutes INTEGER NOT NULL, updated_at TEXT NOT NULL)',
-    'CREATE TABLE veg_shop_profile (id INTEGER PRIMARY KEY, shop_logo_url TEXT NOT NULL, shop_address TEXT NOT NULL, business_hours TEXT NOT NULL, shop_description TEXT NOT NULL, delivery_description TEXT NOT NULL, home_banner_title TEXT NOT NULL, home_banner_subtitle TEXT NOT NULL, shop_slogan TEXT NOT NULL, search_hot_words TEXT NOT NULL, home_section_title TEXT NOT NULL, updated_at TEXT NOT NULL)',
+    "CREATE TABLE veg_shop_profile (id INTEGER PRIMARY KEY, shop_logo_url TEXT NOT NULL DEFAULT '', shop_address TEXT NOT NULL DEFAULT '', business_hours TEXT NOT NULL DEFAULT '', shop_description TEXT NOT NULL DEFAULT '', delivery_description TEXT NOT NULL DEFAULT '', home_banner_title TEXT NOT NULL DEFAULT '', home_banner_subtitle TEXT NOT NULL DEFAULT '', shop_slogan TEXT NOT NULL DEFAULT '', search_hot_words TEXT NOT NULL DEFAULT '[]', home_section_title TEXT NOT NULL DEFAULT '', home_featured_product_ids TEXT NOT NULL DEFAULT '[]', notification_popup_title TEXT NOT NULL DEFAULT '', notification_popup_image_url TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL)",
     'CREATE TABLE veg_operation_log (id INTEGER PRIMARY KEY AUTOINCREMENT, actor_type TEXT NOT NULL, actor_id INTEGER NULL, order_id INTEGER NULL, action TEXT NOT NULL, detail_json TEXT NOT NULL, created_at TEXT NOT NULL)',
     'CREATE TABLE veg_fresh_category_root (category_id INTEGER PRIMARY KEY, created_at TEXT NOT NULL)',
     'CREATE TABLE veg_fresh_category_state (id INTEGER PRIMARY KEY, legacy_seeded INTEGER NOT NULL, updated_at TEXT NOT NULL)',
     'CREATE TABLE shopxo_goods_category (id INTEGER PRIMARY KEY AUTOINCREMENT, pid INTEGER NOT NULL, name TEXT NOT NULL, vice_name TEXT NOT NULL, icon TEXT NOT NULL, icon_active TEXT NOT NULL, "describe" TEXT NOT NULL, bg_color TEXT NOT NULL, is_home_recommended INTEGER NOT NULL, sort INTEGER NOT NULL, is_enable INTEGER NOT NULL, add_time INTEGER NOT NULL, upd_time INTEGER NOT NULL)',
     'CREATE TABLE shopxo_goods_category_join (goods_id INTEGER NOT NULL, category_id INTEGER NOT NULL, add_time INTEGER NOT NULL)',
-    "CREATE TABLE shopxo_goods (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_color TEXT NOT NULL DEFAULT '', simple_desc TEXT NOT NULL DEFAULT '', spec_desc TEXT NOT NULL DEFAULT '', images TEXT NOT NULL DEFAULT '', original_price TEXT NOT NULL DEFAULT '0.00', min_original_price TEXT NOT NULL DEFAULT '0.00', max_original_price TEXT NOT NULL DEFAULT '0.00', price TEXT NOT NULL DEFAULT '0.00', min_price TEXT NOT NULL DEFAULT '0.00', max_price TEXT NOT NULL DEFAULT '0.00', inventory INTEGER NOT NULL DEFAULT 0, inventory_unit TEXT NOT NULL DEFAULT '', is_shelves INTEGER NOT NULL DEFAULT 0, is_exist_many_spec INTEGER NOT NULL DEFAULT 0, content_web TEXT NOT NULL DEFAULT '', buy_min_number INTEGER NOT NULL DEFAULT 1, buy_max_number INTEGER NOT NULL DEFAULT 0, is_deduction_inventory INTEGER NOT NULL DEFAULT 1, sort_level INTEGER NOT NULL DEFAULT 0, is_delete_time INTEGER NOT NULL DEFAULT 0, add_time INTEGER NOT NULL DEFAULT 0, upd_time INTEGER NOT NULL DEFAULT 0)",
+    "CREATE TABLE shopxo_goods (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, title_color TEXT NOT NULL DEFAULT '', simple_desc TEXT NOT NULL DEFAULT '', spec_desc TEXT NOT NULL DEFAULT '', images TEXT NOT NULL DEFAULT '', original_price TEXT NOT NULL DEFAULT '0.00', min_original_price TEXT NOT NULL DEFAULT '0.00', max_original_price TEXT NOT NULL DEFAULT '0.00', price TEXT NOT NULL DEFAULT '0.00', min_price TEXT NOT NULL DEFAULT '0.00', max_price TEXT NOT NULL DEFAULT '0.00', inventory INTEGER NOT NULL DEFAULT 0, inventory_unit TEXT NOT NULL DEFAULT '', sales_count INTEGER NOT NULL DEFAULT 0, is_shelves INTEGER NOT NULL DEFAULT 0, is_exist_many_spec INTEGER NOT NULL DEFAULT 0, content_web TEXT NOT NULL DEFAULT '', buy_min_number INTEGER NOT NULL DEFAULT 1, buy_max_number INTEGER NOT NULL DEFAULT 0, is_deduction_inventory INTEGER NOT NULL DEFAULT 1, sort_level INTEGER NOT NULL DEFAULT 0, is_delete_time INTEGER NOT NULL DEFAULT 0, add_time INTEGER NOT NULL DEFAULT 0, upd_time INTEGER NOT NULL DEFAULT 0)",
     'CREATE TABLE shopxo_goods_spec_base (id INTEGER PRIMARY KEY AUTOINCREMENT, goods_id INTEGER NOT NULL, price TEXT NOT NULL, original_price TEXT NOT NULL, inventory INTEGER NOT NULL, buy_min_number INTEGER NOT NULL, buy_max_number INTEGER NOT NULL, weight INTEGER NOT NULL, volume INTEGER NOT NULL, coding TEXT NOT NULL, barcode TEXT NOT NULL, inventory_unit TEXT NOT NULL, extends TEXT NOT NULL, add_time INTEGER NOT NULL)',
     'CREATE TABLE shopxo_goods_spec_value (id INTEGER PRIMARY KEY AUTOINCREMENT, goods_id INTEGER NOT NULL, goods_spec_base_id INTEGER NOT NULL, value TEXT NOT NULL)',
 ];
@@ -98,7 +98,7 @@ foreach ($schema as $statement) {
 }
 
 $pdo->exec("INSERT INTO veg_shop_setting VALUES (1, '春连鲜选', '公告', '', '', 0, 1, 30, NOW())");
-$pdo->exec("INSERT INTO veg_shop_profile VALUES (1, '', '', '', '', '', '', '', '', '[]', '', NOW())");
+$pdo->exec("INSERT INTO veg_shop_profile (id, search_hot_words, updated_at) VALUES (1, '[]', NOW())");
 $pdo->exec("INSERT INTO veg_fresh_category_state VALUES (1, 0, NOW())");
 $pdo->exec("INSERT INTO shopxo_goods_category (pid,name,vice_name,icon,icon_active,\"describe\",bg_color,is_home_recommended,sort,is_enable,add_time,upd_time) VALUES "
     . "(0,'叶菜类','','','', '', '#fff', 0, 100, 1, 1, 1),"
@@ -118,6 +118,9 @@ $saved = $settings->update([
     'shop_slogan' => '新鲜看得见',
     'search_hot_words' => ['小青菜', '土鸡蛋'],
     'home_section_title' => '今日鲜选',
+    'home_featured_product_ids' => ['100', '101'],
+    'notification_popup_title' => '周末鲜蔬上新',
+    'notification_popup_image_url' => 'https://example.test/popup.png',
     'payment_qr_url' => 'https://example.test/qr.png',
     'delivery_fee_fen' => 500,
     'is_open' => false,
@@ -136,10 +139,23 @@ expect($readback['home_banner_subtitle'] === '清晨直达', 'banner subtitle sh
 expect($readback['shop_slogan'] === '新鲜看得见', 'shop slogan should persist');
 expect($readback['search_hot_words'] === ['小青菜', '土鸡蛋'], 'hot words should round-trip as a JSON list');
 expect($readback['home_section_title'] === '今日鲜选', 'home section title should persist');
+expect($readback['home_featured_product_ids'] === ['100', '101'], 'featured product IDs should round-trip in carousel order');
+expect($readback['notification_popup_title'] === '周末鲜蔬上新', 'notification popup title should persist');
+expect($readback['notification_popup_image_url'] === 'https://example.test/popup.png', 'notification popup image URL should persist');
 expect($readback['delivery_fee_fen'] === 500 && $readback['min_lead_minutes'] === 45, 'numeric settings should persist');
 expect($readback['is_open'] === false, 'open state should remain a boolean');
 expect($settings->update(['shop_logo_url' => 'javascript:alert(1)'], '7')['code'] === 'VALIDATION_FAILED', 'invalid logo URL should be rejected');
+expect($settings->update(['notification_popup_image_url' => 'javascript:alert(1)'], '7')['code'] === 'VALIDATION_FAILED', 'invalid notification popup image URL should be rejected');
 expect($settings->update(['search_hot_words' => '小青菜'], '7')['code'] === 'VALIDATION_FAILED', 'hot words must be an array');
+expect($settings->update(['home_featured_product_ids' => ['100', '100']], '7')['code'] === 'VALIDATION_FAILED', 'featured product IDs must be unique');
+expect($settings->update(['home_featured_product_ids' => ['abc']], '7')['code'] === 'VALIDATION_FAILED', 'featured product IDs must be numeric strings');
+expect($settings->update(['home_featured_product_ids' => array_fill(0, 11, '100')], '7')['code'] === 'VALIDATION_FAILED', 'featured product IDs must not exceed 10 items');
+$clearedPopup = $settings->update([
+    'notification_popup_title' => '',
+    'notification_popup_image_url' => '',
+], '7');
+expect($clearedPopup['code'] === 'OK', 'notification popup fields should be clearable');
+expect($clearedPopup['data']['notification_popup_title'] === '' && $clearedPopup['data']['notification_popup_image_url'] === '', 'cleared notification popup fields should return empty values');
 
 $categories = new FreshCategoryManagementService($pdo, 'shopxo_');
 $initial = $categories->list();
@@ -183,6 +199,14 @@ $merchantProduct = $pdo->query("SELECT g.`id` FROM `shopxo_goods` g WHERE g.`id`
 $customerProduct = $pdo->query("SELECT g.`id` FROM `shopxo_goods` g WHERE g.`id` = 100 AND {$customerPredicate}")->fetchColumn();
 expect($merchantProduct !== false, 'merchant product lookup should include disabled categories');
 expect($customerProduct === false, 'customer product lookup should exclude disabled categories');
+$pdo->exec("INSERT INTO shopxo_goods (id, title, is_shelves, inventory, min_price, max_price) VALUES (101, '轮播商品乙', 1, 5, '3.50', '3.50')");
+$pdo->exec("UPDATE shopxo_goods SET is_shelves = 1, inventory = 8, min_price = '2.50', max_price = '2.50' WHERE id = 100");
+$pdo->exec('INSERT INTO shopxo_goods_category_join (goods_id, category_id, add_time) VALUES (100, 1, 3), (101, 1, 4)');
+$customerCatalog = new CustomerCatalogService($pdo, 'shopxo_');
+$featured = $customerCatalog->goodsList(null, null, null, 1, 10, '101,100');
+expect($featured['code'] === 'OK', 'featured goods query should succeed');
+expect(array_column($featured['data']['list'], 'id') === ['101', '100'], 'featured goods should only return public goods in configured order');
+expect($customerCatalog->goodsList(null, null, null, 1, 10, '100,nope')['code'] === 'VALIDATION_FAILED', 'featured goods query should reject malformed IDs');
 expect($categories->delete($childId, '7')['code'] === 'VALIDATION_FAILED', 'category with a product association must not be deleted');
 
 $pdo->forUpdateCallsInTransaction = 0;

@@ -33,7 +33,7 @@ final class RevisionCalculator
      */
     public function preview(Order $order, array $submittedItems, array $skuCatalog): TransitionResult
     {
-        if ($order->fulfillment->value !== 'PENDING') {
+        if ($order->orderStatus->value !== 'PENDING') {
             return TransitionResult::reject(RejectionCode::ORDER_NOT_EDITABLE);
         }
 

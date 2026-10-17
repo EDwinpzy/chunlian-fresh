@@ -59,6 +59,7 @@ $requiredTables = [
     'veg_operation_log',
     'veg_outbox_event',
     'veg_merchant_session',
+    'veg_push_device',
     'veg_idempotency',
 ];
 
@@ -138,7 +139,7 @@ if ($stale > 0) {
 $receivable = $pdo->query(
     "SELECT COUNT(*) AS c
      FROM veg_order_delivery d
-     WHERE d.payment_method = 'COD' AND d.fulfillment = 'DELIVERED' AND d.payment_state = 'UNPAID'"
+     WHERE d.payment_method = 'COD' AND d.order_status = 'DELIVERED' AND d.payment_state = 'UNPAID'"
 )->fetch();
 
 echo "\n[5] COD 待收款挂账: {$receivable['c']} 单\n";

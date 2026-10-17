@@ -6,6 +6,7 @@ namespace Chunlian\Http\Controller\Merchant;
 
 use Chunlian\Domain\CollectionMethod;
 use Chunlian\Domain\Order;
+use Chunlian\Domain\OrderApiCompatibility;
 use Chunlian\Domain\RejectionCode;
 use Chunlian\Repository\OrderRepository;
 use Chunlian\Service\LedgerCalculator;
@@ -18,7 +19,7 @@ use Chunlian\Service\TransitionResult;
  * ⚠️  本类展示**业务规则如何被服务端强制执行**，不包含 ShopXO 实际持久化代码。
  *     接入时需要：
  *       1. 用审计后的 Repository 替换下面的 `$this->orders()` 桩实现
- *       2. 在事务内加行锁 / 乐观锁 `WHERE version=? AND fulfillment='PENDING'`
+ *       2. 在事务内加行锁 / 乐观锁 `WHERE version=? AND order_status='PENDING'`
  *       3. 写入 `veg_operation_log` 审计
  *       4. 写 `veg_outbox_event` 触发 App 同步
  *
@@ -62,7 +63,8 @@ final class OrderController
             'data' => [
                 'order_id' => $orderId,
                 'order_version' => $result->get('version'),
-                'fulfillment' => $result->get('fulfillment')->value,
+                'order_status' => $result->get('order_status')->value,
+                ...OrderApiCompatibility::legacyFieldsFor($result->get('order_status'), false),
                 'locked_customer_editing' => true,
             ],
         ];
@@ -100,7 +102,7 @@ final class OrderController
             return $this->error($result->code, $result->data, $result->message);
         }
 
-        // 事务内：更新履约状态 + （条件性）写 COD 收款流水
+        // 事务内：更新订单阶段 + （条件性）写 COD 收款流水
         $this->orders()->applyTransition($order, $result);
 
         $ledgerId = null;
@@ -134,7 +136,8 @@ final class OrderController
             'data' => [
                 'order_id' => $orderId,
                 'order_version' => $result->get('version'),
-                'fulfillment' => $result->get('fulfillment')->value,
+                'order_status' => $result->get('order_status')->value,
+                ...OrderApiCompatibility::legacyFieldsFor($result->get('order_status'), false),
                 'payment_state' => $result->get('payment_state')->value,
                 'receivable_fen' => $result->get('receivable_fen'),
                 'ledger_id' => $ledgerId,

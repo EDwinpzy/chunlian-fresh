@@ -7,10 +7,9 @@ namespace Chunlian\Tests\Service;
 use Chunlian\Domain\Contact;
 use Chunlian\Domain\DeliveryMode;
 use Chunlian\Domain\Order;
-use Chunlian\Domain\OrderFulfillment;
+use Chunlian\Domain\OrderStatus;
 use Chunlian\Domain\OrderLine;
 use Chunlian\Domain\OrderPaymentState;
-use Chunlian\Domain\OrderReceiptState;
 use Chunlian\Domain\OrderRevisionState;
 use Chunlian\Domain\PaymentMethod;
 use PHPUnit\Framework\TestCase;
@@ -26,9 +25,8 @@ final class OrderAggregateTest extends TestCase
             id: '10025',
             orderNo: '20261012193000001',
             version: 1,
-            fulfillment: OrderFulfillment::PENDING,
+            orderStatus: OrderStatus::PENDING,
             paymentState: OrderPaymentState::UNPAID,
-            receiptState: OrderReceiptState::UNCONFIRMED,
             revisionState: OrderRevisionState::NONE,
             paymentMethod: PaymentMethod::COD,
             deliveryMode: DeliveryMode::ASAP,

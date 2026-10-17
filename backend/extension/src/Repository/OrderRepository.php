@@ -6,6 +6,7 @@ namespace Chunlian\Repository;
 
 use Chunlian\Domain\CollectionMethod;
 use Chunlian\Domain\Order;
+use Chunlian\Domain\PaymentMethod;
 use Chunlian\Service\TransitionResult;
 
 /**
@@ -14,10 +15,10 @@ use Chunlian\Service\TransitionResult;
  * ⚠️  实现必须满足以下不变量（方案 §9.3）：
  *
  *  1. **行锁 / 乐观锁**：`findForUpdate()` 必须以
- *     `SELECT ... FOR UPDATE` 或 `WHERE version=? AND fulfillment='PENDING'` 方式读取，
+ *     `SELECT ... FOR UPDATE` 或 `WHERE version=? AND order_status='PENDING'` 方式读取，
  *     否则并发下会出现"错版本发货"。
- *  2. **事务边界**：`applyTransition()` 与 `writeCodReceipt()` 必须在**同一事务**内完成，
- *     保证"送达 + 收款"原子性。
+ *  2. **事务边界**：`applyTransition()` 与资金流水写入必须在**同一事务**内完成，
+ *     保证状态变更与收款记账原子性。
  *  3. **幂等**：`writeCodReceipt()` 依赖 `veg_payment_ledger.uk_idem_key` /
  *     `uk_business_no` 唯一约束兜底，重复调用不得产生第二条流水。
  *  4. **库存对称**：修订预占的增减必须可逆，撤销时对称归还。
@@ -40,6 +41,15 @@ interface OrderRepository
         string $orderId,
         int $amountFen,
         CollectionMethod $method,
+        string $operatorId,
+        string $idempotencyKey,
+    ): int;
+
+    /** 写入顾客确认收货时自动结清的资金流水。 */
+    public function writeCustomerReceipt(
+        string $orderId,
+        int $amountFen,
+        PaymentMethod $paymentMethod,
         string $operatorId,
         string $idempotencyKey,
     ): int;
