@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-10-13T16:20:45.468120+00:00",
+  "target": "isolated-staging",
+  "php_zone": "Asia/Shanghai",
+  "mysql_session_zone": "+08:00",
+  "same_business_date": true,
+  "same_order_date": true,
+  "scope": "plugin session only; shared server and existing production data unchanged"
+}

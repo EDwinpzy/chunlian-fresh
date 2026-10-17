@@ -1,0 +1,1158 @@
+{
+  "generatedAt": "2026-10-14T08:24:54.893Z",
+  "viewports": {
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screens": [
+        {
+          "key": "home",
+          "route": "/",
+          "imageCount": 6,
+          "tabCount": 4,
+          "tabs": [
+            {
+              "label": "首页",
+              "active": true,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "分类",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "2\n购物车",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "我的",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            }
+          ]
+        },
+        {
+          "key": "category",
+          "route": "category",
+          "imageCount": 4,
+          "tabCount": 4,
+          "tabs": [
+            {
+              "label": "首页",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "分类",
+              "active": true,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "2\n购物车",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "我的",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            }
+          ]
+        },
+        {
+          "key": "cart",
+          "route": "cart",
+          "imageCount": 4,
+          "tabCount": 4,
+          "tabs": [
+            {
+              "label": "首页",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "分类",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "2\n购物车",
+              "active": true,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "我的",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            }
+          ]
+        },
+        {
+          "key": "profile",
+          "route": "me",
+          "imageCount": 7,
+          "tabCount": 4,
+          "tabs": [
+            {
+              "label": "首页",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "分类",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "2\n购物车",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "我的",
+              "active": true,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            }
+          ]
+        },
+        {
+          "key": "goods",
+          "route": "goods/1",
+          "imageCount": 1,
+          "tabCount": 0,
+          "tabs": []
+        },
+        {
+          "key": "refund",
+          "route": "orders/2005/refunds",
+          "imageCount": 1,
+          "tabCount": 0,
+          "tabs": []
+        },
+        {
+          "key": "search",
+          "route": "search",
+          "imageCount": 1,
+          "tabCount": 0,
+          "tabs": []
+        }
+      ],
+      "iconImages": [
+        {
+          "src": "http://127.0.0.1:5181/app/assets/brand/spring-fresh.png?v=2",
+          "loaded": true,
+          "naturalSize": [
+            1254,
+            1254
+          ],
+          "size": [
+            38,
+            38
+          ],
+          "wrapperSize": [
+            38,
+            38
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/search-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            20,
+            20
+          ],
+          "wrapperSize": [
+            20,
+            20
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/home-active.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/category-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/profile-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/home-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/category-active.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/profile-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/home-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/category-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-active.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/profile-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/common/orders.svg",
+          "loaded": true,
+          "naturalSize": [
+            64,
+            64
+          ],
+          "size": [
+            22,
+            22
+          ],
+          "wrapperSize": [
+            22,
+            22
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            22,
+            22
+          ],
+          "wrapperSize": [
+            22,
+            22
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/common/phone.svg",
+          "loaded": true,
+          "naturalSize": [
+            64,
+            64
+          ],
+          "size": [
+            22,
+            22
+          ],
+          "wrapperSize": [
+            22,
+            22
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/home-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/category-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/profile-active.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/common/product_detail.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            20,
+            20
+          ],
+          "wrapperSize": [
+            20,
+            20
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/common/refund.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            22,
+            22
+          ],
+          "wrapperSize": [
+            22,
+            22
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/search-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            20,
+            20
+          ],
+          "wrapperSize": [
+            20,
+            20
+          ],
+          "objectFit": "contain"
+        }
+      ]
+    },
+    "mobile": {
+      "viewport": {
+        "width": 412,
+        "height": 915
+      },
+      "screens": [
+        {
+          "key": "home",
+          "route": "/",
+          "imageCount": 6,
+          "tabCount": 4,
+          "tabs": [
+            {
+              "label": "首页",
+              "active": true,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "分类",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "2\n购物车",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "我的",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            }
+          ]
+        },
+        {
+          "key": "category",
+          "route": "category",
+          "imageCount": 4,
+          "tabCount": 4,
+          "tabs": [
+            {
+              "label": "首页",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "分类",
+              "active": true,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "2\n购物车",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "我的",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            }
+          ]
+        },
+        {
+          "key": "cart",
+          "route": "cart",
+          "imageCount": 4,
+          "tabCount": 4,
+          "tabs": [
+            {
+              "label": "首页",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "分类",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "2\n购物车",
+              "active": true,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "我的",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            }
+          ]
+        },
+        {
+          "key": "profile",
+          "route": "me",
+          "imageCount": 7,
+          "tabCount": 4,
+          "tabs": [
+            {
+              "label": "首页",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "分类",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "2\n购物车",
+              "active": false,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            },
+            {
+              "label": "我的",
+              "active": true,
+              "sourceMatchesState": true,
+              "centerDeltaX": 0
+            }
+          ]
+        },
+        {
+          "key": "goods",
+          "route": "goods/1",
+          "imageCount": 1,
+          "tabCount": 0,
+          "tabs": []
+        },
+        {
+          "key": "refund",
+          "route": "orders/2005/refunds",
+          "imageCount": 1,
+          "tabCount": 0,
+          "tabs": []
+        },
+        {
+          "key": "search",
+          "route": "search",
+          "imageCount": 1,
+          "tabCount": 0,
+          "tabs": []
+        }
+      ],
+      "iconImages": [
+        {
+          "src": "http://127.0.0.1:5181/app/assets/brand/spring-fresh.png?v=2",
+          "loaded": true,
+          "naturalSize": [
+            1254,
+            1254
+          ],
+          "size": [
+            38,
+            38
+          ],
+          "wrapperSize": [
+            38,
+            38
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/search-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            20,
+            20
+          ],
+          "wrapperSize": [
+            20,
+            20
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/home-active.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/category-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/profile-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/home-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/category-active.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/profile-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/home-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/category-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-active.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/profile-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/common/orders.svg",
+          "loaded": true,
+          "naturalSize": [
+            64,
+            64
+          ],
+          "size": [
+            22,
+            22
+          ],
+          "wrapperSize": [
+            22,
+            22
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            22,
+            22
+          ],
+          "wrapperSize": [
+            22,
+            22
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/common/phone.svg",
+          "loaded": true,
+          "naturalSize": [
+            64,
+            64
+          ],
+          "size": [
+            22,
+            22
+          ],
+          "wrapperSize": [
+            22,
+            22
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/home-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/category-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/cart-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/profile-active.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            24,
+            24
+          ],
+          "wrapperSize": [
+            24,
+            24
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/common/product_detail.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            20,
+            20
+          ],
+          "wrapperSize": [
+            20,
+            20
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/common/refund.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            22,
+            22
+          ],
+          "wrapperSize": [
+            22,
+            22
+          ],
+          "objectFit": "contain"
+        },
+        {
+          "src": "http://127.0.0.1:5181/app/assets/tabbar/search-normal.svg",
+          "loaded": true,
+          "naturalSize": [
+            150,
+            150
+          ],
+          "size": [
+            20,
+            20
+          ],
+          "wrapperSize": [
+            20,
+            20
+          ],
+          "objectFit": "contain"
+        }
+      ]
+    }
+  },
+  "assetHttpErrors": [],
+  "pageErrors": [],
+  "svgAssets": [
+    "tabbar/cart-active.svg",
+    "tabbar/cart-normal.svg",
+    "tabbar/category-active.svg",
+    "tabbar/category-normal.svg",
+    "tabbar/home-active.svg",
+    "tabbar/home-normal.svg",
+    "tabbar/profile-active.svg",
+    "tabbar/profile-normal.svg",
+    "tabbar/search-active.svg",
+    "tabbar/search-normal.svg",
+    "common/orders.svg",
+    "common/phone.svg",
+    "common/product_detail.svg",
+    "common/refund.svg"
+  ],
+  "ok": true
+}

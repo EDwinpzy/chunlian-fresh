@@ -1,0 +1,22 @@
+{
+  "backup": "/opt/chunlian/backups/chunlian-fresh/20261014T033555Z",
+  "local_backup": "D:\\MyProjects\\chunlian-fresh\\dist\\private\\backup-20261014",
+  "restore_check": "passed-order-ledger-counts",
+  "order_count": 13,
+  "ledger_count": 5,
+  "transfer_sha256": [
+    {
+      "name": "code-config.tar.gz",
+      "passed": true
+    },
+    {
+      "name": "database.sql.gz",
+      "passed": true
+    },
+    {
+      "name": "uploads.tar.gz",
+      "passed": true
+    }
+  ],
+  "scope": "restored database order/ledger counts and downloaded archive SHA256; not full table field restoration audit"
+}

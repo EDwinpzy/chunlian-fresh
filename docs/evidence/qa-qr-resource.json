@@ -1,0 +1,10 @@
+{
+  "scope": "isolated QA public QR image GET only",
+  "image_path": "/static/upload/images/goods/2026/10/13/202610131853083463.png",
+  "status": 200,
+  "content_type": "image/png",
+  "width": 450,
+  "height": 450,
+  "bytes": 7082,
+  "sha256": "a9c5d332698fd853029895e3c5f754694c1b743eca905ea17202b55f0df4dcd5"
+}

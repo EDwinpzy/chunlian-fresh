@@ -1,0 +1,19 @@
+{
+  "release": "chunlian-20261015-shop-config-v1",
+  "packages": [
+    {
+      "file": "chunlian-customer-1.0.2.apk",
+      "version_name": "1.0.2",
+      "version_code": 3,
+      "sha256": "a63787f5a583ae3d622e51780533122e0ca406425c51e7649a7a6fd5d68b23df",
+      "bytes": 13223227
+    },
+    {
+      "file": "chunlian-merchant-1.0.3.apk",
+      "version_name": "1.0.3",
+      "version_code": 4,
+      "sha256": "241697a5d0f7b31abbd580fc98c66e4be36a302747134f70ad316a432f81becd",
+      "bytes": 14419670
+    }
+  ]
+}

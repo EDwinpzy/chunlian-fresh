@@ -1,0 +1,36 @@
+{
+  "timestamp": "2026-10-14T03:12:38.538378+00:00",
+  "scope": "persisted order, line, revision, ledger and existing shop setting data; no writes",
+  "tables": {
+    "shopxo_order": {
+      "rows": 13,
+      "sha256": "6f8493ef2bfdf4d0d88f39142fcb4b890bee8c1916a58e34025631f29a27382e"
+    },
+    "shopxo_order_detail": {
+      "rows": 12,
+      "sha256": "ed8c6cfaea7dda80c4599dc2d6676c514e4a09b5bfeac5fcfc31751b1fa90c26"
+    },
+    "veg_order_delivery": {
+      "rows": 11,
+      "sha256": "a30271592b2d0f61ff46aeefb8d88bf2014b02efe1011dc69a485a7d4ac2af6d"
+    },
+    "veg_order_line": {
+      "rows": 11,
+      "sha256": "eee68317e26ce2b4726482f1577e85585696bac379495f145922725b7e01b4c5"
+    },
+    "veg_order_revision": {
+      "rows": 9,
+      "sha256": "e0d3630fa15529e3991b8ce697837d8c1a49f9c4f1218c9086cee6969881cf5b"
+    },
+    "veg_payment_ledger": {
+      "rows": 5,
+      "sha256": "db048c5b82ebda1b677e544b1db96c904fd5c68be08e5df957d761c5890ad3e5"
+    },
+    "veg_shop_setting_existing_columns": {
+      "rows": 1,
+      "sha256": "6a0781c15bfca2eeaf474e9fa653d74de66c56a544bb02dd9669eda855826f78"
+    }
+  },
+  "unchanged": true,
+  "different_tables": []
+}

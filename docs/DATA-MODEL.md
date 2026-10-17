@@ -2,6 +2,7 @@
 
 > 来源：方案 §9。
 > **以下SQL为概念性历史草案，不是当前生产迁移清单。** 当前代码库迁移脚本是schema来源。2026-10-14发布已增加二维码字段及逐事件通知已读表。草案中的WX_*/WECHAT属于历史模型；当前采用人工扫码与COD，没有自动支付/退款。
+> 订单状态按当前统一模型列出；历史初始建表迁移保持原样。`2026_10_17_000008_unify_order_status.sql` 以扩展方式新增 `order_status`，并保留 `fulfillment`、`receipt_state` 供已发布的 1.0.5 Android 客户端和代码回滚使用；它不改写 ShopXO 原生订单、金额、支付状态或资金流水。
 
 ## 1. 设计原则
 
@@ -16,30 +17,30 @@
 
 | 表名 | 字段摘要 | 目的 |
 |---|---|---|
-| `veg_order_delivery` | `order_id`、`delivery_mode`、`expected_at`、`fulfillment`、`delivered_at`、`received_at`、`version` | 自配送状态与订单版本（乐观锁） |
+| `veg_order_delivery` | `order_id`、`delivery_mode`、`expected_at`、`order_status`、旧客户端兼容列 `fulfillment` / `receipt_state`、`delivered_at`、`received_at`、`version` | 自配送状态与订单版本（乐观锁） |
 | `veg_order_revision` | `id`、`order_id`、`from_version`、`to_version`、`status`、`before_json`、`after_json`、`delta_fen` | 修改前后快照、差价与履约封锁 |
 | `veg_payment_ledger` | `id`、`order_id`、`revision_id`、`kind`、`amount_fen`、`provider_trade_no`、`status`、`idempotency_key` | 记录扫码入账、补款、人工退款及 COD 实收 |
 | `veg_operation_log` | `id`、`actor_type`、`actor_id`、`order_id`、`action`、`detail_json`、`created_at` | 审计，禁止前台删除 |
 | `veg_outbox_event` | `id`、`event_type`、`entity_id`、`payload`、`sent_at`、`retry_count` | 业务事件与 App 提醒重试 |
 | `veg_merchant_session` | `token_hash`、`device_id`、`actor_id`、`expires_at`、`revoked_at` | 商家专用 API 登录会话 |
 | `veg_notification_seen` | `actor_id`、`event_id`、`read_at` | 按商家账号逐事件保存已读状态；与通知总数分页无关 |
+| `veg_shop_profile` | `shop_logo_url`、展示文案、`notification_popup_title`、`notification_popup_image_url` | 店铺对外展示资料与顾客首页弹窗内容 |
 
 ### 2.1 枚举取值
 
 | 字段 | 枚举 |
 |---|---|
 | `veg_order_delivery.delivery_mode` | `ASAP` / `SCHEDULED` |
-| `veg_order_delivery.fulfillment` | `PENDING` / `DELIVERING` / `DELIVERED` / `FINISHED` / `CANCELLED` |
+| `veg_order_delivery.order_status` | `PENDING` / `DELIVERING` / `DELIVERED` / `FINISHED` / `CANCELLED` |
 | `veg_order_delivery.payment_state` | `UNPAID` / `PAYING` / `PAID` / `PARTIAL_REFUNDED` / `REFUNDING` / `REFUNDED` |
-| `veg_order_delivery.receipt_state` | `UNCONFIRMED` / `CONFIRMED` |
 | `veg_order_delivery.revision_state` | `NONE` / `PENDING_TOPUP` / `APPLYING` / `COMMITTED` / `FAILED` |
 | `veg_order_delivery.payment_method` | `OFFLINE_QR` / `COD` |
 | `veg_order_revision.status` | `PENDING_TOPUP` / `APPLYING` / `COMMITTED` / `FAILED` / `REVERTED` |
-| `veg_payment_ledger.kind` | `OFFLINE_RECEIPT` / `TOPUP` / `OFFLINE_REFUND` / `COD_RECEIPT` |
+| `veg_payment_ledger.kind` | `WX_PAY` / `TOPUP` / `WX_REFUND` / `COD_RECEIPT` / `CUSTOMER_RECEIPT` / `OFFLINE_RECEIPT` / `OFFLINE_REFUND` |
 | `veg_payment_ledger.status` | `PENDING` / `SUCCESS` / `FAILED` / `PROCESSING` / `CLOSED` |
-| `veg_payment_ledger.collection_method` | `CASH` / `OFFLINE_QR` / `OTHER` |
+| `veg_payment_ledger.collection_method` | `WECHAT` / `OFFLINE_QR` / `COD` / `CASH` / `OTHER` |
 
-> 四维状态（履约/支付/收货/修订）**拆开存放**，不允许合并成一个布尔字段。
+> `order_status` 是新后端的规范订单阶段；付款与修订仍由各自字段表示。新后端将 `order_status` 双写至 `fulfillment`，确认收货时同时写 `receipt_state=CONFIRMED`；API 也返回这些兼容字段。顾客确认收货以 `FINISHED` 和 `received_at` 记录，旧字段保留至不再支持 1.0.5 客户端后再另行审查移除。
 
 ## 3. 迁移脚本
 
@@ -55,10 +56,9 @@ CREATE TABLE IF NOT EXISTS `veg_order_delivery` (
     `order_id`        BIGINT UNSIGNED NOT NULL COMMENT 'ShopXO 订单 ID',
     `delivery_mode`   VARCHAR(16)     NOT NULL COMMENT 'ASAP / SCHEDULED',
     `expected_at`     DATETIME        NULL     COMMENT '预约送达时间，ASAP 时为 NULL',
-    `fulfillment`     VARCHAR(16)     NOT NULL DEFAULT 'PENDING',
+    `order_status`     VARCHAR(16)     NOT NULL DEFAULT 'PENDING',
     `payment_state`   VARCHAR(24)     NOT NULL DEFAULT 'UNPAID',
     `payment_method`  VARCHAR(16)     NOT NULL COMMENT 'OFFLINE_QR / COD',
-    `receipt_state`   VARCHAR(16)     NOT NULL DEFAULT 'UNCONFIRMED',
     `revision_state`  VARCHAR(24)     NOT NULL DEFAULT 'NONE',
     `delivered_at`    DATETIME        NULL,
     `received_at`     DATETIME        NULL     COMMENT '顾客确认收货时间',
@@ -66,10 +66,13 @@ CREATE TABLE IF NOT EXISTS `veg_order_delivery` (
     `created_at`      DATETIME        NOT NULL,
     `updated_at`      DATETIME        NOT NULL,
     PRIMARY KEY (`order_id`),
-    KEY `idx_fulfillment_expected` (`fulfillment`, `expected_at`),
+    KEY `idx_order_status_expected` (`order_status`, `expected_at`),
     KEY `idx_payment_state` (`payment_method`, `payment_state`),
     KEY `idx_revision_state` (`revision_state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单履约扩展';
+
+-- 当前安装/升级后，确认收货用 order_status=FINISHED 与 received_at 表示。
+-- 确认时写入的 CUSTOMER_RECEIPT 金额进入收入汇总；退款流水仍按原金额和状态计算。
 
 CREATE TABLE IF NOT EXISTS `veg_order_revision` (
     `id`           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -219,7 +222,7 @@ FROM veg_order_delivery d
 LEFT JOIN veg_payment_ledger l
        ON l.order_id = d.order_id AND l.kind = 'COD_RECEIPT' AND l.status = 'SUCCESS'
 WHERE d.payment_method = 'COD'
-  AND d.fulfillment = 'DELIVERED'
+  AND d.order_status = 'DELIVERED'
 GROUP BY d.order_id, d.delivered_at, d.version
 HAVING collected_fen < :order_total_fen;
 ```

@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "chunlian-fresh",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-17",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "NAT_ORIGIN_BASE": "http://103.236.97.137:36965"
+  },
+  "vpc_services": [
+    {
+      "binding": "CUSTOMER_ORIGIN",
+      "service_id": "01a147cf-1fa5-7103-8853-278e977dfd09",
+      "remote": true
+    }
+  ]
+}

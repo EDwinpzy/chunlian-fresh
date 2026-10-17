@@ -1,0 +1,144 @@
+{
+  "checked_at": "2026-10-17T09:52:47.217432+00:00",
+  "scope": "signed artifact verification; device installation and UI acceptance are recorded separately",
+  "packages": [
+    {
+      "file": "customer-release.apk",
+      "application_id": "com.chunlian.customer",
+      "bytes": 16630653,
+      "sha256": "bb48ba98ef8ce8ca96553097a32a8998beb4f1811b0fbd6ce73c6f3b02179603",
+      "certificate_sha256": "1301d842762a91154cb92b5ea87041584b76466ff34e15a034484f1265903462",
+      "version_code": 7,
+      "version_name": "1.0.6"
+    },
+    {
+      "file": "merchant-release.apk",
+      "application_id": "com.chunlian.merchant",
+      "bytes": 50488433,
+      "sha256": "4e7d7f12315985a26dc21f2a05bce0215bb017212b2d335eb1ae489f39cab39b",
+      "certificate_sha256": "1301d842762a91154cb92b5ea87041584b76466ff34e15a034484f1265903462",
+      "version_code": 7,
+      "version_name": "1.0.6"
+    }
+  ],
+  "checks": [
+    {
+      "name": "customer APK signature verification",
+      "passed": true
+    },
+    {
+      "name": "customer APK contains signer certificate",
+      "passed": true
+    },
+    {
+      "name": "customer application ID",
+      "passed": true
+    },
+    {
+      "name": "customer APK version metadata",
+      "passed": true
+    },
+    {
+      "name": "customer APK version matches Gradle configuration",
+      "passed": true
+    },
+    {
+      "name": "customer minimum Android version",
+      "passed": true
+    },
+    {
+      "name": "customer release is not debuggable",
+      "passed": true
+    },
+    {
+      "name": "customer named CA resource resolves to a packaged file",
+      "passed": true
+    },
+    {
+      "name": "customer manifest uses verified network security configuration",
+      "passed": true
+    },
+    {
+      "name": "customer packaged security configuration forbids cleartext",
+      "passed": true
+    },
+    {
+      "name": "customer project CA is scoped to exact production IP",
+      "passed": true
+    },
+    {
+      "name": "customer production HTTPS endpoint in compiled APK",
+      "passed": true
+    },
+    {
+      "name": "customer isolated QA endpoint absent",
+      "passed": true
+    },
+    {
+      "name": "customer trusted project CA matches delivery",
+      "passed": true
+    },
+    {
+      "name": "merchant APK signature verification",
+      "passed": true
+    },
+    {
+      "name": "merchant APK contains signer certificate",
+      "passed": true
+    },
+    {
+      "name": "merchant application ID",
+      "passed": true
+    },
+    {
+      "name": "merchant APK version metadata",
+      "passed": true
+    },
+    {
+      "name": "merchant APK version matches Gradle configuration",
+      "passed": true
+    },
+    {
+      "name": "merchant minimum Android version",
+      "passed": true
+    },
+    {
+      "name": "merchant release is not debuggable",
+      "passed": true
+    },
+    {
+      "name": "merchant named CA resource resolves to a packaged file",
+      "passed": true
+    },
+    {
+      "name": "merchant manifest uses verified network security configuration",
+      "passed": true
+    },
+    {
+      "name": "merchant packaged security configuration forbids cleartext",
+      "passed": true
+    },
+    {
+      "name": "merchant project CA is scoped to exact production IP",
+      "passed": true
+    },
+    {
+      "name": "merchant production HTTPS endpoint in compiled APK",
+      "passed": true
+    },
+    {
+      "name": "merchant isolated QA endpoint absent",
+      "passed": true
+    },
+    {
+      "name": "merchant trusted project CA matches delivery",
+      "passed": true
+    },
+    {
+      "name": "both APKs use the same project signing certificate",
+      "passed": true
+    }
+  ],
+  "passed": 29,
+  "total": 29
+}

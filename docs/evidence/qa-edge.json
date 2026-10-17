@@ -1,0 +1,968 @@
+{
+  "target": "http://127.0.0.1:18096",
+  "timestamp": "2026-10-15T07:04:13.361075+00:00",
+  "script_sha256": "1b3642204eee19a55747a2e6ceafcfc17c7314f93a79e9eee2e46c94ac3e3c7f",
+  "business_helper_sha256": "6ab1df752514586776af3d88ca1cb6cf66e71032374b4c84ee8baa85977b5711",
+  "tests": [
+    {
+      "name": "edge merchant login",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge customer register",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant PNG upload",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "upload returns public goods image path",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "uploaded image URL returns HTTP 200",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "uploaded resource is a valid PNG",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge categories",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge goods create",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge goods detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge goods create",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge goods detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge goods create",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge goods detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "SKU update rejects legacy POST method",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "last-unit race has one winner and one stock refusal",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "last-unit race stock never negative",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "last-unit cancel restores one",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "unpaid QR dispatch rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "customer cannot verify receipt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "missing receipt key rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "cancelled QR order rejects later receipt confirmation",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "rejected receipt leaves cancelled order unpaid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify prepayment",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "paid cancellation occupies manual refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "cancel refund rejects over-refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "paid cancellation fully refunded",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "new-key repeat refund rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify prepayment",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pending reduction refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "two pending refunds exactly equal original receipt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order list",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant detail exposes both pending refund obligations",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order list exposes both pending refunds",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "first refund keeps remaining refund pending",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order list",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "first verification removes only its refund obligation",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "both refunds settle without over-refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order list",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order list",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "fully verified refunds clear merchant detail and list",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dashboard metrics baseline",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify prepayment",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dashboard refund revision",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dashboard with pending refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "refund revision is not counted as pending top-up",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pending refund dashboard count counts the order once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dashboard QR receipts exclude pending refunds",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-07 pending manual refund blocks dispatch",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-07 refused dispatch preserves pending refund order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pending refund ledger",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-07 pending refund does not reduce actual net receipts",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dashboard after refund settles",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "settled refund leaves no pending dashboard count",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dashboard preserves QR receipt and signed refund totals",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify prepayment",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "mixed SKU top-up",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pending decrease not released early",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-05 pending top-up blocks dispatch",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-05 refused dispatch preserves top-up order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "legacy blind commit blocked",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pending top-up cancel restores every reserved unit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify prepayment",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "mixed top-up for commit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "mixed top-up collect",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "top-up commit releases negative SKU once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "committed mixed cancellation restores all stock",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dispatch vs revision produces one commit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dispatch/revision race advances version once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "race winner leaves a valid dispatch or cancellation state",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify prepayment",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-02 revision/cancel race commits exactly once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-02 race advances the order version once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-02 final cancellation reserves exactly the original paid amount",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant order detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-02 refund obligations total original receipt without overlap",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-02 race refunds fully without double refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-02 cancellation releases each inventory unit once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-03 concurrent QR receipt has one winner",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-03 concurrent receipt ledger",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-03 exactly one successful receipt ledger entry",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge verify refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-04 dispatch COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-04 concurrent delivery confirms once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-04 delivery leaves one version and unpaid receivable",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-04 concurrent COD receipts commit once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-04 COD ledger",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-04 COD paid once with one successful ledger entry",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-06 mixed revision with insufficient stock is rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-06 failed revision leaves version lines and total unchanged",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "inventory check",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "C-06 failed revision keeps all SKU inventory unchanged",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "raise price",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "first price split",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "first split keeps 2x300 plus 1x400",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "split price revision history",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "split price history sums SKU quantities",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "second increment preserves split",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "second split remains 2x300 plus 2x400",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "archive historical product",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "archive hides product",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "reduce archived snapshot",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "archived snapshot can decrease without repricing",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edge cancel",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "foreign payment method WECHAT unsupported",
+      "passed": true,
+      "detail": null
+    }
+  ]
+}

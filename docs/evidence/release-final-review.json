@@ -1,0 +1,98 @@
+{
+  "timestamp": "2026-10-14T03:02:36Z",
+  "scope": "Final candidate review for isolated QA and local temporary recovery mocks. No production switch, production database write, or live backup command was performed in this review.",
+  "candidate": {
+    "release": "chunlian-20261013-v1",
+    "package_sha256": "6e986cf1e2fafc3ae5780a94f93408be90f5312a27060d57dc796ffd927ecc6a",
+    "package_bytes": 219290,
+    "archive_entries": 129,
+    "archive_file_entries_including_manifest": 115,
+    "manifest_payload_files": 114,
+    "archive_directories": 14,
+    "package_manifest_migration_sha256": "91d07e989bf101e9190972b70cc164738cb60382fbf0f72a4809fa6b6e45bb1a",
+    "release_script_sha256": "ca877f89c93a49c9f1e68e50b0627b83c2b77a6bb260d10a72b049ea026a5871",
+    "rollback_script_sha256": "51658c40e27a21b4b179d729e752f341ad20add203140a49641c852b22559e37",
+    "build_script_sha256": "1a64767a4aca1e7a61eddbad6ecb2faf72983edbd24b7e8d45ae6e5cbaac78f1",
+    "nginx_source_sha256": "ca901e8213428835faa4ebab6b80c266e722110375943b0e9fab8dc58cb30830"
+  },
+  "package_preflight": {
+    "evidence_file": "docs/evidence/release-preflight.json",
+    "remote_package_sha256_matches": true,
+    "remote_dry_check": "passed",
+    "repeated_build_sha256_equal": true,
+    "production_switch": false,
+    "outcome": "passed"
+  },
+  "package_permissions": {
+    "evidence_file": "docs/evidence/release-code-permissions.json",
+    "package_sha256": "6e986cf1e2fafc3ae5780a94f93408be90f5312a27060d57dc796ffd927ecc6a",
+    "readable_files": 115,
+    "total_files": 115,
+    "writable_entries": 0,
+    "owner_group": "root:www-data",
+    "directories": "0750",
+    "files": "0640",
+    "outcome": "passed"
+  },
+  "release_script_review": {
+    "release_script_sha256": "ca877f89c93a49c9f1e68e50b0627b83c2b77a6bb260d10a72b049ea026a5871",
+    "rollback_script_sha256": "51658c40e27a21b4b179d729e752f341ad20add203140a49641c852b22559e37",
+    "checks": [
+      "Package member paths, file set, manifest digests, PHP syntax, required notification migration, and existing database tables are checked before apply.",
+      "Dry-check exits before maintenance mode, backup, migration, file replacement, permission changes, or service reloads.",
+      "Apply enables maintenance and drains existing PHP workers before the backup and migration.",
+      "Production restore-check backup is invoked before the additive migrations.",
+      "Post-release health first verifies veg_notification_seen exists, then verifies strict-TLS web assets, SPA routing, public APIs, QR configuration, and anonymous API protection.",
+      "Health failure restores backend, plugin, web, app configuration, and nginx configuration; the new trees are retained for diagnosis.",
+      "Standalone rollback restores the retained code/configuration under maintenance and does not import or modify a database."
+    ],
+    "database_rollback_policy": "The additive payment QR and notification marker schema is preserved by file rollback. Restoring a database is a separate deliberate operation.",
+    "outcome": "passed"
+  },
+  "isolated_mock_recovery": {
+    "scope": "Temporary local trees only; external MySQL, PHP, backup, nginx, and systemd commands were mocked. Release health was failed by simulating a missing notification marker table. No repository source was rewritten for the mocks.",
+    "windows_path_note": "The in-memory test copy normalized extracted archive path separators to emulate Linux Path formatting; the repository script and package were not changed.",
+    "checks": [
+      { "name": "final package dry-check exits successfully", "passed": true },
+      { "name": "dry-check performs no maintenance, backup, migration or service writes", "passed": true },
+      { "name": "dry-check rejects package missing notification migration", "passed": true },
+      { "name": "post-migration health rejects missing notification marker table", "passed": true },
+      { "name": "verified backup restore-check precedes additive migration", "passed": true },
+      { "name": "backup and all service reloads run under maintenance", "passed": true },
+      { "name": "health failure restores old code/config and clears maintenance", "passed": true },
+      { "name": "failed new code is retained in rollback evidence tree", "passed": true },
+      { "name": "additive notification migration ran before health failure", "passed": true },
+      { "name": "standalone rollback completes and records restored marker", "passed": true },
+      { "name": "standalone rollback restores all code trees and app/nginx config", "passed": true },
+      { "name": "standalone rollback keeps maintenance through checks then clears it", "passed": true },
+      { "name": "standalone rollback performs no database calls", "passed": true }
+    ],
+    "passed": 13,
+    "failed": 0,
+    "total": 13,
+    "outcome": "passed"
+  },
+  "maintenance_gate": {
+    "evidence_file": "docs/evidence/release-maintenance-gate.json",
+    "passed": 7,
+    "total": 7,
+    "outcome": "passed"
+  },
+  "notification_race": {
+    "evidence_file": "docs/evidence/qa-notification-race.json",
+    "run_id": "83126067293a45e0aff6363a66745caa",
+    "script_sha256": "7c177a2851b9f84be7d85d8635707c72c0dc7fba4e827a3cf463465277d87c48",
+    "service_sha256": "e2539ed35c39fd2c3d7dab425f2304e4034b329c863c87a179096d63e761f7e7",
+    "migration_source_sha256": "91d07e989bf101e9190972b70cc164738cb60382fbf0f72a4809fa6b6e45bb1a",
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "total": 18,
+    "outcome": "passed"
+  },
+  "limitations": [
+    "Recovery behavior was exercised in isolated filesystem mocks, not by switching the live production service.",
+    "A live production backup/restore-check and production deployment remain outside this review."
+  ],
+  "outcome": "passed"
+}

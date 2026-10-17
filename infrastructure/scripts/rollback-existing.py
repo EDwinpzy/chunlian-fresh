@@ -1,7 +1,8 @@
-"""Restore one retained project release, preserving the additive QR column.
+"""Restore one retained project release without rolling back database state.
 
 Default is read-only inspection. --apply requires the exact retained release ID.
-Never imports a database or touches another service. A failed rollback leaves
+Never imports a database or touches another service. It verifies the legacy
+1.0.5 order columns still exist before switching code. A failed rollback leaves
 maintenance enabled for a deliberate repair instead of serving mixed code.
 """
 import argparse
@@ -39,6 +40,15 @@ if not args.apply:
 
 def run(*command):
     return subprocess.check_output(command, stderr=subprocess.STDOUT).decode().strip()
+
+legacy_order_columns = run(
+    'mysql', '--protocol=socket', '-uroot', '-N', '-e',
+    "SELECT COUNT(*) FROM information_schema.COLUMNS "
+    "WHERE TABLE_SCHEMA='chunlian_shop' AND TABLE_NAME='veg_order_delivery' "
+    "AND COLUMN_NAME IN ('fulfillment','receipt_state');",
+)
+if legacy_order_columns != '2':
+    raise SystemExit('Cannot safely restore 1.0.5 code: legacy order columns are missing')
 
 for _, source in paths[:2]:
     for path in source.rglob('*.php'):

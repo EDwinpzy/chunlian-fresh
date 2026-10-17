@@ -1,0 +1,97 @@
+{
+  "device": "emulator-5558",
+  "screenPx": [
+    1080,
+    2274
+  ],
+  "densityDpi": 420,
+  "items": [
+    {
+      "label": "逛逛",
+      "itemBounds": [
+        0,
+        2064,
+        200,
+        2274
+      ],
+      "iconSlotBounds": [
+        68,
+        2104,
+        131,
+        2167
+      ],
+      "horizontalCenterOffsetPx": -0.5,
+      "iconCenterYpx": 2135.5
+    },
+    {
+      "label": "分类",
+      "itemBounds": [
+        221,
+        2064,
+        420,
+        2274
+      ],
+      "iconSlotBounds": [
+        289,
+        2104,
+        352,
+        2167
+      ],
+      "horizontalCenterOffsetPx": 0.0,
+      "iconCenterYpx": 2135.5
+    },
+    {
+      "label": "购物车",
+      "itemBounds": [
+        441,
+        2064,
+        640,
+        2274
+      ],
+      "iconSlotBounds": [
+        509,
+        2104,
+        572,
+        2167
+      ],
+      "horizontalCenterOffsetPx": 0.0,
+      "iconCenterYpx": 2135.5
+    },
+    {
+      "label": "订单",
+      "itemBounds": [
+        661,
+        2064,
+        860,
+        2274
+      ],
+      "iconSlotBounds": [
+        729,
+        2104,
+        792,
+        2167
+      ],
+      "horizontalCenterOffsetPx": 0.0,
+      "iconCenterYpx": 2135.5
+    },
+    {
+      "label": "我的",
+      "itemBounds": [
+        881,
+        2064,
+        1080,
+        2274
+      ],
+      "iconSlotBounds": [
+        949,
+        2104,
+        1012,
+        2167
+      ],
+      "horizontalCenterOffsetPx": 0.0,
+      "iconCenterYpx": 2135.5
+    }
+  ],
+  "maxAbsHorizontalCenterOffsetPx": 0.5,
+  "verticalCenterSpreadPx": 0.0
+}

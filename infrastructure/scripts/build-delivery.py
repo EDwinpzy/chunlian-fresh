@@ -22,11 +22,22 @@ with tempfile.TemporaryDirectory(prefix='chunlian-package-') as folder:
     staged = Path(folder)
     for src, dest in [
         ('backend/extension/src', 'backend-extension/src'),
+        ('backend/extension/config', 'backend-extension/config'),
         ('backend/extension/migrations', 'backend-extension/migrations'),
+        ('backend/extension/scripts', 'backend-extension/scripts'),
         ('backend/shopxo-plugin/chunlianfresh', 'plugin'),
         ('apps/customer-web/dist', 'web'),
     ]:
         shutil.copytree(root / src, staged / dest)
+    required_server_files = [
+        staged / 'backend-extension/config/extension.php',
+        staged / 'backend-extension/scripts/health-check.php',
+        staged / 'backend-extension/scripts/migrate.php',
+        staged / 'backend-extension/scripts/outbox-worker.php',
+    ]
+    missing_server_files = [str(path.relative_to(staged)) for path in required_server_files if not path.is_file()]
+    if missing_server_files:
+        raise SystemExit('Missing required server files: ' + ', '.join(missing_server_files))
     shutil.copy2(root / 'infrastructure/nginx/chunlian.conf', staged / 'nginx.conf')
     files = {str(p.relative_to(staged)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(staged.rglob('*')) if p.is_file()}
     (staged / 'manifest.json').write_text(json.dumps({'release': args.release, 'files': files}, indent=2) + '\n')

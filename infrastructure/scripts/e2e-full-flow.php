@@ -304,7 +304,7 @@ $recv = http('POST', $base . "/customer/orders/{$createdOrderId}/receive", [
     'version' => $v3,
 ], $customerToken, uuid());
 check('顾客确认收货', ($recv['code'] ?? '') === 'OK', $recv['message'] ?? '');
-check('订单进入已完成', ($recv['data']['fulfillment'] ?? '') === 'FINISHED');
+check('订单进入已完成', ($recv['data']['order_status'] ?? '') === 'FINISHED');
 
 // ---------------- 拒绝场景 ----------------
 echo "\n[6] 拒绝场景（服务端裁决）\n";

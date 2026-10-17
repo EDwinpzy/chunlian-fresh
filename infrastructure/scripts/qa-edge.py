@@ -95,9 +95,9 @@ def main():
     unpaid=cancel(unpaid)
     q.check('cancelled QR order rejects later receipt confirmation',q.action(m,unpaid,'qr-receipt',amount_fen=600)['code']!='OK')
     unpaid=q.detail(c,unpaid['id'])
-    q.check('rejected receipt leaves cancelled order unpaid',unpaid['fulfillment']=='CANCELLED' and unpaid['payment_state']=='UNPAID' and unpaid['paid_fen']==0)
+    q.check('rejected receipt leaves cancelled order unpaid',unpaid['order_status']=='CANCELLED' and unpaid['payment_state']=='UNPAID' and unpaid['paid_fen']==0)
     paid=pay(q.order(c,sa,2,'OFFLINE_QR'));cancel(paid);cancelled=q.detail(c,paid['id'])
-    q.check('paid cancellation occupies manual refund',cancelled['fulfillment']=='CANCELLED' and cancelled['refunding_fen']==600 and cancelled['payment_state']=='REFUNDING')
+    q.check('paid cancellation occupies manual refund',cancelled['order_status']=='CANCELLED' and cancelled['refunding_fen']==600 and cancelled['payment_state']=='REFUNDING')
     q.check('cancel refund rejects over-refund',q.action(m,cancelled,'manual-refund',amount_fen=601)['code']!='OK')
     cancelled=refund(cancelled,600)
     q.check('paid cancellation fully refunded',cancelled['payment_state']=='REFUNDED' and cancelled['refunded_fen']==600 and cancelled['refunding_fen']==0)
@@ -133,7 +133,7 @@ def main():
     q.check('dashboard QR receipts exclude pending refunds',dashboard_pending_refund['today_offline_qr_received_fen']==dashboard_before['today_offline_qr_received_fen']+600 and dashboard_pending_refund['today_refund_fen']==dashboard_before['today_refund_fen'])
     q.check('C-07 pending manual refund blocks dispatch',q.action(m,metric_order,'deliver')['code']=='TOPUP_REQUIRED')
     blocked=q.detail(c,metric_order['id'])
-    q.check('C-07 refused dispatch preserves pending refund order',blocked['version']==metric_order['version'] and blocked['fulfillment']=='PENDING' and blocked['payment_state']==metric_order['payment_state'] and blocked['refunding_fen']==metric_order['refunding_fen'])
+    q.check('C-07 refused dispatch preserves pending refund order',blocked['version']==metric_order['version'] and blocked['order_status']=='PENDING' and blocked['payment_state']==metric_order['payment_state'] and blocked['refunding_fen']==metric_order['refunding_fen'])
     pending_ledger=q.good('pending refund ledger',q.api('GET','merchant/ledger?order_id='+metric_order['id'],token=m))
     q.check('C-07 pending refund does not reduce actual net receipts',pending_ledger['summary']['net_fen']==600 and pending_ledger['summary']['in_flight_count']==1)
     metric_order=refund(metric_order,300)
@@ -149,7 +149,7 @@ def main():
     q.check('pending decrease not released early',stock(ga)==start_a-4 and stock(gb)==start_b-2)
     q.check('C-05 pending top-up blocks dispatch',q.action(m,pending,'deliver')['code']=='TOPUP_REQUIRED')
     blocked=q.detail(c,pending['id'])
-    q.check('C-05 refused dispatch preserves top-up order',blocked['version']==pending['version'] and blocked['fulfillment']=='PENDING' and blocked['revision_state']=='PENDING_TOPUP' and blocked['lines']==pending['lines'])
+    q.check('C-05 refused dispatch preserves top-up order',blocked['version']==pending['version'] and blocked['order_status']=='PENDING' and blocked['revision_state']=='PENDING_TOPUP' and blocked['lines']==pending['lines'])
     q.check('legacy blind commit blocked',q.action(m,pending,'revision/commit-topup')['code']!='OK')
     cancel(pending);pending=q.detail(c,pending['id'])
     q.check('pending top-up cancel restores every reserved unit',stock(ga)==start_a and stock(gb)==start_b)
@@ -173,16 +173,16 @@ def main():
     after=q.detail(c,o['id']);q.check('dispatch/revision race advances version once',after['version']==o['version']+1)
     race_state_ok=False
     race_cleanup_detail=None
-    if after['fulfillment']=='PENDING':
+    if after['order_status']=='PENDING':
         cleanup_result=q.api('POST','customer/orders/'+o['id']+'/cancel',{'version':after['version']},c,q.key())
         race_cleanup_detail=q.api('GET','customer/orders/'+o['id'],token=c)
         race_state_ok=(cleanup_result.get('code')=='OK' and race_cleanup_detail.get('code')=='OK'
-                       and race_cleanup_detail.get('data',{}).get('fulfillment')=='CANCELLED')
-    elif after['fulfillment']=='DELIVERING':
+                       and race_cleanup_detail.get('data',{}).get('order_status')=='CANCELLED')
+    elif after['order_status']=='DELIVERING':
         race_state_ok=True
     q.check('race winner leaves a valid dispatch or cancellation state',race_state_ok,
-            {'fulfillment':after.get('fulfillment'),'cleanup_code':None if race_cleanup_detail is None else cleanup_result.get('code'),
-             'final_fulfillment':None if race_cleanup_detail is None or race_cleanup_detail.get('code')!='OK' else race_cleanup_detail.get('data',{}).get('fulfillment')})
+            {'order_status':after.get('order_status'),'cleanup_code':None if race_cleanup_detail is None else cleanup_result.get('code'),
+             'final_order_status':None if race_cleanup_detail is None or race_cleanup_detail.get('code')!='OK' else race_cleanup_detail.get('data',{}).get('order_status')})
 
     # C-02: cancellation and a paid-order reduction contend for one version.
     initial_stock=stock(ga)
@@ -194,10 +194,10 @@ def main():
     q.check('C-02 revision/cancel race commits exactly once',sum(r['code']=='OK' for r in outcomes)==1 and all(r['code'] in ('OK','ORDER_VERSION_CONFLICT') for r in outcomes),outcomes)
     after=q.detail(c,both['id'])
     q.check('C-02 race advances the order version once',after['version']==both['version']+1)
-    if after['fulfillment']!='CANCELLED':
+    if after['order_status']!='CANCELLED':
         cancel(after)
         after=q.detail(c,after['id'])
-    q.check('C-02 final cancellation reserves exactly the original paid amount',after['fulfillment']=='CANCELLED' and after['refunding_fen']==1200 and after['refunded_fen']==0)
+    q.check('C-02 final cancellation reserves exactly the original paid amount',after['order_status']=='CANCELLED' and after['refunding_fen']==1200 and after['refunded_fen']==0)
     obligations=merchant_detail(after['id'])['pending_manual_refunds']
     q.check('C-02 refund obligations total original receipt without overlap',sum(r['amount_fen'] for r in obligations)==1200)
     for obligation in obligations:
@@ -224,7 +224,7 @@ def main():
         delivered=list(pool.map(lambda _:q.action(m,cod,'confirm-delivery',collected_on_delivery=False),range(2)))
     q.check('C-04 concurrent delivery confirms once',sum(r['code']=='OK' for r in delivered)==1 and all(r['code'] in ('OK','ORDER_VERSION_CONFLICT') for r in delivered),delivered)
     delivered_order=q.detail(c,cod['id'])
-    q.check('C-04 delivery leaves one version and unpaid receivable',delivered_order['version']==cod['version']+1 and delivered_order['fulfillment']=='DELIVERED' and delivered_order['payment_state']=='UNPAID' and delivered_order['receivable_fen']==300)
+    q.check('C-04 delivery leaves one version and unpaid receivable',delivered_order['version']==cod['version']+1 and delivered_order['order_status']=='DELIVERED' and delivered_order['payment_state']=='UNPAID' and delivered_order['receivable_fen']==300)
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
         collected=list(pool.map(lambda _:q.action(m,delivered_order,'cod-receipt',collected_fen=300,collection_method='CASH'),range(2)))
     q.check('C-04 concurrent COD receipts commit once',sum(r['code']=='OK' for r in collected)==1 and all(r['code'] in ('OK','ORDER_VERSION_CONFLICT') for r in collected),collected)

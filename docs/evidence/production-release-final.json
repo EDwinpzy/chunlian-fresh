@@ -1,0 +1,41 @@
+{
+  "checked_at": "2026-10-14T03:39:09.323603+00:00",
+  "release": "chunlian-20261013-v1",
+  "package_sha256": "6e986cf1e2fafc3ae5780a94f93408be90f5312a27060d57dc796ffd927ecc6a",
+  "verified_files": 114,
+  "status": "deployed",
+  "job_id": "496195f853484aae87919e306c10f4b6",
+  "first_attempt": {
+    "job_id": "5a253ca81d1849088904e57e48101d28",
+    "result": "free space guard refused before production change"
+  },
+  "backup": "/opt/chunlian/backups/chunlian-fresh/20261014T033555Z",
+  "rollback": "/opt/chunlian/releases/chunlian-20261013-v1/rollback",
+  "restore_check": "passed-order-ledger-counts",
+  "production_data_fingerprint_unchanged": true,
+  "services": {
+    "nginx": "active",
+    "php8.3-fpm": "active"
+  },
+  "maintenance_removed": true,
+  "production_qr_empty": true,
+  "notification_seen_table_present": true,
+  "disk_snapshot": {
+    "available": "845 MiB",
+    "used_percent": 98
+  },
+  "cleanup": {
+    "kind": "unused Docker build cache",
+    "reclaimed": "430.5 MB",
+    "runtime_images_volumes_and_rollback_assets_retained": true
+  },
+  "production_readonly": {
+    "passed": 18,
+    "total": 18
+  },
+  "signed_apk_install": {
+    "customer": "passed; public catalog loaded through strict HTTPS",
+    "merchant": "passed; login screen only; no production account login or write"
+  },
+  "production_business_test_writes": false
+}

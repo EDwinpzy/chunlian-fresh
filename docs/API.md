@@ -69,7 +69,7 @@
 | stats、ledger | 经营统计与资金流水 |
 | notifications、notifications/read | 通知与已读状态 |
 | store | 读取或更新店铺设置，包括 payment_qr_url |
-| uploads | 上传商品或收款码所需图片 |
+| uploads | 上传商品、收款码或店铺展示所需图片 |
 | goods/categories | 商品分类 |
 | goods、goods/{id} | 商品列表、详情、新建、更新或下架 |
 | goods/{id}/shelves | 商品上下架 |
@@ -101,7 +101,11 @@
 | `home_banner_title`、`home_banner_subtitle`、`shop_slogan` | 首页主副标题、宣传语 | 文本 |
 | `search_hot_words` | 首页热门搜索词，最多 10 项 | 文本数组 |
 | `home_section_title` | 首页商品区标题 | 文本 |
+| `notification_popup_title` | 顾客端首页通知弹窗标题 | 文本，最多 80 字 |
+| `notification_popup_image_url` | 通知弹窗图片地址；支持绝对 HTTP(S) URL 或 `/static/upload/` 路径，空值用于清除 | 文本，最多 500 字 |
 | `updated_at` | 最近更新时间 | 只读文本 |
+
+通知弹窗使用 `notification_popup_title` 和 `notification_popup_image_url` 两个字段；顾客端仅在两者均非空时展示。商家可先通过 `POST /api/v1/merchant/uploads` 上传图片，再把响应中的 `url` 保存到图片字段。顾客端 `GET /api/v1/customer/shop` 会返回这两个字段；是否在每次启动时展示由顾客端控制。
 
 分类由商家 App 的“商品分类”管理：`GET /api/v1/merchant/goods/categories` 返回可配置的根分类及直接子类（含已停用项）；`POST` 新建根类或子类。创建根类传 `{"name":"海鲜水产","sort":100,"is_enabled":true}`；创建子类额外传 `parent_id`。新建请求必须带 UUID v4 `Idempotency-Key`。`PATCH` 或 `PUT /api/v1/merchant/goods/categories/{id}` 可更新 `name`、`sort`、`is_enabled`；`DELETE` 仅允许删除没有子类且没有关联商品的分类。根分类 ID 会单独登记，所以改名不会改变它是否属于春连鲜选目录。顾客端只显示启用的已登记分类；停用分类下既有商品仍可由商家查看和调整。
 
@@ -111,7 +115,9 @@
 
 商家鉴权后的订单详情返回 `contact.phone`，供拨号及复制履约信息。订单列表、工作台与通知仍只返回脱敏电话；匿名请求不能读取详情。
 
-`GET merchant/orders` 可用 `status` 按履约状态筛选；省略时包含全部订单。`status=DELIVERED` 同时包含 `DELIVERED`（已送达）和 `FINISHED`（已完成），列表将两者合并展示。支持的值为 `PENDING`、`DELIVERING`、`DELIVERED` 和 `CANCELLED`。接口不提供列表专用的待收款筛选，收款与退款业务仍由工作台统计、账本及对应操作接口提供。接口还支持 `sort=DEFAULT|EXPECTED_AT`：默认值 `DEFAULT` 保持待配送、配送中、已送达和终态的履约优先顺序；`EXPECTED_AT` 按预计配送时间从早到晚排序，`expected_at` 为空的即时配送（ASAP）订单排在预约订单之前。两种排序都在服务端应用，因此筛选、关键词搜索和分页共用同一排序结果；无效的 `sort` 值回退为 `DEFAULT`。
+`GET merchant/orders` 可用 `status` 按订单阶段筛选；省略时包含全部订单。`status=DELIVERED` 同时包含 `DELIVERED`（已送达）和 `FINISHED`（已完成），列表将两者合并展示。支持的值为 `PENDING`、`DELIVERING`、`DELIVERED` 和 `CANCELLED`。顾客确认收货后订单阶段进入 `FINISHED`，并自动将所有付款方式的剩余应收记为成功流水 `CUSTOMER_RECEIPT`，统计时归入原付款方式；足额已付款订单不会重复入账，已有退款处理中时继续保留 `REFUNDING`。接口不提供列表专用的待收款筛选，收款与退款业务仍由工作台统计、账本及对应操作接口提供。接口还支持 `sort=DEFAULT|EXPECTED_AT`：默认值 `DEFAULT` 保持待配送、配送中、已送达和终态的订单阶段优先顺序；`EXPECTED_AT` 按预计配送时间从早到晚排序，`expected_at` 为空的即时配送（ASAP）订单排在预约订单之前。两种排序都在服务端应用，因此筛选、关键词搜索和分页共用同一排序结果；无效的 `sort` 值回退为 `DEFAULT`。
+
+`POST /api/v1/customer/orders/{id}/receive` 只允许 `DELIVERED` 订单。成功后订单进入 `FINISHED` 并记录 `received_at`；所有付款方式的未结余额会自动写成成功 `CUSTOMER_RECEIPT` 流水，并按原付款方式纳入统计。足额入账订单不会重复生成流水，退款处理中时付款状态保留 `REFUNDING`。
 
 通知列表的 `unread_count` 为该商家账号的全部未读事件数，不受 `limit` 限制；`total` 仅为本次列表条数。`POST notifications/read` 返回 `marked_count`，只将本次读取已提交的事件标为已读；随后提交的并发事件仍为未读。已读状态按账号和事件分别保存。
 
@@ -134,4 +140,4 @@ SKU 调价与库存接口使用 `PATCH` 或 `PUT`；`POST` 会被拒绝。经营
 
 ## 5. 业务不变量
 
-履约、付款、顾客收货与订单修订状态分开；COD 已送达但未收款保留应收；金额用整数分；顾客只能在开始配送成功前自主修改或取消；所有资金、库存和订单副作用均须防止重复执行。详见 docs/PRD.md 与 docs/ARCHITECTURE.md。
+订单阶段、付款状态与修订状态分别表示；COD 已送达但未收款时保留应收，顾客确认收货后剩余应收自动按付款方式记账；金额用整数分；顾客只能在开始配送成功前自主修改或取消；所有资金、库存和订单副作用均须防止重复执行。详见 docs/PRD.md 与 docs/ARCHITECTURE.md。

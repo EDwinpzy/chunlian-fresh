@@ -153,8 +153,8 @@ $ret = EventReturnHandle(MyEventTrigger($hook_name, [
 | 6 | 已关闭 |
 
 > ⚠️ **`4 = 已完成` 把「已送达」与「已完成」合并了** —— 这正是本项目 ADR-003 要解决的问题。
-> 若以 ShopXO `status` 作为履约真源，COD 未收款会被显示成「已完成」，直接漏账。
-> **结论：`veg_order_delivery.fulfillment` 是唯一履约真源，`shopxo_order.status` 仅作展示。**
+> 若以 ShopXO `status` 作为配送阶段唯一来源，COD 未收款会被显示成「已完成」，直接漏账。
+> **结论：`veg_order_delivery.order_status` 是唯一订单阶段真源，`shopxo_order.status` 仅作展示。**
 
 ### 4.2 `shopxo_order_detail`（订单明细）
 

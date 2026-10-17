@@ -1,0 +1,37 @@
+{
+  "cod_pending": {
+    "id": "37",
+    "order_no": "2026101314000531788",
+    "fulfillment": "PENDING",
+    "payment_state": "UNPAID",
+    "revision_state": "NONE"
+  },
+  "cod_uncollected": {
+    "id": "38",
+    "order_no": "2026101314000527614",
+    "fulfillment": "DELIVERED",
+    "payment_state": "UNPAID",
+    "revision_state": "NONE"
+  },
+  "qr_pending": {
+    "id": "39",
+    "order_no": "2026101314000643848",
+    "fulfillment": "PENDING",
+    "payment_state": "UNPAID",
+    "revision_state": "NONE"
+  },
+  "qr_topup": {
+    "id": "40",
+    "order_no": "2026101314000600256",
+    "fulfillment": "PENDING",
+    "payment_state": "PAID",
+    "revision_state": "PENDING_TOPUP"
+  },
+  "qr_refund": {
+    "id": "41",
+    "order_no": "2026101314000624766",
+    "fulfillment": "PENDING",
+    "payment_state": "PAID",
+    "revision_state": "APPLYING"
+  }
+}

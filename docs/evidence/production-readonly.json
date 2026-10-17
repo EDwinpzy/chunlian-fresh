@@ -1,0 +1,120 @@
+{
+  "target": "https://103.236.97.137:8096",
+  "scope": "public and anonymous GET only; no production business writes",
+  "tests": [
+    {
+      "name": "HTTPS with trusted project CA and hostname verification",
+      "passed": true
+    },
+    {
+      "name": "deployed homepage matches accepted local build",
+      "passed": true
+    },
+    {
+      "name": "homepage references compiled assets",
+      "passed": true
+    },
+    {
+      "name": "asset matches build index-Dr6uNUkg.css",
+      "passed": true
+    },
+    {
+      "name": "asset matches build index-pgWPvCVO.js",
+      "passed": true
+    },
+    {
+      "name": "asset matches build vendor-CDndk5Hq.js",
+      "passed": true
+    },
+    {
+      "name": "SPA deep link falls back to accepted homepage",
+      "passed": true
+    },
+    {
+      "name": "public API /api/v1/customer/shop",
+      "passed": true
+    },
+    {
+      "name": "production supports configurable real payment QR",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field shop_logo_url",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field shop_address",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field business_hours",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field shop_description",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field delivery_description",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field home_banner_title",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field home_banner_subtitle",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field shop_slogan",
+      "passed": true
+    },
+    {
+      "name": "configurable shop field home_section_title",
+      "passed": true
+    },
+    {
+      "name": "configurable search hot words",
+      "passed": true
+    },
+    {
+      "name": "public API /api/v1/customer/catalog/categories",
+      "passed": true
+    },
+    {
+      "name": "public API /api/v1/customer/catalog/goods?page=1&page_size=30",
+      "passed": true
+    },
+    {
+      "name": "anonymous protected API denied /api/v1/customer/orders",
+      "passed": true
+    },
+    {
+      "name": "anonymous protected API denied /api/v1/merchant/orders",
+      "passed": true
+    },
+    {
+      "name": "private server file denied /.env",
+      "passed": true
+    },
+    {
+      "name": "private server file denied /.git/config",
+      "passed": true
+    },
+    {
+      "name": "private server file denied /config/database.php",
+      "passed": true
+    },
+    {
+      "name": "private server file denied /vendor/autoload.php",
+      "passed": true
+    },
+    {
+      "name": "HTTP redirects to HTTPS before serving the app",
+      "passed": true
+    }
+  ],
+  "passed": 28,
+  "total": 28
+}

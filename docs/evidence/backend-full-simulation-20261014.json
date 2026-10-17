@@ -1,0 +1,39 @@
+{
+  "environment": "isolated-staging",
+  "database": "chunlian_qa_20261013",
+  "date": "2026-10-14",
+  "source_verification": {
+    "files": 45,
+    "mismatches": [],
+    "remoteExtra": []
+  },
+  "unit": {
+    "tests": 165,
+    "assertions": 490,
+    "failed": 0
+  },
+  "self_check": {
+    "passed": 46,
+    "total": 46
+  },
+  "business": {
+    "passed": 144,
+    "total": 144,
+    "file": "qa-business.json"
+  },
+  "edge": {
+    "passed": 188,
+    "total": 188,
+    "file": "qa-edge.json",
+    "note": "Assertion count varies with concurrent race winner branches."
+  },
+  "notification": {
+    "passed": 18,
+    "total": 18
+  },
+  "web_staging": {
+    "passed": 2,
+    "total": 2
+  },
+  "scope": "Synthetic funds and isolated data only; native UI and web mock suites are separate."
+}

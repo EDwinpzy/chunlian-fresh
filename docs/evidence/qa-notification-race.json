@@ -1,0 +1,58 @@
+{
+  "suite": "isolated-notification-read-race",
+  "run_id": "83126067293a45e0aff6363a66745caa",
+  "started_at_utc": "2026-10-14T02:54:17.819Z",
+  "finished_at_utc": "2026-10-14T02:54:18.714Z",
+  "target": "http://127.0.0.1:18096",
+  "environment": "isolated-staging",
+  "database": "chunlian_qa_20261013",
+  "artifacts": {
+    "qa_script": {
+      "path": "infrastructure/scripts/qa-notification-race.py",
+      "sha256": "7c177a2851b9f84be7d85d8635707c72c0dc7fba4e827a3cf463465277d87c48"
+    },
+    "service": {
+      "path": "backend-extension/src/Service/MerchantInsightService.php",
+      "local_sha256": "e2539ed35c39fd2c3d7dab425f2304e4034b329c863c87a179096d63e761f7e7",
+      "qa_instance_sha256": "e2539ed35c39fd2c3d7dab425f2304e4034b329c863c87a179096d63e761f7e7"
+    },
+    "migration": {
+      "path": "backend-extension/migrations/2026_10_14_000004_create_veg_notification_seen.sql",
+      "source_sha256": "91d07e989bf101e9190972b70cc164738cb60382fbf0f72a4809fa6b6e45bb1a",
+      "qa_database_verified": true,
+      "qa_marker_rows_after_cleanup": 405,
+      "orphaned_marker_rows_after_cleanup": 0,
+      "note": "The migration source is hashed locally; the migration file is not present in the QA project tree. The resulting table and data were verified in the isolated QA database."
+    }
+  },
+  "result": {
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "total": 18,
+    "exit_code": 0,
+    "synthetic_events_cleaned": true
+  },
+  "tests": [
+    "notification race refuses non-isolated HTTP target",
+    "notification race connects only to isolated QA database",
+    "notification race merchant login",
+    "lower event id remains uncommitted while higher id commits",
+    "mark all read returns while lower-id event is uncommitted",
+    "mark all read API response",
+    "notifications list after lower-id commit",
+    "late-committed lower-id event remains unread",
+    "higher-id event committed before mark is read",
+    "compact notifications count",
+    "unread count is independent of list limit",
+    "mark late event read",
+    "notifications after second read",
+    "second mark all read marks late event as read",
+    "second mark all read keeps earlier event read",
+    "notifications after a new committed event",
+    "new event after mark all read is unread",
+    "synthetic outbox events and seen markers cleaned"
+  ],
+  "concurrency_handling": "The second read is asserted per synthetic event rather than by the global unread total. The unread-count/list-limit comparison is evaluated only when no new outbox event commits during the two API reads.",
+  "job_output": "/root/.local/state/cloud-server-control/jobs/83126067293a45e0aff6363a66745caa/output.log"
+}

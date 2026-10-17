@@ -1,0 +1,189 @@
+[
+  {
+    "path": "merchant/stats",
+    "code": "OK",
+    "data": {
+      "from": "2026-10-08",
+      "to": "2026-10-14",
+      "received_wechat_fen": 0,
+      "received_cod_fen": 2540,
+      "received_offline_qr_fen": 34180,
+      "refunded_fen": -28250,
+      "received_total_fen": 8470,
+      "receivable_fen": 0,
+      "receivable_count": 0,
+      "order_count": 81,
+      "cod_order_count": 40,
+      "daily": [
+        {
+          "date": "2026-10-13",
+          "received_fen": 8120
+        },
+        {
+          "date": "2026-10-14",
+          "received_fen": 350
+        }
+      ]
+    }
+  },
+  {
+    "path": "merchant/stats?from=2026-10-14&to=2026-10-14",
+    "code": "OK",
+    "data": {
+      "from": "2026-10-14",
+      "to": "2026-10-14",
+      "received_wechat_fen": 0,
+      "received_cod_fen": 0,
+      "received_offline_qr_fen": 700,
+      "refunded_fen": -350,
+      "received_total_fen": 350,
+      "receivable_fen": 0,
+      "receivable_count": 0,
+      "order_count": 2,
+      "cod_order_count": 1,
+      "daily": [
+        {
+          "date": "2026-10-14",
+          "received_fen": 350
+        }
+      ]
+    }
+  },
+  {
+    "path": "merchant/stats?from=2026-10-08&to=2026-10-14",
+    "code": "OK",
+    "data": {
+      "from": "2026-10-08",
+      "to": "2026-10-14",
+      "received_wechat_fen": 0,
+      "received_cod_fen": 2540,
+      "received_offline_qr_fen": 34180,
+      "refunded_fen": -28250,
+      "received_total_fen": 8470,
+      "receivable_fen": 0,
+      "receivable_count": 0,
+      "order_count": 81,
+      "cod_order_count": 40,
+      "daily": [
+        {
+          "date": "2026-10-13",
+          "received_fen": 8120
+        },
+        {
+          "date": "2026-10-14",
+          "received_fen": 350
+        }
+      ]
+    }
+  },
+  {
+    "path": "merchant/dashboard",
+    "code": "OK",
+    "data": {
+      "pending_count": 9,
+      "delivering_count": 1,
+      "delivered_uncollected_count": 0,
+      "pending_topup_count": 0,
+      "pending_refund_count": 1,
+      "today_received_fen": 350,
+      "today_wechat_received_fen": 0,
+      "today_cod_received_fen": 0,
+      "today_offline_qr_received_fen": 700,
+      "today_refund_fen": -350,
+      "today_order_count": 2,
+      "today_receivable_fen": 0,
+      "recent_orders": [
+        {
+          "order_id": "104",
+          "order_no": "2026101400310447002",
+          "summary": "油麦菜×1",
+          "fulfillment": "PENDING",
+          "payment_state": "UNPAID",
+          "payment_method": "OFFLINE_QR",
+          "total_fen": 380,
+          "receivable_fen": 380,
+          "delivery_mode": "SCHEDULED",
+          "expected_at": "2026-10-14T20:00:00+08:00",
+          "contact_name": "FreshQA",
+          "masked_phone": "138****8017",
+          "address": "QA_Test_Building_1_Room_01",
+          "revision_state": "NONE"
+        },
+        {
+          "order_id": "89",
+          "order_no": "2026101318560926726",
+          "summary": "QA business A×1",
+          "fulfillment": "PENDING",
+          "payment_state": "PARTIAL_REFUNDED",
+          "payment_method": "OFFLINE_QR",
+          "total_fen": 350,
+          "receivable_fen": 0,
+          "delivery_mode": "ASAP",
+          "expected_at": null,
+          "contact_name": "QA Customer",
+          "masked_phone": "139****9000",
+          "address": "QA Street 123",
+          "revision_state": "COMMITTED"
+        },
+        {
+          "order_id": "87",
+          "order_no": "2026101318560887693",
+          "summary": "QA business A×1",
+          "fulfillment": "PENDING",
+          "payment_state": "UNPAID",
+          "payment_method": "COD",
+          "total_fen": 350,
+          "receivable_fen": 350,
+          "delivery_mode": "ASAP",
+          "expected_at": null,
+          "contact_name": "QA Concurrent",
+          "masked_phone": "139****9000",
+          "address": "QA Race 1",
+          "revision_state": "NONE"
+        },
+        {
+          "order_id": "36",
+          "order_no": "2026101313551665324",
+          "summary": "金针菇×1 / 金针菇×1",
+          "fulfillment": "PENDING",
+          "payment_state": "UNPAID",
+          "payment_method": "COD",
+          "total_fen": 640,
+          "receivable_fen": 640,
+          "delivery_mode": "SCHEDULED",
+          "expected_at": "2026-10-15T05:55:00+08:00",
+          "contact_name": "QA-User",
+          "masked_phone": "139****9000",
+          "address": "QA Road 123",
+          "revision_state": "COMMITTED"
+        },
+        {
+          "order_id": "34",
+          "order_no": "2026101313521535505",
+          "summary": "QA business A×1",
+          "fulfillment": "PENDING",
+          "payment_state": "PARTIAL_REFUNDED",
+          "payment_method": "OFFLINE_QR",
+          "total_fen": 350,
+          "receivable_fen": 0,
+          "delivery_mode": "ASAP",
+          "expected_at": null,
+          "contact_name": "QA Customer",
+          "masked_phone": "139****9000",
+          "address": "QA Street 123",
+          "revision_state": "COMMITTED"
+        }
+      ],
+      "store": {
+        "shop_name": "春连鲜选测试店",
+        "notice": "隔离验收环境",
+        "phone": "13900139000",
+        "payment_qr_url": "/static/upload/images/goods/2026/10/13/202610131853083463.png",
+        "delivery_fee_fen": 0,
+        "is_open": true,
+        "min_lead_minutes": 30,
+        "updated_at": "2026-10-13 10:56:14"
+      }
+    }
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "passed": [
+    "360-final",
+    "entry-1",
+    "entry-2",
+    "entry-3",
+    "entry-4",
+    "store-confirm",
+    "393-final",
+    "360-font130",
+    "360-empty",
+    "360-error"
+  ],
+  "unit_tests": {
+    "tests": 18,
+    "failures": 0,
+    "errors": 0
+  },
+  "lint_errors": 0,
+  "source_sha256": "b553531a3bb6dea5749e5c33708786244b2e114655b27e761f6dd152cd400d86",
+  "device": "isolated Android 11 emulator",
+  "data": "synthetic local fixtures"
+}

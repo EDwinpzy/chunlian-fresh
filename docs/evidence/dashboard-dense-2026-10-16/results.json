@@ -1,0 +1,23 @@
+{
+  "passed": [
+    "360-dense",
+    "store-confirm",
+    "orders-entry",
+    "393-dense",
+    "360-font130",
+    "360-empty",
+    "360-error",
+    "360-final"
+  ],
+  "first_order_moved_up_dp": 118.33333333333333,
+  "second_order_visible": true,
+  "unit_tests": {
+    "tests": 18,
+    "failures": 0,
+    "errors": 0
+  },
+  "lint_errors": 0,
+  "source_sha256": "4a8df622084f207c769e6d91d2656bf09621f65b41b4e448f67c6fb33878153a",
+  "device": "isolated Android 11 emulator",
+  "data": "synthetic local fixtures"
+}

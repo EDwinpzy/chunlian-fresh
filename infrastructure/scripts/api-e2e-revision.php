@@ -135,9 +135,9 @@ $pdo->prepare(
 ]);
 
 $pdo->prepare(
-    "INSERT INTO `veg_order_delivery` (`order_id`, `delivery_mode`, `expected_at`, `fulfillment`, "
-    . "`payment_state`, `payment_method`, `receipt_state`, `revision_state`, `version`, `created_at`, `updated_at`) "
-    . "VALUES (:oid, 'ASAP', NULL, 'PENDING', 'PAID', 'WECHAT', 'UNCONFIRMED', 'NONE', 1, NOW(), NOW())"
+    "INSERT INTO `veg_order_delivery` (`order_id`, `delivery_mode`, `expected_at`, `order_status`, "
+    . "`payment_state`, `payment_method`, `revision_state`, `version`, `created_at`, `updated_at`) "
+    . "VALUES (:oid, 'ASAP', NULL, 'PENDING', 'PAID', 'WECHAT', 'NONE', 1, NOW(), NOW())"
 )->execute(['oid' => $orderId]);
 
 $detailId = (int) $pdo->query("SELECT `id` FROM `{$prefix}order_detail` WHERE `order_id` = {$orderId}")->fetchColumn();
@@ -276,7 +276,7 @@ check('补款后可以开始配送', $res2->success, json_encode($res2->data ?? 
 echo "\n[5] 差价方向为退款\n";
 
 // 复位：把订单改回 PENDING 并允许再次修订
-$pdo->exec("UPDATE `veg_order_delivery` SET `fulfillment`='PENDING', `revision_state`='NONE' WHERE `order_id` = {$orderId}");
+$pdo->exec("UPDATE `veg_order_delivery` SET `order_status`='PENDING', `revision_state`='NONE' WHERE `order_id` = {$orderId}");
 
 $sub2 = $svc->submit((string) $orderId, [['sku_id' => (string) $skuA['id'], 'qty' => 1]], '1', 'CUSTOMER');
 check('提交成功', ($sub2['code'] ?? '') === 'OK', json_encode($sub2, JSON_UNESCAPED_UNICODE));

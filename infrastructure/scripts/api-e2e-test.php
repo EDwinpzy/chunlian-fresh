@@ -116,9 +116,9 @@ $pdo->prepare(
 
 // 扩展表：四维状态
 $pdo->prepare(
-    "INSERT INTO `veg_order_delivery` (`order_id`, `delivery_mode`, `expected_at`, `fulfillment`, "
-    . "`payment_state`, `payment_method`, `receipt_state`, `revision_state`, `version`, `created_at`, `updated_at`) "
-    . "VALUES (:oid, 'ASAP', NULL, 'PENDING', 'UNPAID', 'COD', 'UNCONFIRMED', 'NONE', 1, NOW(), NOW())"
+    "INSERT INTO `veg_order_delivery` (`order_id`, `delivery_mode`, `expected_at`, `order_status`, "
+    . "`payment_state`, `payment_method`, `revision_state`, `version`, `created_at`, `updated_at`) "
+    . "VALUES (:oid, 'ASAP', NULL, 'PENDING', 'UNPAID', 'COD', 'NONE', 1, NOW(), NOW())"
 )->execute(['oid' => $orderId]);
 
 // 扩展表：订单行快照（模拟钩子已捕获）
@@ -162,7 +162,7 @@ check('错误密码被拒绝', ($bad['body']['code'] ?? '') === 'FORBIDDEN');
 echo "\n[2] 订单详情（读）\n";
 $detail = http('GET', "{$base}/orders/{$orderId}", [], $token);
 check('读取成功', ($detail['body']['code'] ?? '') === 'OK');
-check('履约 = PENDING', ($detail['body']['data']['fulfillment'] ?? '') === 'PENDING');
+check('订单状态 = PENDING', ($detail['body']['data']['order_status'] ?? '') === 'PENDING');
 check('支付 = UNPAID', ($detail['body']['data']['payment_state'] ?? '') === 'UNPAID');
 check('金额为整数分 total=980', ($detail['body']['data']['total_fen'] ?? null) === 980, json_encode($detail['body']['data']['total_fen'] ?? null));
 check('应收 = 980', ($detail['body']['data']['receivable_fen'] ?? null) === 980);
@@ -178,7 +178,7 @@ $uuid1 = sprintf('%s-%s-4%s-%s-%s', bin2hex(random_bytes(4)), bin2hex(random_byt
 
 $deliver = http('POST', "{$base}/orders/{$orderId}/deliver", ['version' => 1], $token, $uuid1);
 check('配送成功', ($deliver['body']['code'] ?? '') === 'OK', json_encode($deliver['body'], JSON_UNESCAPED_UNICODE));
-check('履约 → DELIVERING', ($deliver['body']['data']['fulfillment'] ?? '') === 'DELIVERING');
+check('订单状态 → DELIVERING', ($deliver['body']['data']['order_status'] ?? '') === 'DELIVERING');
 check('version → 2', ($deliver['body']['data']['version'] ?? null) === 2);
 
 // 幂等重放：同键同体
@@ -202,7 +202,7 @@ $confirm = http('POST', "{$base}/orders/{$orderId}/confirm-delivery", [
     'collection_method' => 'CASH',
 ], $token, $uuid3);
 check('确认送达成功', ($confirm['body']['code'] ?? '') === 'OK', json_encode($confirm['body'], JSON_UNESCAPED_UNICODE));
-check('履约 → DELIVERED', ($confirm['body']['data']['fulfillment'] ?? '') === 'DELIVERED');
+check('订单状态 → DELIVERED', ($confirm['body']['data']['order_status'] ?? '') === 'DELIVERED');
 check('支付 → PAID', ($confirm['body']['data']['payment_state'] ?? '') === 'PAID');
 check('已收 = 980', ($confirm['body']['data']['paid_fen'] ?? null) === 980);
 check('应收归零', ($confirm['body']['data']['receivable_fen'] ?? null) === 0);

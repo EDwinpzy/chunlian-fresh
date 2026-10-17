@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-15",
+  "release": "chunlian-20261015-open-access-v1",
+  "server_package_sha256": "8fcd35b8104d316d495032901c420cdd733d0e1ca831685e620525d955edf63a",
+  "backup_path": "/opt/chunlian/backups/chunlian-fresh/20261015T072838Z/",
+  "deployment": {
+    "verified_package_files": 184,
+    "restore_check": "passed-order-ledger-counts",
+    "health_check": "passed-strict-tls-assets-public-and-protected-api",
+    "open_access_environment_value": "1",
+    "maintenance_flag_removed": true,
+    "nginx_active": true,
+    "php_fpm_active": true
+  },
+  "backend_tests": {
+    "merchant_open_access_policy_cases_passed": 10,
+    "merchant_open_access_policy_cases_total": 10,
+    "missing_device_id_rejected": true,
+    "open_session_issued": true,
+    "authorized_dashboard_read": true,
+    "logout_revoked_test_session": true,
+    "php_syntax_check": "passed"
+  },
+  "android": {
+    "application_id": "com.chunlian.merchant",
+    "version_name": "1.0.2",
+    "version_code": 3,
+    "debug_unit_tests": "14/14 passed",
+    "release_unit_tests": "14/14 passed",
+    "release_lint": "passed",
+    "release_signature": "verified; matches previous release signer",
+    "artifact_checks": "25/25 passed",
+    "emulator": "emulator-5558",
+    "cold_start_direct_to_dashboard": true,
+    "settings_shows_public_mode": true,
+    "login_form_absent": true,
+    "logout_entry_absent": true,
+    "crash_buffer_empty": true
+  },
+  "production_readonly": {
+    "passed": 18,
+    "total": 18
+  },
+  "business_orders_goods_and_money_written": false,
+  "unused_docker_builder_cache_reclaimed_mib": 538.3
+}

@@ -1,0 +1,12 @@
+{
+  "package_sha256": "6e986cf1e2fafc3ae5780a94f93408be90f5312a27060d57dc796ffd927ecc6a",
+  "readable_files": 115,
+  "total_files": 115,
+  "writable_entries": 0,
+  "passed": true,
+  "scope": "real Linux temporary extracted package; no production change",
+  "runtime_account": "www-data",
+  "deployed_directory_owner": "root:www-data",
+  "directories": "0750",
+  "files": "0640"
+}

@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-10-14T02:57:23.934140+00:00",
+  "release": "chunlian-20261013-v1",
+  "package_sha256": "6e986cf1e2fafc3ae5780a94f93408be90f5312a27060d57dc796ffd927ecc6a",
+  "bytes": 219290,
+  "verified_files": 114,
+  "remote_package_sha256_matches": true,
+  "remote_dry_check": "passed",
+  "production_switch": false,
+  "permission_test": "release-code-permissions.json",
+  "maintenance_gate": "strict TLS local GET probes while public traffic blocked; isolated nginx7/7",
+  "release_script_sha256": "ca877f89c93a49c9f1e68e50b0627b83c2b77a6bb260d10a72b049ea026a5871",
+  "rollback_script_sha256": "51658c40e27a21b4b179d729e752f341ad20add203140a49641c852b22559e37",
+  "repeated_build_sha256_equal": true
+}

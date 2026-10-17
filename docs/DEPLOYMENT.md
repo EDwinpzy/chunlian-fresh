@@ -57,7 +57,7 @@
 python3 /opt/chunlian/rollback-existing.py --release chunlian-20261015-shop-config-v1
 ```
 
-维护者获准恢复后才加 `--apply`。恢复期间暂停请求并保留被替换版本；失败保持维护状态。该脚本不恢复数据库，保留兼容新增二维码列、通知与店铺配置表和发布后订单。切回旧通知代码可能重复提醒，但不会因此删除事件或资金记录。
+维护者获准恢复后才加 `--apply`。恢复期间暂停请求并保留被替换版本；失败保持维护状态。该脚本只回切代码、nginx 和应用配置，不执行数据库回滚；发布后订单、资金流水、推送设备绑定及所有新增 schema 均保留。脚本在回切前确认 `fulfillment` 与 `receipt_state` 仍存在，因此新旧代码版本可以共享订单数据。迁移目录中的 SQL 回滚文件不属于文件回滚流程，禁止以旧数据库备份覆盖发布后的订单。
 
 禁止直接拿旧数据库备份覆盖发布后的订单。数据库恢复须另行审核数据范围、维护窗口和业务损失。
 
@@ -65,22 +65,28 @@ python3 /opt/chunlian/rollback-existing.py --release chunlian-20261015-shop-conf
 
 1. 更新源码后在隔离QA验证业务、边界、并发、客户端和包体；记录脚本及源文件SHA。
 2. 重新核对磁盘，准备备份及恢复演练空间；生产不构建客户端。
-3. 本机 `python infrastructure/scripts/build-delivery.py --release <版本>` 构建确定性包，上传已审查的部署、备份和回滚脚本。
-4. 先运行release-existing.py默认dry-check，通过后在获准窗口加 `--apply`；脚本维护门禁、排空旧请求、备份恢复核验，再执行新增结构和文件切换。
+3. 本机 `python infrastructure/scripts/build-delivery.py --release <版本>` 构建确定性包。服务包包含扩展 `src/`、`config/`、`migrations/`、`scripts/`（含 outbox worker、迁移和健康检查脚本）、插件和网页；上传已审查的发布、备份和回滚脚本。
+4. 先运行 `release-existing.py` 默认 dry-check。它校验包清单、PHP 语法和 0006–0009 前向迁移；通过后在获准窗口加 `--apply`。脚本进入维护状态、排空旧请求、完成备份恢复核验，按顺序应用迁移并检查新旧订单状态列、索引和推送设备表，再切换文件。
 5. `python infrastructure/scripts/production-readonly.py` 公网只读复验，核对业务指纹和服务状态；下载受限备份并核SHA。
+
+订单状态迁移采用 expand/contract：`order_status` 是新后端的规范字段，`fulfillment` 和 `receipt_state` 保留给已发布的 1.0.5 Android 客户端；新建订单、状态更新和 API 响应均双写/双返回旧字段。迁移不会删除旧列，也不会改写 ShopXO 原生订单金额、支付状态或资金流水。旧列只能在确认不再有 1.0.5 客户端且经过单独审查后另行移除。当前 API 兼容由序列化映射单测和发布脚本的 schema 健康检查覆盖；真实设备与认证后生产订单接口仍需在发布窗口外的隔离环境中验证。
 
 ### Android App 在线更新
 
 顾客端已签名构建为 1.0.6（versionCode 7），店主端为 1.0.6（versionCode 7）。两端支持启动时检查更新和“我的”页手动检查；发现新版本后，用户可选择下载，App 校验文件大小与 SHA-256 后打开 Android 系统安装器，由用户确认安装。更新检查只在启动或手动触发时进行，不包含后台推送或静默安装。2026-10-16 已发布 `chunlian-20261016-category-products-v1`：店主商品管理按生鲜分类展示商品，并提供“全部 / 在售中 / 已下架”筛选；APK、清单和下载页已通过严格 TLS 公网完整性复核。随后发布 `chunlian-20261016-customer-ui-v1`，更新顾客网页和顾客 App。2026-10-17 发布 `chunlian-20261017-all-clients-v1`，顾客、店主 Android 同步升级至 1.0.5（code6），后端和顾客网页同步上线；APK、清单、下载页和网页资源均通过项目 CA HTTPS 与 SHA-256 复核。 2026-10-17 发布 `chunlian-20261017-farm-products-v1`，顾客与店主 Android 升至 1.0.6（code7），同步发布农产品预设、分类图片支持、顾客端分类图和新版下载页；线上完整性检查通过。
+
+本轮（订单状态统一 + 新订单推送）已签名构建为 1.0.7（versionCode 8，发布标识 `chunlian-20261017-order-status-push-v1`），尚未上传和切换；线上仍是 1.0.6（versionCode 7）。
 
 早期已安装版本若不具备更新检查能力，需先从现有 `/downloads/` 下载页手动安装 1.0.6 版本；1.0.6 起，顾客端和店主端均支持启动时检查及“我的”页手动检查更新。更新包必须沿用已发布 App 的签名证书，否则 Android 会拒绝覆盖安装。
 
 发布 Android 更新时：
 
 1. 顾客端和店主端分别执行 `assembleRelease -PSIGNING_PROPERTIES=<签名配置路径>`，使用同一项目签名证书；将签名产物更新到 `dist/release/customer-release.apk` 和 `dist/release/merchant-release.apk`。本地保留当前 APK 各一份；需要回退时，仅在 `dist/release/archive/previous-public/` 保留上一轮已发布的顾客端和店主端 APK 各一份。
-2. 在 Windows Android SDK Build Tools 34.0.0 上运行 `python infrastructure/scripts/verify-delivery.py --build-tools <Build Tools目录> --release <发布标识> --release-notes <更新说明>`。通过签名、包名、版本和网络配置核验后，脚本生成引用固定名 APK 的 `dist/release/android-release.json` 和核验记录；不要额外生成带版本号的 APK 副本。
-3. 将 `customer-release.apk`、`merchant-release.apk` 上传到 `/var/www/chunlian/shopxo/public/downloads/`，核对文件完整后更新 `download-index.html`，让首次安装入口显示并下载当前版本；最后再上传 `android-release.json`。下载页和 App 更新器都使用相同的固定文件名；清单必须包含 `application_id`、版本号、SHA-256 和文件大小。清单的公开 URL 为 `https://103.236.97.137:8096/downloads/android-release.json`；必须最后替换清单。新清单通过线上核验后，清除服务器上不再引用的版本号 APK；本地最多保留当前包和最近一次已发布的回退包。
-4. 发布后分别检查清单、两个 APK 和 `download-index.html` 可通过 HTTPS 获取；核对 APK 的 SHA-256 与清单一致，并确认下载页的手动安装入口能下载新版本。
+2. 在 Windows Android SDK Build Tools 34.0.0 上运行 `python infrastructure/scripts/verify-delivery.py --build-tools <Build Tools目录> --release <发布标识> --release-notes <更新说明>`。通过签名、包名、版本和网络配置核验后，脚本读取 `infrastructure/download-page/index.template.html`，并生成引用固定名 APK 的 `dist/release/android-release.json`、`dist/release/index.html`、兼容副本 `dist/release/download-index.html`、`dist/release/assets/` 页面素材、`infrastructure/download-page/index.html` 本地预览和核验记录；预览页与发布页从同一清单取实际版本和更新文案，页面图标从两端 App 的实际资源复制，不要额外生成带版本号的 APK 副本。
+3. 将 `customer-release.apk`、`merchant-release.apk`、`index.html`、`assets/` 下的宣传图和页面图标上传到 `/var/www/chunlian/shopxo/public/downloads/`，确认正式入口文件名为 `index.html`，核对文件完整后再上传 `android-release.json`。下载页版本号和更新文案由当前清单生成；下载页和 App 更新器都使用相同的固定 APK 文件名。清单必须包含 `application_id`、版本号、SHA-256 和文件大小；公开 URL 为 `https://103.236.97.137:8096/downloads/android-release.json`，必须最后替换清单。新清单通过线上核验后，清除服务器上不再引用的版本号 APK；本地最多保留当前包和最近一次已发布的回退包。
+4. 发布后分别检查清单、两个 APK、`/downloads/index.html` 页面入口、宣传图和页面图标可通过 HTTPS 获取；核对 APK 的 SHA-256 与清单一致，并确认下载页的手动安装入口能下载新版本。仅改下载页时，先上传新增或更新的 `assets/` 文件，再替换 `index.html`；无需重传 APK 或改动版本清单。
+
+新订单系统推送是本次上线的硬性前置条件，缺任何一项都会导致通知静默失败：服务器需在 `/etc/chunlian/chunlian.env` 配置 `GETUI_MERCHANT_APP_ID`、`GETUI_MERCHANT_APP_KEY`、`GETUI_MERCHANT_MASTER_SECRET`（键名与含义见 `backend/extension/docs/getui-push.md`），Android 构建需在 `local.properties` 提供同一商家 App ID 与公开 HTTPS 隐私政策地址。凭据只经安全渠道配置，不写入仓库、不进入构建产物、不在对话中传递；配置完成前不要对外宣称推送已可用。
 
 关闭 `CHUNLIAN_MERCHANT_OPEN_ACCESS` 可阻止新公开会话，但不会自动撤销已签发的30天会话；如需立即收回权限，必须同时撤销相关会话。后续清理outbox与seen标记须采用协调的保留策略；当前未启用自动清理或每日异地备份计划。
 

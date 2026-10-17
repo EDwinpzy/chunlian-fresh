@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-16",
+  "scope": ["customer Android profile", "customer web profile", "merchant Android profile and settings subpages"],
+  "viewports": ["360x800", "393x800 (web)"],
+  "checks": {
+    "customer_android": {"build": "passed", "lint": "passed", "unit_tests": 21, "failures": 0},
+    "merchant_android": {"build": "passed", "lint": "passed", "unit_tests": 18, "failures": 0},
+    "customer_web": {"build": "passed", "regression_tests": 32, "final_targeted_tests": 4},
+    "visual_review": "passed",
+    "merchant_seven_entries_visible_in_first_screen": true,
+    "mock_ui_flows": ["customer profile/shop/nickname/logout/dialer", "merchant seven subpages", "merchant unsaved continue/discard/save-and-leave"]
+  },
+  "test_data": "local in-memory mock only",
+  "production_deployed": false,
+  "physical_device_tested": false
+}

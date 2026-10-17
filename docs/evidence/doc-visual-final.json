@@ -1,0 +1,47 @@
+[
+  {
+    "file": "README.md",
+    "title": "春连鲜选（Chunlian Fresh）",
+    "rendered": true
+  },
+  {
+    "file": "HANDOVER.md",
+    "title": "春连鲜选交接记录",
+    "rendered": true
+  },
+  {
+    "file": "使用说明.md",
+    "title": "春连鲜选使用说明",
+    "rendered": true
+  },
+  {
+    "file": "docs/DEPLOYMENT.md",
+    "title": "部署与恢复｜春连鲜选",
+    "rendered": true
+  },
+  {
+    "file": "docs/ROADMAP.md",
+    "title": "交付状态与后续工作｜春连鲜选",
+    "rendered": true
+  },
+  {
+    "file": "docs/PRD.md",
+    "title": "PRD｜春连鲜选 产品需求文档",
+    "rendered": true
+  },
+  {
+    "file": "docs/DATA-MODEL.md",
+    "title": "数据模型｜春连鲜选",
+    "rendered": true
+  },
+  {
+    "file": "docs/TESTING.md",
+    "title": "验收测试清单｜春连鲜选",
+    "rendered": true
+  },
+  {
+    "file": "docs/ACCEPTANCE-REPORT-2026-10-13.md",
+    "title": "春连鲜选项目验收报告",
+    "rendered": true
+  }
+]

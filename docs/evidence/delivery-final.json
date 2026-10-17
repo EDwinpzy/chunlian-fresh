@@ -1,0 +1,44 @@
+{
+  "checked_at": "2026-10-14T03:44:46.862453+00:00",
+  "release": "chunlian-20261013-v1",
+  "source_zip_entries": 451,
+  "source_zip_forbidden_entries": [],
+  "qa_fixture_included": true,
+  "artifacts": [
+    {
+      "file": "chunlian-ca.cer",
+      "bytes": 1024,
+      "sha256": "4bf838a41db2bd4a1a4508ec041cae3e3d2fbd090eea616f604ef9c2bb43e647"
+    },
+    {
+      "file": "chunlian-server.tar.gz",
+      "bytes": 219290,
+      "sha256": "6e986cf1e2fafc3ae5780a94f93408be90f5312a27060d57dc796ffd927ecc6a"
+    },
+    {
+      "file": "chunlian-source.zip",
+      "bytes": 2098810,
+      "sha256": "1489243760d30f9577be751c68b0d8297f28280180faac6af1ccb757de55c60d"
+    },
+    {
+      "file": "customer-release.apk",
+      "bytes": 12289150,
+      "sha256": "d139f9c0d8a2b71dd259aba912245d59df2be665830506c8984155454db30b93"
+    },
+    {
+      "file": "merchant-release.apk",
+      "bytes": 13401589,
+      "sha256": "56fc22a68fadd38f7c9355181f5dabd2423a878f7fd82e6e7fc64b7ffe8771af"
+    },
+    {
+      "file": "使用说明.md",
+      "bytes": 6874,
+      "sha256": "9bf94733acb979063f3b203220f54016afd156b78d796aac5e3c15d43fa2ccc5"
+    },
+    {
+      "file": "验收报告.md",
+      "bytes": 5512,
+      "sha256": "5fcad92927aa303d08a3e182ffa0cc5ee31157fe3d2b582bc0923c66dc0c1814"
+    }
+  ]
+}

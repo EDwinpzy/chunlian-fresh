@@ -1,0 +1,355 @@
+{
+  "date": "2026-10-14",
+  "method": {
+    "alphaThreshold": 16,
+    "connectedness": "8-neighbor",
+    "ignoredFragmentRule": "area <= max(15px, 2.5% of largest component) and bounding-box gap > 2px",
+    "layout": "center the retained visible artwork at slot center; constrain visible maximum side to 82%; clip content to slot"
+  },
+  "contactSheets": {
+    "customerWeb": 51,
+    "customerAndroid": 44,
+    "merchantAndroid": 36
+  },
+  "web": {
+    "opticalBoundsEntriesChecked": 46,
+    "boundsMatched": 46,
+    "mismatches": [],
+    "screenshotReports": [
+      {
+        "report": "web-asset-geometry-2026-10-14-chromium-desktop.json",
+        "views": 16,
+        "iconInstances": 63,
+        "maxAbsCenterErrorPx": 0,
+        "visibleFractionRange": [
+          0.82,
+          0.82
+        ],
+        "instancesWithIgnoredComponents": 21,
+        "notClipped": 0
+      },
+      {
+        "report": "web-asset-geometry-2026-10-14-chromium-mobile.json",
+        "views": 16,
+        "iconInstances": 63,
+        "maxAbsCenterErrorPx": 0,
+        "visibleFractionRange": [
+          0.82,
+          0.82
+        ],
+        "instancesWithIgnoredComponents": 21,
+        "notClipped": 0
+      }
+    ]
+  },
+  "android": {
+    "packagedDrawableCount": 80,
+    "byteMatches": 80,
+    "byteMismatches": [],
+    "assetsWithIgnoredFragments": [
+      {
+        "app": "customer-web",
+        "asset": "back.png",
+        "ignored": [
+          {
+            "area": 4,
+            "bbox": [
+              47,
+              81,
+              51,
+              82
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer-web",
+        "asset": "close.png",
+        "ignored": [
+          {
+            "area": 19,
+            "bbox": [
+              41,
+              80,
+              55,
+              82
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer-web",
+        "asset": "cod.png",
+        "ignored": [
+          {
+            "area": 3,
+            "bbox": [
+              58,
+              13,
+              61,
+              14
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer-web",
+        "asset": "payment.png",
+        "ignored": [
+          {
+            "area": 9,
+            "bbox": [
+              45,
+              13,
+              54,
+              14
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer-web",
+        "asset": "product_detail.png",
+        "ignored": [
+          {
+            "area": 40,
+            "bbox": [
+              42,
+              13,
+              67,
+              15
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer-web",
+        "asset": "refund.png",
+        "ignored": [
+          {
+            "area": 7,
+            "bbox": [
+              59,
+              13,
+              66,
+              14
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer-web",
+        "asset": "success.png",
+        "ignored": [
+          {
+            "area": 24,
+            "bbox": [
+              33,
+              80,
+              48,
+              82
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer",
+        "asset": "cust_back.png",
+        "ignored": [
+          {
+            "area": 4,
+            "bbox": [
+              47,
+              81,
+              51,
+              82
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer",
+        "asset": "cust_close.png",
+        "ignored": [
+          {
+            "area": 19,
+            "bbox": [
+              41,
+              80,
+              55,
+              82
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer",
+        "asset": "cust_cod.png",
+        "ignored": [
+          {
+            "area": 3,
+            "bbox": [
+              58,
+              13,
+              61,
+              14
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer",
+        "asset": "cust_payment.png",
+        "ignored": [
+          {
+            "area": 9,
+            "bbox": [
+              45,
+              13,
+              54,
+              14
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer",
+        "asset": "cust_product_detail.png",
+        "ignored": [
+          {
+            "area": 40,
+            "bbox": [
+              42,
+              13,
+              67,
+              15
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer",
+        "asset": "cust_refund.png",
+        "ignored": [
+          {
+            "area": 7,
+            "bbox": [
+              59,
+              13,
+              66,
+              14
+            ]
+          }
+        ]
+      },
+      {
+        "app": "customer",
+        "asset": "cust_success.png",
+        "ignored": [
+          {
+            "area": 24,
+            "bbox": [
+              33,
+              80,
+              48,
+              82
+            ]
+          }
+        ]
+      },
+      {
+        "app": "merchant",
+        "asset": "merchant_filter.png",
+        "ignored": [
+          {
+            "area": 15,
+            "bbox": [
+              69,
+              5,
+              80,
+              7
+            ]
+          }
+        ]
+      },
+      {
+        "app": "merchant",
+        "asset": "merchant_publish.png",
+        "ignored": [
+          {
+            "area": 9,
+            "bbox": [
+              5,
+              49,
+              6,
+              58
+            ]
+          }
+        ]
+      },
+      {
+        "app": "merchant",
+        "asset": "merchant_unpaid.png",
+        "ignored": [
+          {
+            "area": 12,
+            "bbox": [
+              5,
+              66,
+              7,
+              73
+            ]
+          }
+        ]
+      },
+      {
+        "app": "merchant",
+        "asset": "merchant_unpublish.png",
+        "ignored": [
+          {
+            "area": 22,
+            "bbox": [
+              5,
+              54,
+              7,
+              68
+            ]
+          }
+        ]
+      }
+    ],
+    "densityPackageByteMatches": 190,
+    "densityPackageCount": 190
+  },
+  "visualScreenshots": [
+    "customer-home.png",
+    "merchant-login.png"
+  ],
+  "evidenceRoot": "docs/evidence/icon-visual-check-2026-10-14/",
+  "renderedPreviews": {
+    "customerWeb": {
+      "assets": 51,
+      "maxCenterErrorPx": 0.0,
+      "visibleFractionRange": [
+        0.82,
+        0.82
+      ]
+    },
+    "customerAndroid": {
+      "assets": 44,
+      "maxCenterErrorPx": 0.0,
+      "visibleFractionRange": [
+        0.82,
+        0.82
+      ]
+    },
+    "merchantAndroid": {
+      "assets": 36,
+      "maxCenterErrorPx": 0.0,
+      "visibleFractionRange": [
+        0.82,
+        0.82
+      ]
+    }
+  }
+}

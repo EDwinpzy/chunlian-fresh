@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-10-13T21:21:34.425783+00:00",
+  "scope": "isolated nginx ports 18095/18097 with a dedicated static gate probe; no production config changes or business writes",
+  "tests": [
+    {
+      "name": "normal loopback GET reachable",
+      "passed": true
+    },
+    {
+      "name": "normal non-loopback GET reachable",
+      "passed": true
+    },
+    {
+      "name": "maintenance strict TLS loopback GET probe allowed",
+      "passed": true
+    },
+    {
+      "name": "maintenance loopback POST blocked",
+      "passed": true
+    },
+    {
+      "name": "maintenance non-loopback GET blocked",
+      "passed": true
+    },
+    {
+      "name": "maintenance forged forwarded headers blocked",
+      "passed": true
+    },
+    {
+      "name": "normal access resumes after flag removal",
+      "passed": true
+    }
+  ],
+  "passed": 7,
+  "total": 7,
+  "fixture_note": "Initial document-root GET used an unavailable QA /app fixture; replaced with dedicated 200 probe before final gate verification."
+}

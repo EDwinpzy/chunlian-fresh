@@ -28,12 +28,12 @@
 | T20 | 有待补款修订时开始配送 | 服务端拒绝配送开始 | [x] |
 | T21 | 开始配送后顾客修改 | 服务端拦截并给出联系店主路径 | [x] |
 | T22 | 开始配送后顾客取消 | 服务端拦截并给出售后路径 | [x] |
-| T23 | 预付订单确认送达 | 仅更新履约，不重复记账 | [x] |
+| T23 | 已付款订单确认送达 | 仅更新订单阶段，不重复记账 | [x] |
 | T24 | COD 已收款并送达 | 一次确认产生一次实收记录 | [x] |
 | T25 | COD 仅送达未收款 | 保留应收，不计入实收 | [x] |
 | T26 | COD 已送达后补记收款 | 实际到账后只记一次，应收减少、实收增加 | [x] |
 | T27 | 重复确认送达或收款 | 无重复履约事件或资金流水 | [x] |
-| T28 | 顾客确认收货 | 履约状态与付款状态仍独立 | [x] |
+| T28 | 顾客确认收货 | 从已送达转为已完成，所有付款方式的剩余应收自动记入账本；足额订单不重复记账 | [x] |
 | T29 | 缺货、断网、资金核对失败 | 报错清楚、可恢复且不丢账 | [x] |
 | T30 | 关闭或重新营业 | 新购规则变化，既有订单仍可处理 | [x] |
 | T31 | 查看商家资金流水 | 收款、补款、退款及状态、时间、订单号显示正确；成功入账、成功退款、净额分列；处理中单独显示且不计入成功汇总 | [x] |
@@ -62,10 +62,10 @@
 | C-02 | 顾客修订与顾客取消同时发生 | 按最终已提交订单与可退余额处理，不漏退或超退 |
 | C-03 | 同一 OFFLINE_QR 收款核实并发提交 | 只产生一笔扫码收款流水 |
 | C-04 | 重复确认 COD 送达或收款 | 只产生一笔 COD 实收 |
-| C-05 | 补款期间开始配送 | 服务端拒绝且不改变履约状态 |
+| C-05 | 补款期间开始配送 | 服务端拒绝且不改变订单阶段 |
 | C-06 | 修订失败后库存处理 | 新增库存占用对称归还，原订单保持有效 |
 | C-07 | 线下退款尚未实际退回 | 保持退款 PROCESSING 与修订 APPLYING；不计成功退款或实收，并阻止配送 |
-| C-08 | 已取消订单仍有退款待处理 | 履约取消与资金退款状态分别展示 |
+| C-08 | 已取消订单仍有退款待处理 | 订单取消阶段与资金退款状态分别展示 |
 
 ### 最终脚本断言映射（全部执行通过）
 
@@ -74,10 +74,10 @@
 | C-01 | `qa-edge.py`：`dispatch vs revision produces one commit`、`dispatch/revision race advances version once`、`race winner leaves a valid dispatch or cancellation state` | 两个并发请求只提交一个，版本只前进一次，并检查最终状态。 |
 | C-02 | `qa-edge.py`：`C-02 revision/cancel race commits exactly once`、`C-02 race advances the order version once`、退款义务金额、退款结清和库存恢复断言 | 并发改单与取消；检查原已收金额不重叠退款并最终只释放一次库存。 |
 | C-03 | `qa-edge.py`：`C-03 concurrent QR receipt has one winner`、`C-03 exactly one successful receipt ledger entry` | 两个独立核款请求并发，只允许一笔成功和一条实收流水。 |
-| C-04 | qa-edge.py：并发确认送达与并发COD核款；qa-business.py：送达后顾客收货、后补记款 | 各一方成功，版本只推进一次，仅一条成功COD流水；通过 |
-| C-05 | pending top-up blocks dispatch；refused dispatch preserves top-up order | 拒绝配送且履约、修订、版本、补款余额保持；通过 |
+| C-04 | qa-edge.py：并发确认送达与并发 COD 核款；qa-business.py：送达后顾客确认收货自动结清余额 | 各一方成功，版本只推进一次，确认收货只补记未结余额；通过 |
+| C-05 | pending top-up blocks dispatch；refused dispatch preserves top-up order | 拒绝配送且订单阶段、修订、版本、补款余额保持；通过 |
 | C-06 | `qa-edge.py`：`C-06 mixed revision with insufficient stock is rejected`、失败后版本/明细/总额不变及所有相关 SKU 库存不变 | 覆盖多 SKU 修订因库存不足失败时订单与库存均保持原状。 |
-| C-07 | pending manual refund blocks dispatch；refused dispatch preserves pending refund order；pending refund does not reduce actual net receipts | 拒绝配送后版本、履约、退款义务保持；处理中的退款不减少实际净实收；通过 |
+| C-07 | pending manual refund blocks dispatch；refused dispatch preserves pending refund order；pending refund does not reduce actual net receipts | 拒绝配送后版本、订单阶段、退款义务保持；处理中的退款不减少实际净实收；通过 |
 | C-08 | `qa-edge.py`：`paid cancellation occupies manual refund`、商家详情/列表显示两个待处理退款义务及分别核销 | 检查履约已取消同时退款处理中，并在商家详情和列表分别显示退款义务；不是独立命名为 C-08 的并发测试。 |
 
 业务144/144、边界并发192/192通过，结果SHA与当前脚本匹配。通知提交乱序另有18/18；拆价行的历史摘要累加SKU数量已验证。

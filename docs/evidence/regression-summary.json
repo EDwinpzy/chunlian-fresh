@@ -1,0 +1,125 @@
+{
+  "checked_at": "2026-10-14T03:46:01.454914+00:00",
+  "web_mock": {
+    "passed": 20,
+    "total": 20,
+    "targets": [
+      "Chromium desktop",
+      "Pixel 7 Chromium"
+    ],
+    "checked_at": "2026-10-14T02:16:40.031978+00:00",
+    "test_sha256": "bffe2d052420b8592521a9cffea7b4bc83de7b623254a09efa3dc15b94342974",
+    "timezone": "Asia/Shanghai",
+    "schedule_mock_time": "2026-10-14T12:00:00+08:00",
+    "latest_rerun": {
+      "passed": 20,
+      "total": 20,
+      "duration_seconds": 22.3,
+      "checked_at": "2026-10-14T03:14:04.263281+00:00",
+      "test_sha256": "bffe2d052420b8592521a9cffea7b4bc83de7b623254a09efa3dc15b94342974"
+    }
+  },
+  "web_isolated_staging": {
+    "passed": 2,
+    "total": 2,
+    "scope": "Actual customer web account, catalog, address, QR prepay, topup, manual refund, delivery, receipt, COD cancellation",
+    "database": "chunlian_qa_20261013",
+    "checked_at": "2026-10-14T02:11:19.305448+00:00",
+    "duration_seconds": 36.5,
+    "test_sha256": "3f2cf76d3683d4206c837cfca5c3af9d9c7561dd14b8702d59ff8c1b97b2eea4",
+    "latest_rerun": {
+      "passed": 2,
+      "total": 2,
+      "duration_seconds": 33.9,
+      "checked_at": "2026-10-14T03:33:38.049091+00:00",
+      "test_sha256": "3f2cf76d3683d4206c837cfca5c3af9d9c7561dd14b8702d59ff8c1b97b2eea4"
+    }
+  },
+  "backend_unit": {
+    "tests": 165,
+    "assertions": 490,
+    "passed": true,
+    "evidence": "backend-final-verification.json"
+  },
+  "backend_self_check": {
+    "passed": 46,
+    "total": 46
+  },
+  "npm_audit": {
+    "vulnerabilities": 0,
+    "scope": "all dependency categories",
+    "report": "npm-audit-final.json"
+  },
+  "web_build": {
+    "passed": true,
+    "homepage_sha256": "ba67394b19bc6abfaaa4e908dd871511474c2bc4e752ec346858ceba24fa30c4"
+  },
+  "qa_business": {
+    "passed": 144,
+    "total": 144,
+    "script_sha256": "6ab1df752514586776af3d88ca1cb6cf66e71032374b4c84ee8baa85977b5711",
+    "timestamp": "2026-10-14T03:29:18.947023+00:00"
+  },
+  "qa_edge": {
+    "passed": 192,
+    "total": 192,
+    "script_sha256": "1b3642204eee19a55747a2e6ceafcfc17c7314f93a79e9eee2e46c94ac3e3c7f",
+    "timestamp": "2026-10-14T03:30:04.061208+00:00"
+  },
+  "qa_notification_race": {
+    "passed": 18,
+    "total": 18,
+    "evidence": "qa-notification-race.json",
+    "script_sha256": "7c177a2851b9f84be7d85d8635707c72c0dc7fba4e827a3cf463465277d87c48"
+  },
+  "customer_android_build": {
+    "unit_test_results": {
+      "Debug": {
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "Release": {
+        "tests": 13,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lint_debug_passed": true,
+    "lint_release_passed": true,
+    "assemble_release_passed": true,
+    "release_artifact": "release-artifacts.json"
+  },
+  "merchant_android_build": {
+    "unit_test_results": {
+      "Debug": {
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "Release": {
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lint_debug_passed": true,
+    "lint_release_passed": true,
+    "assemble_release_passed": true,
+    "release_artifact": "release-artifacts.json"
+  },
+  "production_business_test_writes": false,
+  "production_release": {
+    "status": "deployed",
+    "evidence": "production-release-final.json",
+    "readonly_passed": 18,
+    "readonly_total": 18
+  },
+  "native_ui_evidence": "native-ui-final.json",
+  "backup_evidence": "backup-restoration-final.json",
+  "delivery_evidence": "delivery-final.json"
+}

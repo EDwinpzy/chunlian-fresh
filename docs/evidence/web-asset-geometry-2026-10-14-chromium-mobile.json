@@ -1,0 +1,1030 @@
+{
+  "viewport": "chromium-mobile",
+  "views": [
+    {
+      "view": "home",
+      "icons": [
+        {
+          "source": "/app/assets/brand/spring-fresh.png",
+          "slot": [
+            38,
+            38
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/search.png",
+          "slot": [
+            20,
+            20
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/new_item.png",
+          "slot": [
+            108,
+            108
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            14,
+            14
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/add_to_cart.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/add_to_cart.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/add_to_cart.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/home_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/category_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/cart_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/profile_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "category",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/search.png",
+          "slot": [
+            18,
+            18
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/add_to_cart.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/home_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/category_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/cart_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/profile_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "search",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/search.png",
+          "slot": [
+            20,
+            20
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/close.png",
+          "slot": [
+            16,
+            16
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/add_to_cart.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "goods",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/cart.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/quantity_minus.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/quantity_plus.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/product_detail.png",
+          "slot": [
+            20,
+            20
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/cart.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "cart",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/quantity_minus.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/quantity_plus.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/close.png",
+          "slot": [
+            16,
+            16
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/home_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/category_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/cart_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/profile_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "checkout",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            18,
+            18
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "order-result",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/warning.png",
+          "slot": [
+            56,
+            56
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "orders",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "order-detail",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "order-edit",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/quantity_minus.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/quantity_plus.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "refund-progress",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/refund.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "addresses",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "address-edit",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "login",
+      "icons": [
+        {
+          "source": "/app/assets/brand/spring-fresh.png",
+          "slot": [
+            40,
+            40
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "profile",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/orders.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            16,
+            16
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/address.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            16,
+            16
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/cart.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            16,
+            16
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/phone.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            16,
+            16
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/notification.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            16,
+            16
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/home_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/category_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/cart_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/user-art/tabbar/profile_art.png",
+          "slot": [
+            24,
+            24
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    },
+    {
+      "view": "about",
+      "icons": [
+        {
+          "source": "/app/assets/icons/customer/back.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 1,
+          "ignoredOutsideSlot": true
+        },
+        {
+          "source": "/app/assets/icons/customer/phone.png",
+          "slot": [
+            22,
+            22
+          ],
+          "centerErrorPx": [
+            0,
+            0
+          ],
+          "visibleFraction": 0.82,
+          "overflow": "hidden",
+          "ignoredComponents": 0,
+          "ignoredOutsideSlot": true
+        }
+      ]
+    }
+  ]
+}

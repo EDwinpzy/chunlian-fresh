@@ -1,0 +1,23 @@
+{
+  "backup": "/opt/chunlian/backups/chunlian-fresh/20261013T103348Z",
+  "restore_check": "passed-order-ledger-counts",
+  "order_count": 13,
+  "ledger_count": 5,
+  "files": [
+    {
+      "name": "code-config.tar.gz",
+      "bytes": 391695,
+      "sha256": "bc3ec37cf28865f0046e9974f90aee94ee04d593779e40024e56887c71abe6e0"
+    },
+    {
+      "name": "database.sql.gz",
+      "bytes": 160352,
+      "sha256": "84686438af028b164b3cac48767aff5a3ce0175d3e8a5278cd2300662a69451f"
+    },
+    {
+      "name": "uploads.tar.gz",
+      "bytes": 34125824,
+      "sha256": "3dcb4c6e7ef813f5cd73033be36a51572bf63844d026536f40432f86edc6ece7"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import subprocess
 import zipfile
+from prepare_download_page import render_download_page
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build-tools', required=True)
@@ -102,6 +103,8 @@ if passed:
     temporary_manifest = manifest_path.with_suffix('.json.tmp')
     temporary_manifest.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     temporary_manifest.replace(manifest_path)
+    render_download_page(root, manifest)
+    print('PASS downloads index, compatibility copy, campaign image, and actual app icons generated')
     print('PASS android-release.json generated; upload both fixed-name APKs before the manifest to /downloads/')
 
 raise SystemExit(0 if passed else 1)

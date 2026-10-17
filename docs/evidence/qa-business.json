@@ -1,0 +1,727 @@
+{
+  "target": "http://127.0.0.1:18096",
+  "timestamp": "2026-10-15T07:03:25.291916+00:00",
+  "script_sha256": "6ab1df752514586776af3d88ca1cb6cf66e71032374b4c84ee8baa85977b5711",
+  "tests": [
+    {
+      "name": "merchant login",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "snapshot original store settings",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "shop is open before business regression",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "bad merchant login rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant anonymous rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "register customer",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "duplicate registration rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "invalid phone rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "bad customer login rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "second independent session",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "first session remains valid",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "update nickname",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "logout second session",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "revoked session rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "other customer",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "address create",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "address list",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "address edit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "address default",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "foreign address edit rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "foreign address delete rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "six fresh categories",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "category count six",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant goods creation requires an idempotency key",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant goods creation rejects a non-v4 key",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant goods create",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant goods idempotent replay",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "same-key goods replay returns the original product",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "same key with different goods body conflicts",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "customer product detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant goods create",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "customer product detail",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "same-key concurrent create never duplicates",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "empty preview rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stock preview rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "past appointment rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "server ignores spoofed money",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "appointment retained",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "authorized merchant reads delivery contact",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant detail includes dialable contact phone",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant list contact privacy",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant list never exposes full contact phone",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "anonymous merchant detail contact protected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "foreign order read rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "foreign cancel rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "order info edit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "latest address and mode",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stale info version rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create OFFLINE_QR",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "QR initial receipt rejects wrong amount",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant verifies QR prepayment",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "QR prepayment idempotent replay",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "QR receipt replay is stable",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "QR prepayment updates paid order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "paid QR order creates pending top-up",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pending QR top-up keeps old active lines",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "QR top-up rejects wrong amount",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant verifies QR top-up",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "verified top-up commits new lines once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "paid QR decrease enters manual refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "QR refund reserves refund amount",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "manual refund rejects wrong amount",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant confirms actual manual refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "manual refund idempotent replay",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read manual refund business timestamp",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "manual refund timestamp matches China business time",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "manual refund settles once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dispatch settled prepaid QR order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "deliver prepaid QR without recording another receipt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "prepaid delivery message says money settled",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "prepaid delivered balance stays zero",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "prepaid delivery ledger unchanged",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "prepaid delivery does not duplicate money entry",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "revision add new product",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "revision same key replay",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "revision replay same result",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "revision key conflict",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "COD increase immediate and totals",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "COD decrease no refund",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "COD decrease committed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dispatch COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "edit after dispatch rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "cancel after dispatch rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "deliver without collection",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "delivered unpaid independent",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "customer receives unpaid COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "receivables after customer receipt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "finished unpaid remains receivable",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "wrong collection amount rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "collect after customer receipt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "finished and paid independent",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "duplicate collection rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "ledger query",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "revision history",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant notifications",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "compact merchant notifications",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "notification unread count ignores list limit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "mark notifications read",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "notifications after read",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "mark all read clears global count",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "merchant stats",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "default stats ends on China business date",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "single China business day stats",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dashboard business-day totals",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "single day stats range is honored",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "today stats and dashboard use same funds and order date",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "daily settlement",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "create COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "notifications after new order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "new order creates unread notification after read",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stock before cancellation",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "cancel pending COD",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "cancel replay",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stock after cancellation",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "cancel stock returned once",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pause shop",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "pause rejects new purchase",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "existing order readable paused",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "resume shop",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "price inventory update",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "read customer order",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "old snapshot unchanged",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "goods edit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "goods off shelf",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "off shelf prevents purchase",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "on shelf again",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "delete own address",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "original shop settings and QR path restored",
+      "passed": true,
+      "detail": null
+    }
+  ]
+}
