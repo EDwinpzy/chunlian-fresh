@@ -1,24 +1,24 @@
 {
-  "checked_at": "2026-10-17T09:52:47.217432+00:00",
+  "checked_at": "2026-10-17T10:01:23.900547+00:00",
   "scope": "signed artifact verification; device installation and UI acceptance are recorded separately",
   "packages": [
     {
       "file": "customer-release.apk",
       "application_id": "com.chunlian.customer",
       "bytes": 16630653,
-      "sha256": "bb48ba98ef8ce8ca96553097a32a8998beb4f1811b0fbd6ce73c6f3b02179603",
+      "sha256": "a60c48a8b4fad9f8b24a41120fa678a2e46daf5728db75c9f6d44149a2b5a091",
       "certificate_sha256": "1301d842762a91154cb92b5ea87041584b76466ff34e15a034484f1265903462",
-      "version_code": 7,
-      "version_name": "1.0.6"
+      "version_code": 8,
+      "version_name": "1.0.7"
     },
     {
       "file": "merchant-release.apk",
       "application_id": "com.chunlian.merchant",
       "bytes": 50488433,
-      "sha256": "4e7d7f12315985a26dc21f2a05bce0215bb017212b2d335eb1ae489f39cab39b",
+      "sha256": "35641f302ea46c6890f33107d10cc2f2049bbf24a1148f223f19e790301bc65b",
       "certificate_sha256": "1301d842762a91154cb92b5ea87041584b76466ff34e15a034484f1265903462",
-      "version_code": 7,
-      "version_name": "1.0.6"
+      "version_code": 8,
+      "version_name": "1.0.7"
     }
   ],
   "checks": [
