@@ -145,7 +145,7 @@ async function addFromHome(page, goods) {
 }
 
 async function displayedOrderQuantity(page, goodsTitle) {
-  const texts = await page.locator('.goods-row').filter({ hasText: goodsTitle }).allTextContents()
+  const texts = await page.locator('.od-gline').filter({ hasText: goodsTitle }).allTextContents()
   return texts.reduce((sum, text) => sum + Number(text.match(/×\s*(\d+)/)?.[1] || 0), 0)
 }
 
@@ -319,14 +319,14 @@ test('隔离 staging：顾客账户地址、QR 补款退款、配送收货和 CO
 
   await page.getByRole('button', { name: '查看订单详情' }).click()
   await expect(page.getByText('staging 网页 QR 预约测试')).toBeVisible()
-  await expect(page.locator('.row').filter({ hasText: '期望送达' })).toContainText(/预约 .*18:30/)
+  await expect(page.locator('.od-slot')).toContainText(/预约 .*18:30/)
 
   // Info-only edit path should save without changing quantity or payment state.
   await page.getByRole('button', { name: '修改订单' }).click()
   await page.getByPlaceholder('例如：放门口').fill('staging 网页备注已修改')
   await page.getByRole('button', { name: '保存修改' }).click()
   await expect(page.getByText('staging 网页备注已修改')).toBeVisible()
-  await expect(page.locator('.goods-row').filter({ hasText: goods.title })).toContainText('× 1')
+  await expect(page.locator('.od-gline').filter({ hasText: goods.title })).toContainText('× 1')
 
   // Increasing paid QR order quantity creates an unapplied top-up. Existing
   // lines remain unchanged until the merchant confirms the top-up amount.
@@ -336,7 +336,7 @@ test('隔离 staging：顾客账户地址、QR 补款退款、配送收货和 CO
   await expect(page.getByRole('dialog').getByText('需补付', { exact: true })).toBeVisible()
   await page.getByRole('dialog').getByRole('button', { name: '确认变更' }).click()
   await expect(page.getByRole('heading', { name: '扫码补款' })).toBeVisible()
-  await expect(page.locator('.goods-row').filter({ hasText: goods.title })).toContainText('× 1')
+  await expect(page.locator('.od-gline').filter({ hasText: goods.title })).toContainText('× 1')
   qrOrder = await customerOrder(qrOrderId)
   expect(qrOrder.revision_state).toBe('PENDING_TOPUP')
   expect(qrOrder.payment_state).toBe('PAID')
@@ -367,14 +367,14 @@ test('隔离 staging：顾客账户地址、QR 补款退款、配送收货和 CO
   // independently verified on the customer detail page.
   await merchantOrderAction(qrOrderId, 'deliver')
   await page.reload()
-  await expect(page.locator('.detail-status__title')).toHaveText('配送中')
+  await expect(page.locator('.od-hero__status-text')).toHaveText('配送中')
   await expect(page.getByRole('button', { name: '修改订单' })).toHaveCount(0)
   await merchantOrderAction(qrOrderId, 'confirm-delivery', { collected_on_delivery: false })
   await page.reload()
-  await expect(page.locator('.detail-status__title')).toHaveText('已送达')
+  await expect(page.locator('.od-hero__status-text')).toHaveText('已送达')
   await page.getByRole('button', { name: '确认收货' }).click()
   await page.getByRole('dialog').getByRole('button', { name: '确认收货' }).click()
-  await expect(page.locator('.detail-status__title')).toHaveText('已完成')
+  await expect(page.locator('.od-hero__status-text')).toHaveText('已完成')
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(page.locator('.toast')).toHaveCount(0)
   await page.screenshot({ path: 'test-results/web-order-finished.png', fullPage: true })
@@ -394,11 +394,11 @@ test('隔离 staging：顾客账户地址、QR 补款退款、配送收货和 CO
   await page.screenshot({ path: 'test-results/web-cod-qr.png', fullPage: true })
   await page.getByRole('button', { name: '查看订单详情' }).click()
   await expect(page.getByRole('heading', { name: '货到扫码' })).toBeVisible()
-  await expect(page.locator('.detail-status')).toContainText('货到付款')
+  await expect(page.locator('.od-hero__status')).toContainText('货到付款')
   await page.getByRole('button', { name: '取消订单' }).click()
   await page.getByRole('dialog').getByRole('button', { name: '下错了' }).click()
   await page.getByRole('dialog').getByRole('button', { name: '确认取消' }).click()
-  await expect(page.locator('.detail-status__title')).toHaveText('已取消')
+  await expect(page.locator('.od-hero__status-text')).toHaveText('已取消')
   await expect(page.locator('.offline-qr')).toHaveCount(0)
   const cancelledCodOrder = await customerOrder(codOrderId)
   expect(cancelledCodOrder.order_status).toBe('CANCELLED')

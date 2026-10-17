@@ -162,7 +162,7 @@ test('顾客网页 16 个主视图逐页加载并保存桌面/手机截图', asy
     { name: 'checkout', path: 'checkout', ready: () => page.getByRole('heading', { name: '确认订单' }) },
     { name: 'order-result', path: 'order-result/9001', ready: () => page.getByRole('heading', { name: '订单已提交，待付款' }) },
     { name: 'orders', path: 'orders', ready: () => page.getByRole('heading', { name: '我的订单' }) },
-    { name: 'order-detail', path: 'orders/1001', ready: () => page.locator('.detail-status__title') },
+    { name: 'order-detail', path: 'orders/1001', ready: () => page.locator('.od-hero__status-text') },
     { name: 'order-edit', path: 'orders/1001/edit', ready: () => page.getByRole('heading', { name: '修改订单' }) },
     { name: 'refund-progress', path: 'orders/2005/refunds', ready: () => page.getByRole('heading', { name: '退款进度' }) },
     { name: 'addresses', path: 'addresses', ready: () => page.getByRole('heading', { name: '收货地址' }) },
