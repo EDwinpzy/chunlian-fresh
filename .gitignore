@@ -84,3 +84,19 @@ backend/extension/.env
 # ---------- AI 协作工作区 ----------
 # 本机工具的项目记忆与交接记录，属于个人工作数据，不进共享仓库。
 .workbuddy-ai/
+
+# ---------- MCP 工具凭据 ----------
+# 服务器 SSH 密码只存本机，绝不进仓库。
+infrastructure/mcp/**/credential.json
+
+# ---------- 本机 QA / 设计过程产物 ----------
+# 截图与样板每次跑都变，且体积大；正式证据统一放 docs/evidence/。
+**/qa-artifacts/
+**/design-previews/
+# 误用相对路径跑脚本会在 apps/ 下再生成一份 evidence，仓库只认根目录 docs/evidence/。
+apps/docs/
+# 各端本地过程文档（商家端样板预览等），不进共享仓库。
+apps/merchant-android/docs/
+# 临时核验脚本与测试载荷
+.verify-*
+dist/tmp-cleanup/
